@@ -1,0 +1,106 @@
+<div class="register-container">
+  <div class="register-box">
+    <h2>Registro de Staff</h2>
+
+    @if (isLoading()) {
+      <div class="loading">
+        Validando invitacion...
+      </div>
+    }
+
+    @if (!isLoading()) {
+      @if (error() && !invitacion()) {
+        <div class="error-message">
+          {{ error() }}
+        </div>
+      }
+
+      @if (!invitacion()) {
+        <div class="invitacion-info">
+          Has sido invitado con el rol de: <strong>{{ invitacion()?.rol }}</strong>
+        </div>
+
+        <form [formGroup]="formulario" (ngSubmit)="onSubmit()">
+          
+          <div class="form-row">
+            <div class="form-group">
+              <label for="nombre">Nombre</label>
+              <input id="nombre" type="text" formControlName="nombre">
+              @if (nombreControl.touched && nombreControl.hasError('required')) {
+                <small class="error-message">El nombre es obligatorio</small>
+              }
+            </div>
+            <div class="form-group">
+              <label for="apellido">Apellido</label>
+              <input id="apellido" type="text" formControlName="apellido">
+              @if (apellidoControl.touched && apellidoControl.hasError('required')) {
+                <small class="error-message">El apellido es obligatorio</small>
+              }
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="dni">DNI</label>
+            <input id="dni" type="text" formControlName="dni">
+            @if (dniControl.touched && dniControl.hasError('required')) {
+              <small class="error-message">El DNI es obligatorio</small>
+            }
+          </div>
+
+          <div class="form-group">
+            <label for="country">Pais para Telefono</label>
+            <select id="country" (change)="onCountryChange($event)">
+              @for (country of countries; track country.code) {
+                <option [value]="country.code">
+                  {{ country.name }} ({{ country.dialCode }})
+                </option>
+              }
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label for="telefono">Telefono (sin codigo de pais)</label>
+            <input id="telefono" type="text" formControlName="telefono" placeholder="1122334455">
+            @if (telefonoControl.touched && telefonoControl.hasError('required')) {
+              <small class="error-message">El telefono es obligatorio</small>
+            }
+          </div>
+
+          <div class="form-group">
+            <label for="email">Email</label>
+            <input id="email" type="email" formControlName="email">
+            @if (emailControl.touched && emailControl.hasError('required')) {
+              <small class="error-message">El email es obligatorio</small>
+            }
+            @if (emailControl.touched && emailControl.hasError('email')) {
+              <small class="error-message">Ingresa un email valido</small>
+            }
+          </div>
+
+          <div class="form-group">
+            <label for="password">Contrasena</label>
+            <input id="password" type="password" formControlName="password">
+            @if (passwordControl.touched && passwordControl.hasError('required')) {
+              <small class="error-message">La contrasena es obligatoria</small>
+            }
+            @if (passwordControl.touched && passwordControl.hasError('minlength')) {
+              <small class="error-message">La contrasena debe tener al menos 6 caracteres</small>
+            }
+          </div>
+
+          <button type="submit" [disabled]="formulario.invalid || isSubmitting()">
+            {{ isSubmitting() ? 'Registrando...' : 'Confirmar Registro' }}
+          </button>
+
+          @if (error()) {
+            <div class="error-message mt-1rem">
+              {{ error() }}
+            </div>
+          }
+
+        </form>
+      }
+
+    }
+  </div>
+</div>

@@ -1,0 +1,23 @@
+<span
+  #trigger
+  class="inline-flex"
+  (mouseenter)="show()"
+  (mouseleave)="hide()"
+  (focusin)="show()"
+  (focusout)="hide()">
+  <ng-content></ng-content>
+</span>
+
+<ng-template #tooltipPanel>
+  <div
+    class="pointer-events-none relative overflow-hidden rounded-[8px] border border-[var(--c-200)] bg-[var(--c-50)] px-3 py-2
+           shadow-sm"
+    [class.animate-tooltip-in]="!isClosing()"
+    [class.animate-tooltip-out]="isClosing()"
+    role="tooltip"
+    [attr.data-open]="isOpen()">
+    <span class="absolute inset-x-0 top-0 h-px bg-[var(--c-300)]"></span>
+    <span class="block text-[9px] uppercase tracking-[0.14em] text-[var(--c-400)]">{{ caption() }}</span>
+    <span class="mt-0.5 block text-[11px] font-light leading-snug text-[var(--c-600)]">{{ text() }}</span>
+  </div>
+</ng-template>

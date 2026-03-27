@@ -46,3 +46,10 @@ Thumbs.db
 .nx/polygraph
 .claude/worktrees
 .claude/settings.local.json
+.angular
+
+
+# Archivos personales / no subir
+AGENTS.md
+derma-antiguo/
+prompt-plan-migracion.md

@@ -1,0 +1,28 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600&display=swap');
+
+:root {
+  /* Minimalist Black & White Abstract Elegance */
+  --c-50:  #f8f9fa;  /* fondo principal de la app */
+  --c-100: #e9ecef;  /* fondo de página / scene bg */
+  --c-200: #dee2e6;  /* borders suaves, dividers */
+  --c-300: #ced4da;  /* borders énfasis, icon borders */
+  --c-400: #adb5bd;  /* texto muted / placeholders */
+  --c-500: #6c757d;  /* texto secundario */
+  --c-600: #495057;  /* texto cuerpo / iconos */
+  --c-700: #343a40;  /* texto énfasis */
+  --c-800: #212529;  /* texto principal / botón primario bg */
+
+  --font-body: 'Space Grotesk', system-ui, sans-serif;
+}
+
+body {
+  font-family: var(--font-body);
+  background-color: var(--c-100);
+  color: var(--c-600);
+  margin: 0;
+  padding: 0;
+}

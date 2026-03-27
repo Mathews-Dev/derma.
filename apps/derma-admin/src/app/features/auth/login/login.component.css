@@ -1,0 +1,22 @@
+/* Animación de entrada suave del componente */
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(20px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.animate-in {
+  animation: fadeUp 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+/* Patrón diagonal texturizado para elementor decorativos abstractos */
+.diagonal-pattern {
+  background-image: repeating-linear-gradient(
+    45deg,
+    var(--c-300) 0,
+    var(--c-300) 1px,
+    transparent 0,
+    transparent 10px
+  );
+  -webkit-mask-image: linear-gradient(45deg, rgba(0,0,0,0.8) 0%, rgba(0,0,0,0.4) 30%, rgba(0,0,0,0) 100%);
+  mask-image: linear-gradient(45deg, rgba(0,0,0,0.8) 0%, rgba(0,0,0,0.4) 30%, rgba(0,0,0,0) 100%);
+}

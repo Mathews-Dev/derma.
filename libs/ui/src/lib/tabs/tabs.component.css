@@ -1,0 +1,30 @@
+/* Tabs component styles */
+/* Estilos manejados con Tailwind + inline styles para máxima consistencia */
+
+button {
+  cursor: pointer;
+}
+
+/* Línea de underline - oculta por defecto (width: 0) */
+.tab-line-hover {
+  display: block;
+  width: 0 !important;
+  background-color: var(--c-800);
+  height: 1px;
+}
+
+/* En hover - se expande desde el centro */
+button:hover .tab-line-hover {
+  width: 60px !important;
+}
+
+/* En activo - mantiene el mismo tamaño que hover, sin expandirse más */
+button.active .tab-line-hover {
+  width: 60px !important;
+}
+
+button.active {
+  color: var(--c-800);
+  font-weight: 500;
+}
+

@@ -1,0 +1,50 @@
+<label
+  class="inline-flex items-center gap-3 cursor-pointer select-none group"
+  [class.opacity-40]="disabled()"
+  [class.cursor-not-allowed]="disabled()"
+  [class.pointer-events-none]="disabled()">
+
+  <!-- Input accesible oculto -->
+  <input
+    type="checkbox"
+    [checked]="state()"
+    (change)="toggle()"
+    [disabled]="disabled()"
+    class="sr-only"/>
+
+  <!-- Caja custom -->
+  <div
+    class="relative w-[18px] h-[18px] rounded-[4px] border flex items-center justify-center
+           flex-shrink-0 transition-all duration-200 ease-out"
+    [class.bg-[var(--c-800)]]="state()"
+    [class.border-[var(--c-800)]]="state()"
+    [class.border-[var(--c-300)]]="!state()"
+    [class.group-hover:border-[var(--c-600)]]="!state()">
+
+    <!-- Check animado -->
+    <svg
+      class="transition-all duration-200"
+      [class.opacity-0]="!state()"
+      [class.scale-0]="!state()"
+      [class.opacity-100]="state()"
+      [class.scale-100]="state()"
+      xmlns="http://www.w3.org/2000/svg"
+      fill="none" viewBox="0 0 24 24"
+      stroke-width="2.5" stroke="currentColor"
+      style="width:10px;height:10px;color:var(--c-50)">
+      <path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12.75l6 6 9-13.5"/>
+    </svg>
+
+  </div>
+
+  <!-- Label -->
+  @if (label()) {
+    <span
+      class="text-[13px] font-light leading-snug transition-colors duration-200"
+      [class.text-[var(--c-800)]]="state()"
+      [class.text-[var(--c-600)]]="!state()">
+      {{ label() }}
+    </span>
+  }
+
+</label>

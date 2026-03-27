@@ -1,0 +1,39 @@
+<div class="bg-[var(--c-50)] border border-[var(--c-200)] rounded-[16px] overflow-hidden">
+  <!-- Tabs header with indicator -->
+  <div class="relative border-b border-[var(--c-200)]">
+    <div class="flex">
+      @for (tab of tabs(); track tab.id) {
+        <button
+          #tabButton
+          [attr.data-tab-id]="tab.id"
+          (click)="selectTab(tab.id)"
+          type="button"
+          aria-selected="activeTab() === tab.id"
+          class="flex-1 px-6 py-3 text-center text-[0.875rem] font-medium relative
+                 text-[var(--c-400)]
+                 hover:text-[var(--c-700)]
+                 transition-colors duration-200 cursor-pointer"
+          [class.active]="activeTab() === tab.id">
+          {{ tab.label }}
+          <!-- Línea de underline que se expande -->
+          <span
+            class="tab-line-hover absolute bottom-0 left-1/2 h-[1px] bg-[var(--c-800)] 
+                   transform -translate-x-1/2 transition-all duration-300 origin-center"
+            style="width: 0px;">
+          </span>
+        </button>
+      }
+    </div>
+  </div>
+
+  <!-- Tab content -->
+  <div class="p-6">
+    @for (tab of tabs(); track tab.id) {
+      @if (activeTab() === tab.id) {
+        <div class="text-[var(--c-600)] text-[0.875rem] leading-relaxed">
+          {{ tab.content }}
+        </div>
+      }
+    }
+  </div>
+</div>

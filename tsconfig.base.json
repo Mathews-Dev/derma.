@@ -1,0 +1,26 @@
+{
+  "compileOnSave": false,
+  "compilerOptions": {
+    "rootDir": ".",
+    "sourceMap": true,
+    "declaration": false,
+    "moduleResolution": "node",
+    "emitDecoratorMetadata": true,
+    "experimentalDecorators": true,
+    "importHelpers": true,
+    "target": "es2015",
+    "module": "esnext",
+    "lib": ["es2020", "dom"],
+    "skipLibCheck": true,
+    "skipDefaultLibCheck": true,
+    "baseUrl": ".",
+    "paths": {
+      "@derma/firebase": ["libs/firebase/src/index.ts"],
+      "@derma/guards": ["libs/shared/guards/src/index.ts"],
+      "@derma/models": ["libs/shared/models/src/index.ts"],
+      "@derma/ui": ["libs/ui/src/index.ts"],
+      "@derma/validators": ["libs/shared/validators/src/index.ts"]
+    }
+  },
+  "exclude": ["node_modules", "tmp"]
+}

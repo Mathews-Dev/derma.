@@ -1,3 +1,9 @@
+## Always-On Project Instruction
+
+- Treat `.github/copilot-instructions.md` as mandatory and always active for every request in this repository.
+- Before coding, reviewing, refactoring, or generating files, align decisions with `.github/copilot-instructions.md`.
+- If any suggestion conflicts with `.github/copilot-instructions.md`, follow `.github/copilot-instructions.md`.
+
 <!-- nx configuration start-->
 <!-- Leave the start & end comments to automatically receive updates. -->
 

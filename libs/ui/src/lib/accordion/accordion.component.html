@@ -1,0 +1,39 @@
+<div class="overflow-hidden rounded-[12px] border border-[var(--c-200)] bg-[var(--c-50)]">
+  @for (item of items(); track item.id) {
+    <section class="border-b border-[var(--c-200)] last:border-b-0">
+      <button
+        type="button"
+        class="group flex w-full items-center justify-between gap-4 px-5 py-4 text-left"
+        [attr.aria-expanded]="isOpen(item.id)"
+        [attr.aria-controls]="'accordion-panel-' + item.id"
+        (click)="toggle(item.id)">
+        <span class="text-[0.825rem] font-light text-[var(--c-800)] transition-colors group-hover:text-[var(--c-700)]">
+          {{ item.title }}
+        </span>
+
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          fill="none"
+          viewBox="0 0 24 24"
+          stroke-width="1.5"
+          stroke="currentColor"
+          class="size-4 flex-shrink-0 text-[var(--c-400)] transition-transform duration-300"
+          [class.rotate-180]="isOpen(item.id)">
+          <path stroke-linecap="round" stroke-linejoin="round" d="m19.5 8.25-7.5 7.5-7.5-7.5" />
+        </svg>
+      </button>
+
+      <div
+        [id]="'accordion-panel-' + item.id"
+        class="grid transition-[grid-template-rows] duration-300 ease-out"
+        [class.grid-rows-[1fr]]="isOpen(item.id)"
+        [class.grid-rows-[0fr]]="!isOpen(item.id)">
+        <div class="overflow-hidden">
+          <p class="px-5 pb-4 text-[0.8rem] font-light leading-relaxed text-[var(--c-600)]">
+            {{ item.content }}
+          </p>
+        </div>
+      </div>
+    </section>
+  }
+</div>

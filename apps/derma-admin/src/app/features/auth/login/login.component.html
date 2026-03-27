@@ -1,0 +1,111 @@
+<div class="min-h-screen flex items-center justify-center p-4 bg-[var(--c-50)] selection:bg-[var(--c-200)] selection:text-[var(--c-800)]">
+
+  <div class="w-full max-w-[850px] bg-[var(--c-50)] rounded-[32px] shadow-[0_20px_60px_-15px_rgba(0,0,0,0.1)] flex overflow-hidden animate-in">
+
+    <div class="hidden md:flex w-[40%] bg-[var(--c-800)] relative items-center justify-center overflow-hidden">
+      <!-- Arte Abstracto -->
+      <div class="absolute inset-0 w-full h-full opacity-80">
+        <!-- Gradiente base -->
+        <div class="absolute inset-0 bg-gradient-to-br from-[var(--c-700)] via-[var(--c-800)] to-[#000]"></div>
+        <!-- Blobs de luz -->
+        <div class="absolute top-[-20%] right-[-20%] w-[300px] h-[300px] bg-[var(--c-600)]/40 rounded-full blur-[80px]"></div>
+        <div class="absolute bottom-[-10%] left-[-10%] w-[250px] h-[250px] bg-[var(--c-700)]/20 rounded-full blur-[60px]"></div>
+        <!-- Ruido de textura -->
+        <div class="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-10 mix-blend-overlay"></div>
+        <!-- Líneas decorativas sutiles -->
+        <svg class="absolute inset-0 w-full h-full opacity-20" viewBox="0 0 100 100" preserveAspectRatio="none">
+          <line x1="0" y1="100" x2="100" y2="0" stroke="var(--c-50)" stroke-width="0.2" />
+        </svg>
+      </div>
+
+      <!-- Logo / Icono Centrado -->
+      <div class="relative z-10 flex flex-col items-center gap-4 p-8 text-center">
+        <div class="w-20 h-20 flex items-center justify-center bg-[var(--c-50)]/5 backdrop-blur-md rounded-2xl border border-[var(--c-50)]/10 shadow-2xl">
+          <img src="assets/images/icon-white.png" alt="icon" class="w-10 h-10 object-contain drop-shadow-lg opacity-90" onerror="this.style.display='none'">
+        </div>
+        <!-- Texto decorativo -->
+        <div class="space-y-1">
+          <p class="text-[var(--c-50)] text-lg font-light tracking-widest uppercase">Derma</p>
+          <div class="h-[2px] w-8 mx-auto rounded-full bg-[var(--c-50)]/20"></div>
+        </div>
+      </div>
+    </div>
+
+   
+    <div class="w-full md:w-[60%] bg-[var(--c-50)] p-8 sm:p-10 flex flex-col justify-center relative">
+
+      <!-- Estado de Carga -->
+      @if (isLoading()) {
+
+        <div class="absolute inset-0 bg-[var(--c-50)]/80 backdrop-blur-sm z-50 flex items-center justify-center">
+          <p class="text-xs text-[var(--c-500)] font-medium tracking-widest animate-pulse">INGRESANDO AL PORTAL...</p>
+        </div>
+      }
+
+      <div class="w-full">
+        
+        <!-- Header del Formulario -->
+        <div class="mb-6 flex justify-between items-end border-b border-[var(--c-200)] pb-2">
+          <div>
+            <h2 class="text-2xl font-light text-[var(--c-800)] tracking-tight">
+              Iniciar sesión
+            </h2>
+            <p class="text-[12px] text-[var(--c-500)] font-light mt-1">
+              Ingresa tus credenciales para acceder.
+            </p>
+          </div>
+          <!-- Badge de Rol -->
+          <div class="flex flex-col items-end">
+            <span class="text-[9px] font-bold text-[var(--c-400)] uppercase tracking-wider">Portal</span>
+            <span class="text-[11px] font-light text-[var(--c-800)] bg-[var(--c-100)] px-2 py-1 rounded-md">
+              ADMIN/STAFF
+            </span>
+          </div>
+        </div>
+
+        @if (error()) {
+          <div class="mb-5 p-3 rounded-xl bg-[var(--c-100)] border-l-4 border-[var(--c-800)] text-[0.8rem] text-[var(--c-800)] font-medium">
+            {{ error() }}
+          </div>
+        }
+
+        <!-- FORMULARIO COMPACTO (Componentes UI reutilizables) -->
+        <form [formGroup]="formulario" (ngSubmit)="onSubmit()" class="space-y-4">
+
+          <!-- Correo Electrónico -->
+          <ui-input 
+            label="Correo Electrónico" 
+            type="email" 
+            placeholder="tu@email.com" 
+            [control]="formulario.get('email')"
+            autocomplete="email">
+          </ui-input>
+
+          <!-- Contraseña -->
+          <ui-input class="mt-2" 
+            label="Contraseña" 
+            type="password" 
+            placeholder="••••••••" 
+            [control]="formulario.get('password')"
+            autocomplete="current-password">
+          </ui-input>
+
+          <!-- Footer & Botón -->
+          <div class="pt-6 flex items-center justify-between gap-4 mt-2">
+            <p class="text-[11px] text-[var(--c-500)] font-light leading-relaxed max-w-[200px]">
+              Área de acceso restringida para usuarios autorizados.
+            </p>
+
+            <ui-button 
+              type="submit" 
+              label="ENTRAR"
+              [disabled]="formulario.invalid" 
+              [isLoading]="isLoading()">
+            </ui-button>
+          </div>
+
+        </form>
+      </div>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,15 @@
+<!-- Track: w-11 h-6 (44×24px) -->
+<button
+  type="button"
+  (click)="toggle()"
+  [disabled]="disabled()"
+  class="relative w-11 h-6 rounded-full transition-colors duration-300
+               cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+        [class.bg-[var(--c-800)]]="state()"
+        [class.bg-[var(--c-200)]]="!state()">
+
+  <span class="absolute top-1/2 -translate-y-1/2 w-[18px] h-[18px] rounded-full
+               bg-[var(--c-50)] shadow-sm transition-all duration-300"
+        [style.left]="state() ? '23px' : '3px'">
+  </span>
+</button>

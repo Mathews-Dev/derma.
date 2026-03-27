@@ -1,0 +1,190 @@
+.geo {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  overflow: hidden;
+}
+
+.geo-arc-1 {
+  position: absolute;
+  width: 280px;
+  height: 280px;
+  border-radius: 50%;
+  border: 1px solid var(--c-200);
+  top: -120px;
+  right: -80px;
+}
+
+.geo-arc-2 {
+  position: absolute;
+  width: 160px;
+  height: 160px;
+  border-radius: 50%;
+  border: 1px solid var(--c-100);
+  top: -40px;
+  right: 10px;
+}
+
+.geo-diagonal {
+  position: absolute;
+  bottom: -10px;
+  left: -10px;
+  width: 180px;
+  height: 140px;
+  opacity: 0.5;
+  background-image: repeating-linear-gradient(
+    45deg,
+    var(--c-300) 0,
+    var(--c-300) 1px,
+    transparent 0,
+    transparent 10px
+  );
+  -webkit-mask-image: linear-gradient(
+    45deg,
+    rgba(0, 0, 0, 0.9) 0%,
+    rgba(0, 0, 0, 0.6) 30%,
+    rgba(0, 0, 0, 0) 100%
+  );
+  mask-image: linear-gradient(
+    45deg,
+    rgba(0, 0, 0, 0.9) 0%,
+    rgba(0, 0, 0, 0.6) 30%,
+    rgba(0, 0, 0, 0) 100%
+  );
+}
+
+.close {
+  position: absolute;
+  top: 1.25rem;
+  right: 1.25rem;
+  width: 28px;
+  height: 28px;
+  border-radius: 8px;
+  border: 1px solid var(--c-200);
+  background: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.2s, border-color 0.2s;
+  z-index: 10;
+}
+
+.close:hover {
+  background: var(--c-800);
+  border-color: var(--c-800);
+}
+
+.close:hover svg {
+  color: var(--c-50);
+}
+
+.close svg {
+  width: 12px;
+  height: 12px;
+  color: var(--c-500);
+  transition: color 0.2s;
+}
+
+.modal-icon {
+  position: relative;
+  z-index: 1;
+  width: 48px;
+  height: 48px;
+  border-radius: 12px;
+  border: 1.5px solid var(--c-300);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 1.5rem;
+}
+
+.modal-icon svg {
+  width: 20px;
+  height: 20px;
+  color: var(--c-600);
+}
+
+h2 {
+  position: relative;
+  z-index: 1;
+  font-family: 'Space Grotesk', system-ui, sans-serif;
+  font-size: 1.5rem;
+  font-weight: 300;
+  color: var(--c-800);
+  letter-spacing: -0.02em;
+  line-height: 1.2;
+  margin-bottom: 0.6rem;
+}
+
+h2 strong {
+  font-weight: 600;
+}
+
+p {
+  position: relative;
+  z-index: 1;
+  font-family: 'Space Grotesk', system-ui, sans-serif;
+  font-size: 13px;
+  font-weight: 300;
+  color: var(--c-500);
+  line-height: 1.8;
+  max-width: 300px;
+  margin-bottom: 2.5rem;
+}
+
+.divider {
+  height: 1px;
+  background: var(--c-200);
+  margin: 1.5rem 0;
+  position: relative;
+  z-index: 1;
+}
+
+.footer {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 0.75rem;
+  position: relative;
+  z-index: 1;
+  padding-bottom: 0.125rem;
+}
+
+.btn-cancel {
+  background: none;
+  border: 1px solid var(--c-200);
+  border-radius: 10px;
+  padding: 0.6rem 1.25rem;
+  font-family: 'Space Grotesk', system-ui, sans-serif;
+  font-size: 11px;
+  font-weight: 400;
+  color: var(--c-500);
+  cursor: pointer;
+  letter-spacing: 0.03em;
+  transition: border-color 0.2s, color 0.2s;
+}
+
+.btn-cancel:hover {
+  border-color: var(--c-400);
+  color: var(--c-700);
+}
+
+.btn-confirm {
+  background: var(--c-800);
+  border: none;
+  border-radius: 10px;
+  padding: 0.6rem 1.5rem;
+  font-family: 'Space Grotesk', system-ui, sans-serif;
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--c-50);
+  cursor: pointer;
+  letter-spacing: 0.04em;
+  transition: background 0.2s;
+}
+
+.btn-confirm:hover {
+  background: var(--c-700);
+}
+

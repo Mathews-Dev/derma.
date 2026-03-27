@@ -1,0 +1,45 @@
+<span
+  #trigger
+  class="inline-flex"
+  (click)="toggle()"
+  (keydown.enter)="toggle()"
+  (keydown.space)="$event.preventDefault(); toggle()">
+  <ng-content></ng-content>
+</span>
+
+<ng-template #popoverPanel>
+  <section
+    class="relative overflow-hidden rounded-[12px] border border-[var(--c-200)] bg-[var(--c-50)] p-4 shadow-sm"
+    [class.animate-popover-in]="!isClosing()"
+    [class.animate-popover-out]="isClosing()"
+    role="dialog"
+    aria-modal="false">
+    <span class="absolute inset-x-0 top-0 h-px bg-[var(--c-300)]"></span>
+
+    <div class="pointer-events-none absolute inset-0 overflow-hidden" aria-hidden="true">
+      <span class="absolute -right-10 -top-10 h-24 w-24 rounded-full border border-[var(--c-200)]"></span>
+    </div>
+
+    <button
+      type="button"
+      class="absolute right-3 top-3 rounded-[8px] border border-[var(--c-200)] p-1 text-[var(--c-500)]
+             transition-colors hover:border-[var(--c-300)] hover:text-[var(--c-700)]"
+      aria-label="Cerrar"
+      (click)="closeAnimated()">
+      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-3">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M6 18 18 6M6 6l12 12" />
+      </svg>
+    </button>
+
+    <p class="pr-8 text-[10px] uppercase tracking-[0.14em] text-[var(--c-400)]">Popover</p>
+    <h3 class="mt-2 text-[1rem] font-light leading-snug text-[var(--c-800)]">
+      {{ title() }}
+    </h3>
+
+    @if (description()) {
+      <p class="mt-2 max-w-[28ch] text-[0.825rem] font-light leading-relaxed text-[var(--c-600)]">
+        {{ description() }}
+      </p>
+    }
+  </section>
+</ng-template>
