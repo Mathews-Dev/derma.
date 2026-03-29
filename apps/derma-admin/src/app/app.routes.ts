@@ -1,5 +1,6 @@
 import { Route } from '@angular/router';
-import { noAuthGuard } from '@derma/guards';
+import { authGuard, noAuthGuard, roleGuard } from '@derma/guards';
+import { RolUsuario } from '@derma/models';
 
 export const appRoutes: Route[] = [
   {
@@ -8,12 +9,62 @@ export const appRoutes: Route[] = [
     canActivate: [noAuthGuard]
   },
   {
+    path: 'admin',
+    canActivate: [authGuard, roleGuard([RolUsuario.ADMIN, RolUsuario.DERMATOLOGO, RolUsuario.RECEPCIONISTA, RolUsuario.EMPLEADO])],
+    loadComponent: () => import('./layouts/private-layout/private-layout.component').then(m => m.PrivateLayoutComponent),
+    children: [
+      {
+        path: 'dashboard',
+        loadComponent: () => import('./features/dashboard/dashboard.component').then(m => m.DashboardComponent)
+      },
+      {
+        path: 'agenda',
+        canActivate: [roleGuard([RolUsuario.ADMIN, RolUsuario.DERMATOLOGO, RolUsuario.RECEPCIONISTA])],
+        loadComponent: () => import('./features/agenda/agenda.component').then(m => m.AgendaComponent)
+      },
+      {
+        path: 'pacientes',
+        canActivate: [roleGuard([RolUsuario.ADMIN, RolUsuario.DERMATOLOGO, RolUsuario.RECEPCIONISTA])],
+        loadComponent: () => import('./features/pacientes/pacientes.component').then(m => m.PacientesComponent)
+      },
+      {
+        path: 'historial',
+        canActivate: [roleGuard([RolUsuario.ADMIN, RolUsuario.DERMATOLOGO])],
+        loadComponent: () => import('./features/historial/historial.component').then(m => m.HistorialComponent)
+      },
+      {
+        path: 'tratamientos',
+        canActivate: [roleGuard([RolUsuario.ADMIN, RolUsuario.DERMATOLOGO])],
+        loadComponent: () => import('./features/tratamientos/tratamientos.component').then(m => m.TratamientosComponent)
+      },
+      {
+        path: 'finanzas',
+        canActivate: [roleGuard(RolUsuario.ADMIN)],
+        loadComponent: () => import('./features/finanzas/finanzas.component').then(m => m.FinanzasComponent)
+      },
+      {
+        path: 'staff',
+        canActivate: [roleGuard(RolUsuario.ADMIN)],
+        loadComponent: () => import('./features/staff/staff.component').then(m => m.StaffComponent)
+      },
+      {
+        path: 'configuracion',
+        loadComponent: () => import('./features/configuracion/configuracion.component').then(m => m.ConfiguracionComponent)
+      },
+      {
+        path: '',
+        pathMatch: 'full',
+        redirectTo: 'dashboard'
+      }
+    ]
+  },
+  {
     path: '',
-    redirectTo: 'auth/login',
+    redirectTo: 'admin/dashboard',
     pathMatch: 'full'
   },
   {
     path: '**',
-    redirectTo: 'auth/login'
+    redirectTo: 'admin/dashboard'
   }
 ];

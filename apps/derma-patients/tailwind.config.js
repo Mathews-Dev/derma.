@@ -8,7 +8,11 @@ module.exports = {
     ...createGlobPatternsForDependencies(__dirname),
   ],
   theme: {
-    extend: {},
+    extend: {
+      fontFamily: {
+        goodly: ['Goodly', 'sans-serif'],
+      },
+    },
   },
   plugins: [],
 };

@@ -1,9 +1,10 @@
 import { CommonModule } from '@angular/common';
 import { ChangeDetectionStrategy, Component, inject, OnInit, signal } from '@angular/core';
-import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
+import { FormBuilder, ReactiveFormsModule, Validators, FormControl } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import { InvitacionService, AuthService } from '@derma/firebase';
 import { SolicitudInvitacion } from '@derma/models';
+import { UiInputComponent, UiButtonComponent, SelectOption, UiDropdownSelectComponent } from '@derma/ui';
 
 interface Country {
   code: string;
@@ -16,7 +17,7 @@ interface Country {
   selector: 'derm-register-staff',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [CommonModule, ReactiveFormsModule],
+  imports: [CommonModule, ReactiveFormsModule, UiInputComponent, UiButtonComponent, UiDropdownSelectComponent],
   templateUrl: './register-staff.component.html',
   styleUrls: ['./register-staff.component.css']
 })
@@ -42,12 +43,18 @@ export class RegisterStaffComponent implements OnInit {
     password: ['', [Validators.required, Validators.minLength(6)]]
   });
 
+  countryControl = new FormControl<string>('AR', Validators.required);
+
   countries: Country[] = [
     { code: 'AR', name: 'Argentina', flagUrl: 'https://flagcdn.com/w40/ar.png', dialCode: '+54' },
     { code: 'ES', name: 'España', flagUrl: 'https://flagcdn.com/w40/es.png', dialCode: '+34' },
     { code: 'MX', name: 'México', flagUrl: 'https://flagcdn.com/w40/mx.png', dialCode: '+52' },
     { code: 'CL', name: 'Chile', flagUrl: 'https://flagcdn.com/w40/cl.png', dialCode: '+56' },
   ];
+
+  countryOptions = signal<SelectOption[]>(
+    this.countries.map(c => ({ label: `${c.dialCode} ${c.name}`, id: c.code }))
+  );
 
   selectedCountry = signal<Country>(this.countries[0]); // Default Argentina
 
@@ -79,9 +86,8 @@ export class RegisterStaffComponent implements OnInit {
     }
   }
 
-  onCountryChange(event: Event) {
-    const code = (event.target as HTMLSelectElement).value;
-    const country = this.countries.find(c => c.code === code);
+  onCountryChange(option: SelectOption) {
+    const country = this.countries.find(c => c.code === option.id);
     if (country) {
       this.selectedCountry.set(country);
     }

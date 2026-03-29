@@ -1,0 +1,33 @@
+<div class="min-h-screen bg-[var(--c-100)] text-[var(--c-700)]">
+  <derm-admin-header
+    [user]="user()"
+    [sidebarOpen]="sidebarOpen()"
+    (toggleSidebar)="toggleSidebar()"
+    (logout)="logout()"
+  />
+
+  <div class="relative flex">
+    <derm-admin-sidebar
+      [user]="user()"
+      [open]="sidebarOpen()"
+      (navigate)="closeSidebar()"
+    />
+
+    @if (sidebarOpen()) {
+      <button
+        type="button"
+        class="fixed inset-0 z-30 bg-[var(--c-100)]/70 backdrop-blur-sm lg:hidden"
+        aria-label="Cerrar menú lateral"
+        (click)="closeSidebar()"
+        (keydown.enter)="closeSidebar()"
+        (keydown.space)="closeSidebar()"
+      ></button>
+    }
+
+    <main class="flex-1 min-h-screen bg-[var(--c-50)] border-l border-[var(--c-200)] lg:ml-72 pt-20 lg:pt-20">
+      <div class="px-5 py-6 lg:px-10 lg:py-10">
+        <router-outlet />
+      </div>
+    </main>
+  </div>
+</div>

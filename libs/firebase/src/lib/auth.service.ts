@@ -37,6 +37,10 @@ export interface LoginParams {
   password?: string;
 }
 
+export interface LoginOptions {
+  navigate?: boolean;
+}
+
 @Injectable({
   providedIn: 'root'
 })
@@ -150,7 +154,7 @@ export class AuthService {
     }
   }
 
-  async login(params: LoginParams) {
+  async login(params: LoginParams, options: LoginOptions = { navigate: true }) {
     const { email, password } = params;
     if (!email || !password) throw new Error("Email and password are required");
 
@@ -176,7 +180,10 @@ export class AuthService {
       });
 
       this.currentUser.set(userWithVerification);
-      this.navigateBasedOnRole(appUser.rol);
+
+      if (options.navigate !== false) {
+        this.navigateBasedOnRole(appUser.rol);
+      }
     } catch (error) {
       console.error("Error en el login", error);
       const errMsg = error instanceof Error ? error.message : 'Error en el login, revisa tus credenciales.';

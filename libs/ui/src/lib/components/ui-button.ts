@@ -9,33 +9,35 @@ import { CommonModule } from '@angular/common';
     <button 
       [type]="type()" 
       [disabled]="disabled() || isLoading()"
-      class="group relative w-[60px] h-[60px] flex items-center justify-center rounded-full bg-[var(--c-50)] text-[var(--c-800)] border border-[var(--c-800)] overflow-hidden transition-transform duration-300 hover:scale-[1.02] disabled:opacity-50 disabled:cursor-not-allowed">
+      [ngClass]="[size() || 'py-3.5', buttonClass() || 'w-full sm:w-auto']"
+      class="group relative inline-flex items-center justify-center min-w-[160px] px-8 rounded bg-[var(--c-800)] text-[var(--c-50)] overflow-hidden transition-all duration-300 hover:-translate-y-1 hover:shadow-[4px_4px_0px_var(--c-300)] disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:translate-y-0 disabled:hover:shadow-none active:translate-y-0 active:shadow-none">
 
-      <div class="relative z-10 flex items-center justify-center">
-        @if (isLoading()) {
-          <svg class="animate-spin h-[20px] w-[20px] text-[var(--c-800)]" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-          </svg>
-        } @else {
-          <span class="tracking-widest text-[10px] font-semibold group-hover:text-[var(--c-50)] transition-colors duration-300">
-            {{ label() }}
-          </span>
-        }
-      </div>
-
-      <div class="absolute inset-0 z-0 flex items-center justify-center bg-[var(--c-800)] text-[var(--c-50)] rounded-full transition-all duration-300 ease-out scale-0 group-hover:scale-100">
-         @if (!isLoading()) {
-          <span class="tracking-widest text-[10px] font-semibold">
-            {{ label() }}
-          </span>
-         }
+      <div class="relative z-10 flex items-center justify-center gap-2">
+        <span class="tracking-[0.15em] text-[0.7rem] font-semibold uppercase">
+          {{ label() }}
+        </span>
       </div>
     </button>
   `,
   styles: `
     :host {
       display: block;
+    }
+
+    @keyframes buttonPress {
+      0% {
+        transform: scale(1);
+      }
+      50% {
+        transform: scale(0.98);
+      }
+      100% {
+        transform: scale(1);
+      }
+    }
+
+    button:active {
+      animation: buttonPress 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
     }
   `,
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -45,5 +47,7 @@ export class UiButtonComponent {
   type = input<string>('button');
   disabled = input<boolean>(false);
   isLoading = input<boolean>(false);
+  size = input<string>(''); // Ej: 'h-[44px] py-2' para altura y padding personalizado
+  buttonClass = input<string>(''); // Clases Tailwind adicionales: 'w-auto', 'w-full', etc.
 }
 
