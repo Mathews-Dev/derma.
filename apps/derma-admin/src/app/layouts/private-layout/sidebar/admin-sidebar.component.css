@@ -1,0 +1,15 @@
+/* Overlay animations for nav items */
+.group:hover [style*="clip-path"] {
+  clip-path: circle(50% at 50% 50%) !important;
+  transition: clip-path 0.3s cubic-bezier(0.25, 1, 0.5, 1);
+}
+
+/* Active nav state with overlay expanded */
+.active-nav {
+  @apply bg-[var(--c-100)] text-[var(--c-800)] border-l-4 border-[var(--c-800)];
+}
+
+.active-nav [style*="clip-path"] {
+  clip-path: circle(50% at 50% 50%) !important;
+}
+

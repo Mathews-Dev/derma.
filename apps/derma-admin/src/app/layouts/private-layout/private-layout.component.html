@@ -2,6 +2,7 @@
   <derm-admin-header
     [user]="user()"
     [sidebarOpen]="sidebarOpen()"
+    [isSidebarCollapsed]="isSidebarCollapsed()"
     (toggleSidebar)="toggleSidebar()"
     (logout)="logout()"
   />
@@ -10,7 +11,9 @@
     <derm-admin-sidebar
       [user]="user()"
       [open]="sidebarOpen()"
+      [isCollapsed]="isSidebarCollapsed()"
       (navigate)="closeSidebar()"
+      (toggleCollapseEvent)="toggleSidebarCollapse()"
     />
 
     @if (sidebarOpen()) {
@@ -24,7 +27,9 @@
       ></button>
     }
 
-    <main class="flex-1 min-h-screen bg-[var(--c-50)] border-l border-[var(--c-200)] lg:ml-72 pt-20 lg:pt-20">
+    <main class="flex-1 min-h-screen bg-[var(--c-50)] border-l border-[var(--c-200)] pt-20 lg:pt-20 transition-all duration-500 ease-in-out"
+          [class.lg:ml-[240px]]="!isSidebarCollapsed()"
+          [class.lg:ml-[72px]]="isSidebarCollapsed()">
       <div class="px-5 py-6 lg:px-10 lg:py-10">
         <router-outlet />
       </div>
