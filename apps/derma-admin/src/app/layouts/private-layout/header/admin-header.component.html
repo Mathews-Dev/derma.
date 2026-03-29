@@ -1,4 +1,6 @@
-<header class="fixed top-0 inset-x-0 z-40 h-16 flex items-center justify-between bg-[var(--c-50)]/95 backdrop-blur border-b border-[var(--c-200)] px-4 lg:px-8 shadow-sm">
+<header class="fixed top-0 right-0 left-0 z-40 h-16 flex items-center justify-between bg-[var(--c-50)]/95 backdrop-blur border-b border-[var(--c-200)] px-4 lg:px-8 shadow-sm transition-all duration-500 ease-in-out"
+        [class.lg:left-[240px]]="!isSidebarCollapsed()"
+        [class.lg:left-[72px]]="isSidebarCollapsed()">
   <div class="flex items-center gap-3">
     <button
       type="button"
@@ -9,25 +11,151 @@
       <span class="sr-only">Abrir menú</span>
       <div class="h-4 w-4 border-t border-b border-[var(--c-700)]"></div>
     </button>
-    <div class="flex flex-col leading-tight">
-      <span class="text-sm uppercase tracking-[0.22em] text-[var(--c-400)]">Derma</span>
-      <span class="text-lg font-semibold text-[var(--c-800)]">Backoffice</span>
-    </div>
+    <!-- Breadcrumb -->
+    <nav class="hidden sm:flex" aria-label="Breadcrumb">
+      <ol class="flex items-center space-x-1">
+        <!-- Primer elemento fijo: Home -->
+        <li>
+          <a routerLink="/admin/dashboard" class="text-[0.75rem] uppercase tracking-[0.15em] text-[var(--c-400)] hover:text-[var(--c-800)] transition-colors cursor-pointer font-medium">Home</a>
+        </li>
+        
+        <!-- Elementos generados a partir de la ruta -->
+        @for (bc of breadcrumbs(); track bc.url; let isLast = $last) {
+        <li>
+          <div class="flex items-center">
+            <svg class="h-3.5 w-3.5 text-[var(--c-300)] mx-1" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+              <path stroke-linecap="round" stroke-linejoin="round" d="m9 5 7 7-7 7" />
+            </svg>
+            @if (isLast) {
+              <span class="text-[0.75rem] uppercase tracking-[0.15em] text-[var(--c-800)] font-semibold cursor-default">{{ bc.label }}</span>
+            } @else {
+              <a [routerLink]="bc.url" class="text-[0.75rem] uppercase tracking-[0.15em] text-[var(--c-400)] hover:text-[var(--c-800)] transition-colors cursor-pointer font-medium">{{ bc.label }}</a>
+            }
+          </div>
+        </li>
+        }
+      </ol>
+    </nav>
   </div>
 
-  <div class="flex items-center gap-4">
+  <div class="user-menu-container flex items-center gap-x-2 relative">
     @if (user()) {
-      <div class="flex flex-col items-end">
-        <span class="text-sm font-semibold text-[var(--c-800)]">{{ user()!.nombre }} {{ user()!.apellido }}</span>
-        <span class="text-[0.75rem] uppercase tracking-[0.16em] text-[var(--c-400)]">{{ user()!.rol }}</span>
+      <!-- DROPDOWN PERFIL -->
+      <div class="relative text-start">
+        
+        <!-- Trigger (Botón cápsula) -->
+        <button type="button"
+            (click)="toggleUserMenu($event)"
+            class="group flex items-center gap-x-3 pl-2 pr-3 py-2 bg-transparent hover:bg-[var(--c-100)] border border-transparent hover:border-[var(--c-200)] rounded-full transition-all duration-300 cursor-pointer outline-none">
+
+            <!-- Avatar -->
+            @if (!user()?.fotoPerfil) {
+            <div class="relative h-9 w-9 rounded-full bg-[var(--c-800)] text-[var(--c-50)] flex items-center justify-center overflow-hidden transition-transform duration-300 shadow-sm border border-[var(--c-200)]">
+                <span class="text-[11px] font-medium tracking-widest">{{ user()?.nombre?.charAt(0) }}{{ user()?.apellido?.charAt(0) }}</span>
+            </div>
+            } @else {
+            <div class="relative h-9 w-9 rounded-full overflow-hidden transition-transform duration-300 shadow-sm border border-[var(--c-200)]">
+                <img [src]="user()?.fotoPerfil" class="h-full w-full object-cover" alt="Avatar">
+            </div>
+            }
+
+            <!-- Texto Trigger -->
+            <div class="hidden sm:flex flex-col items-start text-left gap-[2px]">
+                <span class="text-[13px] font-medium text-[var(--c-800)] leading-tight transition-colors tracking-tight">
+                    {{ user()?.nombre }} {{ user()?.apellido?.charAt(0) }}.
+                </span>
+                <span class="text-[10px] text-[var(--c-500)] font-medium uppercase tracking-[0.15em] leading-none">
+                    {{ user()?.rol }}
+                </span>
+            </div>
+
+            <!-- Icono Chevron -->
+            <svg class="h-3.5 w-3.5 text-[var(--c-400)] group-hover:text-[var(--c-800)] transition-transform duration-300 ml-1"
+                 [class.rotate-180]="isUserMenuOpen()"
+                 xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                <path stroke-linecap="round" stroke-linejoin="round" d="m19.5 8.25-7.5 7.5-7.5-7.5" />
+            </svg>
+        </button>
+
+        <!-- POPUP MENU -->
+        <div class="absolute right-0 top-full mt-2 w-[240px] bg-[var(--c-50)] rounded-[20px] shadow-[0_12px_40px_rgba(0,0,0,0.08)] border border-[var(--c-200)] p-2 transition-all duration-300 origin-top-right z-50 transform pointer-events-none"
+             [class.opacity-100]="isUserMenuOpen()"
+             [class.scale-100]="isUserMenuOpen()"
+             [class.!pointer-events-auto]="isUserMenuOpen()"
+             [class.opacity-0]="!isUserMenuOpen()"
+             [class.scale-95]="!isUserMenuOpen()"
+             [class.-translate-y-2]="!isUserMenuOpen()"
+             >
+
+            <!-- 1. CABECERA -->
+            <div class="relative pt-6 pb-5 px-4 mb-2 rounded-[16px] bg-[var(--c-100)] overflow-hidden flex flex-col items-center">
+                <!-- Avatar Grande -->
+                <div class="relative z-10 mb-3 group cursor-default">
+                    @if (!user()?.fotoPerfil) {
+                    <div class="relative h-[64px] w-[64px] bg-[var(--c-800)] text-[var(--c-50)] rounded-[20px] flex items-center justify-center text-xl font-light shadow-md shadow-[var(--c-300)] group-hover:scale-105 transition-transform duration-500">
+                        {{ user()?.nombre?.charAt(0) }}{{ user()?.apellido?.charAt(0) }}
+                    </div>
+                    } @else {
+                    <div class="relative h-[64px] w-[64px] rounded-[20px] overflow-hidden shadow-md shadow-[var(--c-300)] border border-[var(--c-200)] group-hover:scale-105 transition-transform duration-500">
+                        <img [src]="user()?.fotoPerfil" class="h-full w-full object-cover" alt="Avatar Grande">
+                    </div>
+                    }
+                </div>
+
+                <!-- Info Usuario -->
+                <div class="relative z-10 text-center w-full">
+                    <h3 class="text-[14px] font-medium text-[var(--c-800)] tracking-tight truncate">
+                        {{ user()?.nombre }} {{ user()?.apellido }}
+                    </h3>
+                    <p class="text-[11px] text-[var(--c-500)] tracking-wide mt-1 truncate">
+                        {{ user()?.email }}
+                    </p>
+                </div>
+            </div>
+
+            <!-- 2. MENÚ COMPACTO -->
+            <div class="px-1 space-y-1 mb-2">
+                <!-- Item: Perfil -->
+                <a class="group relative flex items-center gap-x-3 p-2 rounded-[12px] hover:bg-[var(--c-100)] transition-all duration-200 cursor-pointer">
+                    <div class="text-[var(--c-400)] group-hover:text-[var(--c-800)] transition-colors duration-300">
+                        <svg class="h-4 w-4 transition-transform duration-300 group-hover:rotate-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 6a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5 0ZM4.501 20.118a7.5 7.5 0 0 1 14.998 0A17.933 17.933 0 0 1 12 21.75c-2.676 0-5.216-.584-7.499-1.632Z" />
+                        </svg>
+                    </div>
+                    <span class="text-[11px] font-medium text-[var(--c-500)] group-hover:text-[var(--c-800)] uppercase tracking-[0.12em] transition-colors">
+                        Mi Perfil
+                    </span>
+                </a>
+
+                <!-- Item: Ajustes -->
+                <a class="group relative flex items-center gap-x-3 p-2 rounded-[12px] hover:bg-[var(--c-100)] transition-all duration-200 cursor-pointer">
+                    <div class="text-[var(--c-400)] group-hover:text-[var(--c-800)] transition-colors duration-300">
+                        <svg class="h-4 w-4 transition-transform duration-300 group-hover:rotate-90" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 0 0 2.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 0 0 1.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 0 0-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 0 0-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 0 0-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 0 0-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 0 0 1.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" />
+                        </svg>
+                    </div>
+                    <span class="text-[11px] font-medium text-[var(--c-500)] group-hover:text-[var(--c-800)] uppercase tracking-[0.12em] transition-colors">
+                        Ajustes
+                    </span>
+                </a>
+            </div>
+
+            <!-- Footer: Logout -->
+            <div class="p-1 mt-1 border-t border-[var(--c-200)]">
+                <button type="button" (click)="onLogout()"
+                    class="w-full flex items-center justify-center p-2.5 rounded-[14px] bg-[var(--c-800)] text-[var(--c-50)] overflow-hidden transition-all duration-300 hover:shadow-md hover:scale-[1.02] active:scale-95 group">
+                    <div class="relative z-10 flex items-center gap-2">
+                        <svg class="h-3.5 w-3.5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 9V5.25A2.25 2.25 0 0 0 13.5 3h-6a2.25 2.25 0 0 0-2.25 2.25v13.5A2.25 2.25 0 0 0 7.5 21h6a2.25 2.25 0 0 0 2.25-2.25V15m3 0 3-3m0 0-3-3m3 3H9" />
+                        </svg>
+                        <span class="text-[10px] font-medium uppercase tracking-[0.15em]">Cerrar Sesión</span>
+                    </div>
+                </button>
+            </div>
+
+        </div>
       </div>
-      <button
-        type="button"
-        class="h-10 px-3 rounded-md border border-[var(--c-200)] text-[var(--c-600)] hover:border-[var(--c-300)]"
-        (click)="onLogout()"
-      >
-        Cerrar sesión
-      </button>
     } @else {
       <span class="text-sm text-[var(--c-500)]">Sin sesión</span>
     }

@@ -1,28 +1,99 @@
 <nav
-  class="fixed inset-y-0 left-0 z-40 w-72 bg-[var(--c-50)] border-r border-[var(--c-200)] shadow-sm transition-transform duration-200 ease-out lg:translate-x-0"
-  [class.-translate-x-full]="!open()"
+  class="fixed inset-y-0 left-0 z-40 bg-[var(--c-50)] border-r border-[var(--c-200)] transition-all duration-500 ease-in-out"
+  [class.max-lg:-translate-x-full]="!open()"
+  [class.w-[240px]]="!isCollapsed()"
+  [class.w-[72px]]="isCollapsed()"
   aria-label="Navegación principal"
 >
-  <div class="px-6 pt-16 pb-6 border-b border-[var(--c-200)]">
-    <p class="text-[0.72rem] uppercase tracking-[0.16em] text-[var(--c-400)]">Staff</p>
-    @if (user()) {
-      <p class="mt-1 text-[var(--c-800)] font-semibold">{{ user()!.nombre }} {{ user()!.apellido }}</p>
-      <p class="text-sm text-[var(--c-500)]">{{ user()!.rol }}</p>
-    }
-  </div>
-
-  <div class="px-4 py-4 space-y-2">
-    @for (item of visibleItems(); track item.id) {
-      <a
-        [routerLink]="item.path"
-        routerLinkActive="bg-[var(--c-100)] text-[var(--c-800)] border-[var(--c-300)]"
-        [routerLinkActiveOptions]="{ exact: true }"
-        class="flex items-center justify-between gap-2 rounded-md border border-transparent px-3 py-2 text-[var(--c-600)] hover:text-[var(--c-800)] hover:border-[var(--c-200)] transition"
-        (click)="onNavigate()"
+  <div class="relative flex flex-col h-full max-h-full">
+    <!-- HEADER: Logo & Toggle -->
+    <div class="pt-6 pb-4 flex items-center relative w-full box-border">
+      <!-- Container con pl-5 (20px) fijo: el logo NUNCA se mueve -->
+      <div class="flex items-center pl-5">
+        <!-- Logo icon style like login -->
+        <div class="flex shrink-0 justify-center items-center w-8 h-8 bg-[var(--c-800)] border-[1px] border-[var(--c-800)] rounded-[8px] shadow-[2px_2px_0px_var(--c-300)] overflow-hidden transition-transform duration-500">
+          <span class="font-goodly text-[var(--c-50)] text-xl leading-none mt-1">d.</span>
+        </div>
+        <!-- Logo text animado -->
+        <div class="overflow-hidden transition-all duration-500 flex items-center"
+             [class.w-[80px]]="!isCollapsed()"
+             [class.w-0]="isCollapsed()"
+             [class.opacity-100]="!isCollapsed()"
+             [class.opacity-0]="isCollapsed()">
+          <span class="text-2xl font-goodly text-[var(--c-800)] tracking-tight mt-[4px] whitespace-nowrap pl-2.5">
+            derma.
+          </span>
+        </div>
+      </div>
+      
+      <!-- Toggle button -->
+      <button 
+        (click)="toggleCollapse()"
+        class="flex shrink-0 items-center justify-center w-6 h-6 rounded-md text-[var(--c-400)] hover:bg-[var(--c-100)] hover:text-[var(--c-800)] transition-all duration-500 absolute z-50 bg-[var(--c-50)]"
+        [class.right-5]="!isCollapsed()"
+        [class.right-[-12px]]="isCollapsed()" 
+        [class.border]="isCollapsed()"
+        [class.border-[var(--c-200)]]="isCollapsed()"
+        [class.shadow-sm]="isCollapsed()"
+        title="Colapsar menú"
       >
-        <span class="text-sm font-medium">{{ item.label }}</span>
-        <span class="text-[0.7rem] uppercase tracking-[0.12em] text-[var(--c-400)]">{{ item.id }}</span>
-      </a>
-    }
+        <svg class="w-4 h-4 transition-transform duration-300" [class.rotate-180]="isCollapsed()" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7" />
+        </svg>
+      </button>
+    </div>
+
+    <!-- Navigation items - Fijado a la izquierda para emparejar centro a 36px -->
+    <div class="py-2 space-y-1 flex-1 overflow-y-auto overflow-x-hidden [&::-webkit-scrollbar]:w-0 px-3">
+      @for (item of visibleItems(); track item.id) {
+        <a
+          [routerLink]="item.path"
+          routerLinkActive="!bg-[var(--c-800)] !text-[var(--c-50)] shadow-md shadow-[var(--c-200)] pointer-events-none"
+          [routerLinkActiveOptions]="{ exact: true }"
+          class="relative flex items-center py-2.5 rounded-[12px] text-[var(--c-500)] hover:text-[var(--c-800)] hover:bg-[var(--c-100)] active:scale-[0.98] transition-all duration-500 group cursor-pointer pr-3 pl-[14px]"
+          (click)="onNavigate()"
+          [title]="isCollapsed() ? item.label : ''"
+        >
+          <svg class="h-5 w-5 flex-shrink-0 stroke-current transition-colors duration-500" viewBox="0 0 24 24" fill="none" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+            <path [attr.d]="getIcon(item.icon)"></path>
+          </svg>
+          
+          <div class="whitespace-nowrap overflow-hidden transition-all duration-500 flex items-center"
+               [class.w-[140px]]="!isCollapsed()"
+               [class.w-0]="isCollapsed()"
+               [class.opacity-100]="!isCollapsed()"
+               [class.opacity-0]="isCollapsed()">
+            <span class="text-[13px] font-medium tracking-wide mt-0.5 pl-3">{{ item.label }}</span>
+          </div>
+        </a>
+      }
+    </div>
+
+    <!-- SECCION INVITACION -->
+    <div class="mt-auto pb-5 transition-all duration-500"
+         [class.px-3]="!isCollapsed()"
+         [class.px-2]="isCollapsed()"
+         [class.opacity-0]="isCollapsed()"
+         [class.pointer-events-none]="isCollapsed()"
+         [class.h-0]="isCollapsed()"
+         [class.overflow-hidden]="isCollapsed()"
+    >
+      @if (!isCollapsed()) {
+        <div class="relative bg-[var(--c-50)] border border-[var(--c-200)] rounded-[20px] overflow-hidden py-5 px-4 min-h-[200px] flex flex-col justify-start select-none animate-in fade-in duration-500">
+          
+          <!-- Abstract Geometric Decors -->
+          <div class="absolute -top-12 -right-8 w-32 h-32 border-[2px] border-[var(--c-100)] rounded-full pointer-events-none"></div>
+          <div class="absolute bottom-4 -left-4 w-16 h-16 border border-[var(--c-200)] rounded-full pointer-events-none opacity-50"></div>
+          
+          <img src="images/link.webp" alt="Link Image" class="absolute -bottom-2 -right-0 w-[140px] h-[140px] object-contain opacity-95 pointer-events-none">
+          
+          <div class="relative z-10 w-full mb-auto max-w-[65%]">
+            <h4 class="text-[14px] font-medium text-[var(--c-800)] leading-snug">
+              Crea un link de invitación a la app.
+            </h4>
+          </div>
+        </div>
+      }
+    </div>
   </div>
 </nav>

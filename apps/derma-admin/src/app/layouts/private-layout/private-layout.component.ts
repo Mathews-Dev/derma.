@@ -17,9 +17,14 @@ export class PrivateLayoutComponent {
 
   readonly user = computed(() => this.authService.currentUser());
   readonly sidebarOpen = signal(false);
+  readonly isSidebarCollapsed = signal(false);
 
   toggleSidebar(): void {
     this.sidebarOpen.update(open => !open);
+  }
+
+  toggleSidebarCollapse(): void {
+    this.isSidebarCollapsed.update(c => !c);
   }
 
   closeSidebar(): void {

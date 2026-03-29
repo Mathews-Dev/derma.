@@ -1,12 +1,11 @@
 import { Component, inject } from '@angular/core';
 import { RouterModule } from '@angular/router';
-import { RegisterStaffComponent } from "./features/auth/register-staff/register-staff.component";
 import { LoadingService, LoadingComponent } from '@derma/ui';
 import { CommonModule } from '@angular/common';
 
 @Component({
   standalone: true,
-  imports: [CommonModule, RouterModule, RegisterStaffComponent, LoadingComponent],
+  imports: [CommonModule, RouterModule, LoadingComponent],
   selector: 'derm-root',
   templateUrl: './app.html',
   styleUrl: './app.css',
