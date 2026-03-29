@@ -5,6 +5,7 @@ import { AuthService } from '@derma/firebase';
 
 import { Router } from '@angular/router';
 import { UiButtonComponent, UiInputComponent } from '@derma/ui';
+import { LoadingService } from '@derma/ui';
 
 @Component({
   selector: 'derm-admin-login',
@@ -18,13 +19,13 @@ export class LoginComponent {
   private authService = inject(AuthService);
   private fb = inject(FormBuilder);
   private router = inject(Router);
+  private loadingService = inject(LoadingService);
 
   formulario = this.fb.nonNullable.group({
     email: ['', [Validators.required, Validators.email]],
     password: ['', [Validators.required, Validators.minLength(6)]]
   });
 
-  isLoading = signal(false);
   error = signal<string>('');
 
   
@@ -34,21 +35,35 @@ export class LoginComponent {
       return;
     }
 
-    this.isLoading.set(true);
     this.error.set('');
 
-    try {
-      const { email, password } = this.formulario.getRawValue();
+    const loginPromise = async () => {
+      try {
+        const { email, password } = this.formulario.getRawValue();
+        await this.authService.login({ email, password }, { navigate: false });
+        await this.router.navigate(['/admin/dashboard']);
+      } catch (error: unknown) {
+        this.error.set(this.getErrorMessage(error, 'Error al iniciar sesion'));
+        // Re-throw the error to be caught by showWhile
+        throw error;
+      }
+    };
 
-    
-      await this.authService.login({ email, password });
-      // Redirigir según el rol debería estar ya manejado por authService o por guard
-      this.router.navigate(['/']);
-    } catch (error: unknown) {
-      this.error.set(this.getErrorMessage(error, 'Error al iniciar sesion'));
-    } finally {
-      this.isLoading.set(false);
-    }
+    await this.loadingService.showWhile(loginPromise());
+  }
+
+  async loginWithGoogle() {
+    this.error.set('');
+    const googleLoginPromise = async () => {
+      try {
+        await this.authService.loginWithGoogle();
+        await this.router.navigate(['/admin/dashboard']);
+      } catch (error) {
+        this.error.set(this.getErrorMessage(error, 'Error al iniciar sesión con Google'));
+        throw error;
+      }
+    };
+    await this.loadingService.showWhile(googleLoginPromise());
   }
 
   private getErrorMessage(error: unknown, fallback: string): string {

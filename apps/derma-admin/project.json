@@ -18,6 +18,11 @@
           {
             "glob": "**/*",
             "input": "apps/derma-admin/public"
+          },
+          {
+            "glob": "**/*",
+            "input": "libs/ui/src/assets",
+            "output": "/assets"
           }
         ],
         "styles": ["apps/derma-admin/src/styles.css"]

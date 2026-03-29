@@ -28,7 +28,7 @@ import { AbstractControl, ReactiveFormsModule, FormControl } from '@angular/form
             <p class="text-[9px] text-red-500 font-medium">Debe ser un correo válido</p>
           }
           @if (formControl.errors?.['minlength']) {
-            <p class="text-[9px] text-red-500 font-medium">Mínimo {{ formControl.errors?.['minlength']?.requiredLength }} caracteres</p>
+            <p class="text-[9px] text-red-500 font-medium">MÃnimo {{ formControl.errors?.['minlength']?.requiredLength }} caracteres</p>
           }
         </div>
       }

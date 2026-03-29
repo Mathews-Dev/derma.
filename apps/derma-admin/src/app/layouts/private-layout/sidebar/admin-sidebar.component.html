@@ -1,0 +1,28 @@
+<nav
+  class="fixed inset-y-0 left-0 z-40 w-72 bg-[var(--c-50)] border-r border-[var(--c-200)] shadow-sm transition-transform duration-200 ease-out lg:translate-x-0"
+  [class.-translate-x-full]="!open()"
+  aria-label="Navegación principal"
+>
+  <div class="px-6 pt-16 pb-6 border-b border-[var(--c-200)]">
+    <p class="text-[0.72rem] uppercase tracking-[0.16em] text-[var(--c-400)]">Staff</p>
+    @if (user()) {
+      <p class="mt-1 text-[var(--c-800)] font-semibold">{{ user()!.nombre }} {{ user()!.apellido }}</p>
+      <p class="text-sm text-[var(--c-500)]">{{ user()!.rol }}</p>
+    }
+  </div>
+
+  <div class="px-4 py-4 space-y-2">
+    @for (item of visibleItems(); track item.id) {
+      <a
+        [routerLink]="item.path"
+        routerLinkActive="bg-[var(--c-100)] text-[var(--c-800)] border-[var(--c-300)]"
+        [routerLinkActiveOptions]="{ exact: true }"
+        class="flex items-center justify-between gap-2 rounded-md border border-transparent px-3 py-2 text-[var(--c-600)] hover:text-[var(--c-800)] hover:border-[var(--c-200)] transition"
+        (click)="onNavigate()"
+      >
+        <span class="text-sm font-medium">{{ item.label }}</span>
+        <span class="text-[0.7rem] uppercase tracking-[0.12em] text-[var(--c-400)]">{{ item.id }}</span>
+      </a>
+    }
+  </div>
+</nav>

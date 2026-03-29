@@ -1,0 +1,23 @@
+/* Dropdown Select — Minimal styles */
+
+:host {
+  display: block;
+}
+
+/* Scroll styling */
+::-webkit-scrollbar {
+  width: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--c-300);
+  border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--c-400);
+}
