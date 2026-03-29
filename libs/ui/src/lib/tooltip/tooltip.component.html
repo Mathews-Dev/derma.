@@ -10,14 +10,14 @@
 
 <ng-template #tooltipPanel>
   <div
-    class="pointer-events-none relative overflow-hidden rounded-[8px] border border-[var(--c-200)] bg-[var(--c-50)] px-3 py-2
-           shadow-sm"
+    class="pointer-events-none relative rounded-md bg-[var(--c-800)] px-2.5 py-1.5 text-[10px] text-[var(--c-50)] whitespace-nowrap transition-all"
     [class.animate-tooltip-in]="!isClosing()"
     [class.animate-tooltip-out]="isClosing()"
+    style="box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);"
     role="tooltip"
     [attr.data-open]="isOpen()">
-    <span class="absolute inset-x-0 top-0 h-px bg-[var(--c-300)]"></span>
-    <span class="block text-[9px] uppercase tracking-[0.14em] text-[var(--c-400)]">{{ caption() }}</span>
-    <span class="mt-0.5 block text-[11px] font-light leading-snug text-[var(--c-600)]">{{ text() }}</span>
+    {{ text() }}
+    <!-- Arrow para placement="top" por defecto, aunque Overlay maneja la posición -->
+    <div class="absolute -bottom-1 left-1/2 -translate-x-1/2 w-2 h-2 bg-[var(--c-800)] rotate-45"></div>
   </div>
 </ng-template>

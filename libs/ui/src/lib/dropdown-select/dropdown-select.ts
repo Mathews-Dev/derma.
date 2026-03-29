@@ -93,7 +93,8 @@ export class UiDropdownSelectComponent implements OnDestroy {
         .withPositions(positions),
       backdropClass: '',
       hasBackdrop: true,
-      scrollStrategy: this.overlay.scrollStrategies.reposition()
+      scrollStrategy: this.overlay.scrollStrategies.reposition(),
+      width: this.triggerButton.nativeElement.offsetWidth
     });
 
     this.overlayRef = this.overlay.create(config);

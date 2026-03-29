@@ -8,6 +8,7 @@ export interface SolicitudInvitacion {
     fechaExpiracion: Timestamp;
     usado: boolean;
     creadoPor: string;
+    url?: string;
     usadoPor?: string;
     fechaUso?: Timestamp;
 }

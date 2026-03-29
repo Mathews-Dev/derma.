@@ -16,7 +16,7 @@ import { TemplatePortal } from '@angular/cdk/portal';
 type TooltipPlacement = 'top' | 'right' | 'bottom' | 'left';
 
 @Component({
-  selector: 'app-tooltip',
+  selector: 'ui-tooltip',
   templateUrl: './tooltip.component.html',
   styleUrl: './tooltip.component.css',
   changeDetection: ChangeDetectionStrategy.OnPush

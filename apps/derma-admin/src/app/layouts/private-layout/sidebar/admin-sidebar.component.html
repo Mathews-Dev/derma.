@@ -79,13 +79,16 @@
          [class.overflow-hidden]="isCollapsed()"
     >
       @if (!isCollapsed()) {
-        <div class="relative bg-[var(--c-50)] border border-[var(--c-200)] rounded-[20px] overflow-hidden py-5 px-4 min-h-[200px] flex flex-col justify-start select-none animate-in fade-in duration-500">
+        <div 
+          (click)="openInvitationModal()"
+          class="group relative bg-[var(--c-50)] border border-[var(--c-200)] rounded-[20px] overflow-hidden py-5 px-4 min-h-[200px] flex flex-col justify-start select-none animate-in fade-in duration-500 cursor-pointer"
+        >
           
           <!-- Abstract Geometric Decors -->
-          <div class="absolute -top-12 -right-8 w-32 h-32 border-[2px] border-[var(--c-100)] rounded-full pointer-events-none"></div>
-          <div class="absolute bottom-4 -left-4 w-16 h-16 border border-[var(--c-200)] rounded-full pointer-events-none opacity-50"></div>
+          <div class="absolute -top-12 -right-8 w-32 h-32 border-[2px] border-[var(--c-100)] rounded-full pointer-events-none group-hover:scale-110 transition-transform duration-500"></div>
+          <div class="absolute bottom-4 -left-4 w-16 h-16 border border-[var(--c-200)] rounded-full pointer-events-none opacity-50 group-hover:scale-110 group-hover:rotate-12 transition-transform duration-500 ease-out"></div>
           
-          <img src="images/link.webp" alt="Link Image" class="absolute -bottom-2 -right-0 w-[140px] h-[140px] object-contain opacity-95 pointer-events-none">
+          <img src="images/link.webp" alt="Link Image" class="absolute -bottom-2 -right-0 w-[140px] h-[140px] object-contain opacity-95 pointer-events-none group-hover:scale-[1.03] group-hover:-translate-y-1 group-hover:-translate-x-0.5 transition-all duration-500 ease-out">
           
           <div class="relative z-10 w-full mb-auto max-w-[65%]">
             <h4 class="text-[14px] font-medium text-[var(--c-800)] leading-snug">
@@ -97,3 +100,7 @@
     </div>
   </div>
 </nav>
+
+@if (isInvitationModalOpen()) {
+  <derma-admin-invitation-modal (closeEvent)="closeInvitationModal()" />
+}

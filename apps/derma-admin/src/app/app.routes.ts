@@ -38,9 +38,9 @@ export const appRoutes: Route[] = [
         loadComponent: () => import('./features/tratamientos/tratamientos.component').then(m => m.TratamientosComponent)
       },
       {
-        path: 'finanzas',
+        path: 'invitaciones',
         canActivate: [roleGuard(RolUsuario.ADMIN)],
-        loadComponent: () => import('./features/finanzas/finanzas.component').then(m => m.FinanzasComponent)
+        loadComponent: () => import('./features/invitaciones/invitaciones.component').then(m => m.InvitacionesComponent)
       },
       {
         path: 'staff',

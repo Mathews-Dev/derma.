@@ -15,6 +15,8 @@ export class InvitacionService {
     creadoPor?: string
   ): Promise<string> {
     const codigo = this.generarCodigoAleatorio();
+    const baseUrl = window.location.origin;
+    const url = `${baseUrl}/auth/invite/${codigo}`;
 
     const invitacion: SolicitudInvitacion = {
       codigo,
@@ -22,13 +24,13 @@ export class InvitacionService {
       fechaCreacion: Timestamp.now(),
       fechaExpiracion: Timestamp.fromDate(new Date(Date.now() + 30 * 60 * 1000)), // 30 minutos
       usado: false,
-      creadoPor: creadoPor || 'admin'
+      creadoPor: creadoPor || 'admin',
+      url
     };
 
     await this.firestore.setDocument('invitaciones', codigo, invitacion);
 
-    const baseUrl = window.location.origin;
-    return `${baseUrl}/auth/invite/${codigo}`;
+    return url;
   }
 
   // Validar una invitación

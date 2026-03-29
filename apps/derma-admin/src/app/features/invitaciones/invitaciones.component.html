@@ -1,0 +1,152 @@
+<section class="mb-4 animate-smooth-enter enter-delay-1">
+  <ui-page-header 
+    title="Invitaciones activas" 
+    description="Gestiona el acceso del personal al sistema. Genera enlaces seguros y visualiza su estado en tiempo real.">
+  </ui-page-header>
+</section>
+    <!-- LOADING STATE -->
+    @if(isLoading()) {
+      <div class="animate-smooth-enter enter-delay-2">
+        <ui-loader-card message="Cargando Datos"></ui-loader-card>
+      </div>
+    } @else {
+
+      <!-- TABLA CARD CONTAINER -->
+      <div class="bg-[var(--c-50)] rounded-[24px] shadow-[0_20px_40px_-20px_rgba(0,0,0,0.03)] border border-[var(--c-100)] overflow-hidden flex flex-col animate-smooth-enter enter-delay-2">
+
+        <!-- TABLE TOOLBAR -->
+        <div class="px-8 pt-8 pb-6 flex flex-col sm:flex-row items-center justify-between gap-4">
+          <div class="w-full sm:w-auto relative">
+            <h3 class="text-lg font-medium text-[var(--c-800)] tracking-tight">Registro de accesos</h3>
+            <p class="text-[12px] text-[var(--c-500)] mt-1">Explora, gestiona y revoca las invitaciones creadas.</p>
+          </div>
+          <div class="w-full sm:w-auto shrink-0">
+            <ui-button 
+              label="Crear invitación"
+              (click)="openModal()"
+              buttonClass="w-full sm:w-auto md:min-w-[160px] shadow-sm text-[13px]"
+            ></ui-button>
+          </div>
+        </div>
+
+        <!-- ZONA DE SCROLL HORIZONTAL -->
+        <div class="overflow-x-auto">
+          <table class="min-w-full align-middle">
+
+            <!-- Header Tabla -->
+            <thead class="bg-[#f8f8f8] border-b border-[var(--c-100)] border-t">
+              <tr>
+                <th scope="col" class="px-8 py-4 text-left text-[11px] font-medium text-[var(--c-500)] tracking-wide">
+                  Código (UID)
+                </th>
+                <th scope="col" class="px-8 py-4 text-left text-[11px] font-medium text-[var(--c-500)] tracking-wide hidden sm:table-cell">
+                  Detalles
+                </th>
+                <th scope="col" class="px-8 py-4 text-left text-[11px] font-medium text-[var(--c-500)] tracking-wide">
+                  Estado
+                </th>
+                <th scope="col" class="px-8 py-4 text-left text-[11px] font-medium text-[var(--c-500)] tracking-wide">
+                  Rol
+                </th>
+                <th scope="col" class="px-8 py-4 text-right text-[11px] font-medium text-[var(--c-500)] tracking-wide w-24">
+                  Acción
+                </th>
+              </tr>
+            </thead>
+
+            <!-- Body Tabla -->
+            <tbody class="divide-y divide-[var(--c-50)]">
+              @for (inv of paginatedInvitaciones(); track inv.codigo) {
+                <tr class="group hover:bg-[var(--c-100)]/40 transition-colors duration-300 ease-out">
+                  
+                  <!-- Columna: Código -->
+                  <td class="px-8 py-4 whitespace-nowrap">
+                    <div class="flex items-center gap-4">
+                      <div class="shrink-0 relative transition-transform duration-300 group-hover:scale-105">
+                        <div class="size-10 rounded-[12px] flex items-center justify-center bg-[var(--c-800)] text-[var(--c-50)] font-mono text-[10px] shadow-sm">
+                          {{ inv.codigo.slice(0, 2).toUpperCase() }}
+                        </div>
+                      </div>
+                      <div>
+                        <p class="text-[13px] font-mono font-medium text-[var(--c-800)] group-hover:text-[var(--c-900)] transition-colors">
+                          {{ inv.codigo }}
+                        </p>
+                        <p class="text-[11px] text-[var(--c-500)] font-normal tracking-wide mt-0.5 capitalize">
+                          Creado por {{ inv.creadoPor }}
+                        </p>
+                      </div>
+                    </div>
+                  </td>
+
+                  <!-- Columna: Detalles (Fechas) -->
+                  <td class="px-8 py-4 whitespace-nowrap hidden sm:table-cell">
+                    <div class="flex flex-col gap-0.5">
+                      <p class="text-[12px] font-normal text-[var(--c-600)] tabular-nums">
+                        Generado: {{ inv.fechaCreacion?.toDate() | date:'dd MMM yyyy, HH:mm' }}
+                      </p>
+                      <p class="text-[10px] font-medium text-[var(--c-400)] tracking-wide">
+                        Expira: <span class="tabular-nums">{{ inv.fechaExpiracion?.toDate() | date:'dd MMM yyyy, HH:mm' }}</span>
+                      </p>
+                    </div>
+                  </td>
+
+                  <!-- Columna: Estado -->
+                  <td class="px-8 py-4 whitespace-nowrap">
+                    @if (inv.usado) {
+                      <ui-badge status="neutral">Usada</ui-badge>
+                    } @else if (inv.fechaExpiracion.toDate() < now) {
+                      <ui-badge status="danger">Expirada</ui-badge>
+                    } @else {
+                      <ui-badge status="success">Activa</ui-badge>
+                    }
+                  </td>
+
+                  <!-- Columna: Rol -->
+                  <td class="px-8 py-4 whitespace-nowrap">
+                    <span class="inline-flex items-center gap-2 px-2.5 py-1 rounded-md border border-[var(--c-200)] text-[var(--c-600)] text-[9px] font-medium uppercase tracking-widest bg-[var(--c-50)]">
+                      {{ inv.rol }}
+                    </span>
+                  </td>
+
+                  <!-- Columna: Acciones (Copiar) -->
+                  <td class="px-8 py-4 text-right relative">
+                    @if (!inv.usado && inv.url) {
+                      <ui-tooltip text="Copiar enlace" placement="top">
+                        <button 
+                          (click)="copyLink(inv.url)"
+                          class="size-8 inline-flex justify-center items-center rounded-lg text-[var(--c-400)] hover:text-[var(--c-800)] hover:bg-[var(--c-100)] hover:shadow-sm transition-all duration-200 border border-transparent hover:border-[var(--c-200)] group/btn">
+                          <svg class="size-4 group-hover/btn:scale-110 transition-transform" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+                            <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+                            <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+                          </svg>
+                        </button>
+                      </ui-tooltip>
+                    }
+                  </td>
+
+                </tr>
+              } @empty {
+                <tr>
+                  <td colspan="5" class="py-20 text-center">
+                    <ui-empty-state message="Sin invitaciones"></ui-empty-state>
+                  </td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+
+        <!-- PAGINACIÓN -->
+        <ui-pagination
+          [totalItems]="totalInvitaciones()"
+          [pageSize]="pageSize()"
+          [currentPage]="currentPage()"
+          (pageChange)="onPageChange($event)"
+        ></ui-pagination>
+
+      </div>
+    }
+
+@if (isModalOpen()) {
+  <derma-admin-invitation-modal (closeEvent)="closeModal()" />
+}

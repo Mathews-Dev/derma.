@@ -1,0 +1,126 @@
+﻿<!-- OVERLAY -->
+<div 
+  class="fixed inset-0 z-[100] flex items-center justify-center p-4 modal-backdrop"
+  [class.animate-backdrop-in]="!isClosing()"
+  [class.animate-backdrop-out]="isClosing()"
+  (click)="triggerClose()"
+>
+  <!-- MODAL CONTAINER -->
+  <div 
+    class="relative w-full max-w-[420px] bg-[var(--c-50)] rounded-[20px] overflow-hidden border border-[var(--c-200)] shadow-xl"
+    [class.animate-modal-in]="!isClosing()"
+    [class.animate-modal-out]="isClosing()"
+    style="padding: 2.25rem 2rem 1.75rem;"
+    (click)="$event.stopPropagation()"
+  >
+    
+    <!-- Geometría decorativa -->
+    <div class="geo" aria-hidden="true">
+      <div class="geo-arc-1"></div>
+      <div class="geo-arc-2"></div>
+      <div class="geo-diagonal"></div>
+    </div>
+
+    <!-- Botón cerrar -->
+    <button 
+      (click)="triggerClose()" 
+      class="close"
+      aria-label="Cerrar">
+      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M6 18 18 6M6 6l12 12" />
+      </svg>
+    </button>
+
+    <!-- Ícono -->
+    <div class="modal-icon" [class.stagger-1]="!isClosing()">
+      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+         <path stroke-linecap="round" stroke-linejoin="round" d="M13.19 8.688a4.5 4.5 0 0 1 1.242 7.244l-4.5 4.5a4.5 4.5 0 0 1-6.364-6.364l1.757-1.757m13.35-.622 1.757-1.757a4.5 4.5 0 0 0-6.364-6.364l-4.5 4.5a4.5 4.5 0 0 0 1.242 7.244" />
+      </svg>
+    </div>
+
+    <!-- Título multilínea -->
+    <h2 [class.stagger-2]="!isClosing()">
+      Compartir<br>
+      <strong>Proyecto</strong>
+    </h2>
+
+    <!-- Descripción -->
+    <p [class.stagger-3]="!isClosing()">
+      Genera un enlace temporal de acceso único para el nuevo integrante del equipo.
+    </p>
+
+    <!-- Divider -->
+    <div class="divider" [class.stagger-4]="!isClosing()"></div>
+
+    <div class="space-y-5 relative z-10 w-full mb-2" [class.stagger-5]="!isClosing()">
+      <!-- INPUT: Selección de Rol -->
+      <div class="w-full relative z-[60]">
+        <label class="input-label">Nivel de Permisos</label>
+        
+        <ui-dropdown-select
+          [options]="uiRoles"
+          [selectedValue]="selectedRole()"
+          (valueChanged)="onRoleChange($event)"
+        ></ui-dropdown-select>
+      </div>
+
+      <!-- SECCIÓN DE RESULTADO (LINK) -->
+      @if (generatedLink()) {
+        <div class="animate-backdrop-in relative z-10">
+          <label class="input-label">Enlace generado</label>
+          <div class="result-box">
+            <input 
+              readonly
+              [value]="generatedLink()"
+              class="link-input"
+            />
+            
+            <ui-tooltip [text]="isCopied() ? 'Copiado al portapapeles' : 'Copiar enlace'">
+              <button 
+                type="button" 
+                (click)="copyLink()"
+                class="btn-icon"
+              >
+                @if (!isCopied()) {
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+                    <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+                  </svg>
+                } @else {
+                  <svg class="text-green-500" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                    <polyline points="20 6 9 17 4 12"></polyline>
+                  </svg>
+                }
+              </button>
+            </ui-tooltip>
+
+          </div>
+        </div>
+      }
+
+      <!-- ACCIÓN -->
+      <button 
+        type="button" 
+        (click)="generateLink()" 
+        [disabled]="isGenerating()"
+        class="btn-primary relative z-10"
+      >
+        @if (isGenerating()) {
+          <svg class="animate-spin" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="12" y1="2" x2="12" y2="6"></line>
+            <line x1="12" y1="18" x2="12" y2="22"></line>
+            <line x1="4.93" y1="4.93" x2="7.76" y2="7.76"></line>
+            <line x1="16.24" y1="16.24" x2="19.07" y2="19.07"></line>
+            <line x1="2" y1="12" x2="6" y2="12"></line>
+            <line x1="18" y1="12" x2="22" y2="12"></line>
+            <line x1="4.93" y1="19.07" x2="7.76" y2="16.24"></line>
+            <line x1="16.24" y1="4.93" x2="19.07" y2="7.76"></line>
+          </svg>
+          <span>Generando...</span>
+        } @else {
+          <span>{{ generatedLink() ? 'Regenerar enlace' : 'Crear invitación' }}</span>
+        }
+      </button>
+    </div>
+  </div>
+</div>

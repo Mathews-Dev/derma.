@@ -10,4 +10,5 @@ export * from './lib/tratamiento.model';
 export * from './lib/sesion-tratamiento.model';
 export * from './lib/notificacion.model';
 export * from './lib/solicitud-invitacion.model';
+export * from './lib/invitacion.model';
 export * from './lib/timestamp.utils';
