@@ -1,0 +1,389 @@
+<section class="mb-4 animate-smooth-enter">
+  <ui-page-header
+    title="Datos Personales"
+    description="Administrá tu información personal y datos de contacto."
+  ></ui-page-header>
+</section>
+
+@if (profileForm.dirty) {
+<section class="mb-4 animate-smooth-enter">
+  <div class="flex items-center justify-between gap-3 px-4 py-3 rounded-[var(--border-radius-md)] border-l-2 border-l-amber-600 border border-amber-200 bg-amber-50">
+    <div class="flex items-center gap-2">
+      <svg class="w-4 h-4 text-amber-600 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/>
+        <line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/>
+      </svg>
+      <span class="text-sm font-medium text-amber-800">Cambios sin guardar</span>
+      <span class="text-xs text-amber-700 opacity-75">— {{ dirtysections }}</span>
+    </div>
+    <button type="button" (click)="onCancel()"
+      class="text-xs font-medium text-amber-800 bg-transparent border border-amber-300 rounded-[var(--border-radius-md)] px-3 py-1 transition-colors hover:bg-amber-100">
+      Descartar todo
+    </button>
+  </div>
+</section>
+}
+
+<div class="relative bg-[var(--c-50)] rounded-[var(--border-radius-lg)] border border-[var(--c-200)] overflow-hidden animate-smooth-enter stagger-1 min-h-[600px]">
+  <!-- Geometría decorativa -->
+  <div class="absolute inset-0 pointer-events-none overflow-hidden" aria-hidden="true">
+    <div class="arc-1"></div>
+    <div class="arc-2"></div>
+    <div class="diagonal-pattern opacity-10"></div>
+  </div>
+
+  <div class="flex items-stretch min-h-[600px]">
+
+    <!-- SIDEBAR NAV (con Info) -->
+    <nav class="relative z-10 w-[260px] shrink-0 border-r border-[var(--c-200)] bg-[var(--c-100)]/20 py-10 flex flex-col animate-smooth-enter stagger-2">
+      
+      <!-- PERFIL SIDEBAR INFO -->
+      <div class="px-7 mb-10 flex items-center gap-5">
+        <!-- Avatar -->
+        <div class="relative w-20 h-20 shrink-0 rounded-2xl border-2 border-[var(--c-200)] bg-[var(--c-50)] flex items-center justify-center cursor-pointer overflow-hidden group/av shadow-sm"
+             (click)="fileInput.click()">
+          @if (imagenBase64Preview()) {
+            <img [src]="imagenBase64Preview()" alt="Foto de perfil" class="absolute inset-0 w-full h-full object-cover transition-transform duration-500 group-hover/av:scale-110" />
+          } @else {
+            <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="text-[var(--c-300)]">
+              <path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/>
+            </svg>
+          }
+          <div class="absolute inset-0 bg-[var(--c-800)]/60 flex items-center justify-center opacity-0 group-hover/av:opacity-100 transition-opacity duration-300">
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" x2="12" y1="3" y2="15"/>
+            </svg>
+          </div>
+          <input #fileInput type="file" (change)="onFileSelected($event)" accept="image/*" class="hidden" />
+        </div>
+
+        <!-- Text Data -->
+        <div class="flex flex-col min-w-0">
+          <h2 class="text-base font-bold text-[var(--c-800)] truncate tracking-tight leading-tight mb-1">
+            {{ profileForm.get('nombre')?.value }} {{ profileForm.get('apellido')?.value }}
+          </h2>
+          <p class="text-xs text-[var(--c-500)] truncate mb-2 font-medium">
+            {{ profileForm.get('email')?.value }}
+          </p>
+          <div class="inline-flex self-start items-center px-2 py-0.5 bg-[var(--c-800)] text-white rounded-md">
+            <span class="text-[9px] font-black uppercase tracking-[0.1em] leading-none">
+              {{ currentUser()?.rol || 'USUARIO' }}
+            </span>
+          </div>
+        </div>
+      </div>
+
+      <!-- SEPARADOR -->
+      <div class="px-7 mb-4">
+        <div class="h-px bg-gradient-to-r from-[var(--c-200)] to-transparent"></div>
+      </div>
+
+      <div class="flex flex-col gap-1">
+        <button type="button"
+          (click)="activeTab = 'basica'"
+          [class.active]="activeTab === 'basica'"
+          class="w-full flex items-center gap-3 px-7 py-3 text-sm transition-all relative overflow-hidden group
+                 text-[var(--c-500)] hover:text-[var(--c-800)]
+                 active:scale-[0.98] outline-none">
+          
+          <!-- Barra indicadora animada -->
+          <span class="absolute left-0 top-1/2 -translate-y-1/2 w-[2.5px] bg-[var(--c-800)] transition-all duration-300 ease-out"
+                [class.h-5]="activeTab === 'basica'"
+                [class.h-0]="activeTab !== 'basica'"
+                [class.opacity-100]="activeTab === 'basica'"
+                [class.opacity-0]="activeTab !== 'basica'">
+          </span>
+
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"
+               [class.text-[var(--c-800)]]="activeTab === 'basica'"
+               class="transition-colors group-hover:scale-110">
+            <path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/>
+          </svg>
+          <span [class.text-[var(--c-800)]]="activeTab === 'basica'" [class.font-medium]="activeTab === 'basica'" class="transition-all tracking-tight">Información básica</span>
+          
+          @if (basicaDirty) {
+            <span class="absolute right-5 top-1/2 -translate-y-1/2 w-1.5 h-1.5 rounded-full bg-amber-500 shadow-sm border border-white"></span>
+          }
+        </button>
+
+        <button type="button"
+          (click)="activeTab = 'profesional'"
+          [class.active]="activeTab === 'profesional'"
+          class="w-full flex items-center gap-3 px-7 py-3 text-sm transition-all relative overflow-hidden group
+                 text-[var(--c-500)] hover:text-[var(--c-800)]
+                 active:scale-[0.98] outline-none">
+          
+          <span class="absolute left-0 top-1/2 -translate-y-1/2 w-[2.5px] bg-[var(--c-800)] transition-all duration-300 ease-out"
+                [class.h-5]="activeTab === 'profesional'"
+                [class.h-0]="activeTab !== 'profesional'"
+                [class.opacity-100]="activeTab === 'profesional'"
+                [class.opacity-0]="activeTab !== 'profesional'">
+          </span>
+
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"
+               [class.text-[var(--c-800)]]="activeTab === 'profesional'"
+               class="transition-colors group-hover:scale-110">
+            <rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2"/>
+            <line x1="12" y1="12" x2="12" y2="16"/><line x1="10" y1="14" x2="14" y2="14"/>
+          </svg>
+          <span [class.text-[var(--c-800)]]="activeTab === 'profesional'" [class.font-medium]="activeTab === 'profesional'" class="transition-all tracking-tight">Contacto profesional</span>
+          
+          @if (profesionalDirty) {
+            <span class="absolute right-5 top-1/2 -translate-y-1/2 w-1.5 h-1.5 rounded-full bg-amber-500 shadow-sm border border-white"></span>
+          }
+        </button>
+
+        <button type="button"
+          (click)="activeTab = 'seguridad'"
+          [class.active]="activeTab === 'seguridad'"
+          class="w-full flex items-center gap-3 px-7 py-3 text-sm transition-all relative overflow-hidden group
+                 text-[var(--c-500)] hover:text-[var(--c-800)]
+                 active:scale-[0.98] outline-none">
+          
+          <span class="absolute left-0 top-1/2 -translate-y-1/2 w-[2.5px] bg-[var(--c-800)] transition-all duration-300 ease-out"
+                [class.h-5]="activeTab === 'seguridad'"
+                [class.h-0]="activeTab !== 'seguridad'"
+                [class.opacity-100]="activeTab === 'seguridad'"
+                [class.opacity-0]="activeTab !== 'seguridad'">
+          </span>
+
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"
+               [class.text-[var(--c-800)]]="activeTab === 'seguridad'"
+               class="transition-colors group-hover:scale-110">
+            <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+          </svg>
+          <span [class.text-[var(--c-800)]]="activeTab === 'seguridad'" [class.font-medium]="activeTab === 'seguridad'" class="transition-all tracking-tight">Seguridad</span>
+        </button>
+      </div>
+    </nav>
+
+    <!-- PANEL -->
+    <form [formGroup]="profileForm" (submit)="onSubmit()" class="flex-1 min-w-0 p-7">
+
+      <!-- PANEL: BÁSICA -->
+      @if (activeTab === 'basica') {
+      <div class="px-10 py-10 flex-1">
+        <h3 class="text-xl font-light text-[var(--c-800)] leading-tight tracking-tight mb-2 animate-smooth-enter stagger-1">
+          Información básica
+        </h3>
+        <p class="text-xs text-[var(--c-400)] mb-6 animate-smooth-enter stagger-2">Nombre y documento de identidad.</p>
+
+        <div class="grid grid-cols-1 gap-x-5 gap-y-4 mb-8">
+          <div class="animate-smooth-enter stagger-3">
+            <ui-input label="Nombre" [control]="profileForm.get('nombre')" placeholder="Ej: Laura"></ui-input>
+          </div>
+          <div class="animate-smooth-enter stagger-4">
+            <ui-input label="Apellidos" [control]="profileForm.get('apellido')" placeholder="Ej: Silva Gómez"></ui-input>
+          </div>
+          <div class="animate-smooth-enter stagger-5">
+            <ui-input label="DNI / Documento" [control]="profileForm.get('dni')" placeholder="12.345.678"></ui-input>
+          </div>
+        </div>
+
+        <div class="flex items-center justify-between pt-5 border-t border-[var(--c-200)] animate-smooth-enter stagger-5">
+          <div class="flex items-center gap-2">
+            @if (basicaDirty) {
+              <span class="w-1.5 h-1.5 rounded-full bg-amber-500 shrink-0"></span>
+              <span class="text-xs text-[var(--c-400)] font-medium tracking-tight">CAMBIOS SIN GUARDAR</span>
+            } @else {
+              <span class="text-[10px] text-[var(--c-400)] font-semibold tracking-wider">DATOS ACTUALIZADOS</span>
+            }
+          </div>
+          <div class="flex gap-2">
+            @if (basicaDirty) {
+              <button type="button" (click)="onCancelBasica()"
+                class="text-xs font-medium text-[var(--c-600)] bg-transparent border border-[var(--c-200)] rounded-[10px] px-4 py-1.5 transition-all hover:bg-[var(--c-100)] active:scale-95">
+                Descartar
+              </button>
+            }
+            <ui-button
+              type="submit"
+              label="Guardar"
+              [isLoading]="isSubmitting()"
+              [disabled]="isSubmitting() || !basicaDirty">
+            </ui-button>
+          </div>
+        </div>
+      </div>
+      }
+
+      <!-- PANEL: PROFESIONAL -->
+      @if (activeTab === 'profesional') {
+      <div class="px-10 py-10 flex-1">
+        <h3 class="text-xl font-light text-[var(--c-800)] leading-tight tracking-tight mb-2 animate-smooth-enter stagger-1">
+          Contacto profesional
+        </h3>
+        <p class="text-xs text-[var(--c-400)] mb-4 animate-smooth-enter stagger-2">Correo y teléfono visibles para otros miembros.</p>
+
+        <div class="bg-[var(--c-100)] border border-[var(--c-200)] rounded-xl p-4 mb-6 animate-smooth-enter stagger-2">
+          <p class="text-[11px] text-[var(--c-600)] leading-relaxed">Al modificar tu correo o teléfono, enviaremos un código de verificación antes de actualizar tu perfil.</p>
+        </div>
+
+        <div class="flex flex-col gap-6 mb-6">
+          <!-- Correo -->
+          <div class="relative group/field animate-smooth-enter stagger-3">
+            <div class="flex items-center gap-2 mb-1.5 ml-1">
+              <span class="text-[10px] uppercase font-medium text-[var(--c-600)] tracking-widest">Correo electrónico</span>
+              
+              @if (emailVerified) {
+                <ui-tooltip text="Tu correo electrónico ha sido verificado con éxito" placement="right">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" class="text-green-500 cursor-help">
+                    <polyline points="20 6 9 17 4 12"/>
+                  </svg>
+                </ui-tooltip>
+              } @else {
+                <ui-tooltip text="Correo pendiente de verificación" placement="right">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="text-[var(--c-400)] cursor-help">
+                    <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" x2="6" y2="18"/>
+                  </svg>
+                </ui-tooltip>
+              }
+            </div>
+            <ui-input label="" type="email" [control]="profileForm.get('email')" placeholder="correo@empresa.com"></ui-input>
+            
+            @if (profileForm.get('email')?.dirty) {
+              <p class="text-[9px] text-amber-600 font-medium tracking-tight mt-1 ml-1 uppercase">Verificación pendiente al guardar</p>
+            }
+          </div>
+
+          <!-- Teléfono Grupal (Pais + Numero) -->
+          <div class="relative group/field animate-smooth-enter stagger-4">
+            <div class="flex items-center gap-2 mb-1.5 ml-1">
+              <span class="text-[10px] uppercase font-medium text-[var(--c-600)] tracking-widest">Teléfono</span>
+              
+              @if (telefonoVerified) {
+                <ui-tooltip text="Tu teléfono está verificado" placement="right">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" class="text-green-500 cursor-help">
+                    <polyline points="20 6 9 17 4 12"/>
+                  </svg>
+                </ui-tooltip>
+              } @else {
+                <ui-tooltip text="Teléfono sin verificar" placement="right">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="text-[var(--c-400)] cursor-help">
+                    <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" x2="6" y2="18"/>
+                  </svg>
+                </ui-tooltip>
+              }
+            </div>
+            
+            <div class="flex gap-2 items-end">
+              <!-- Selector de País -->
+              <div class="w-[180px]">
+                <ui-dropdown-select
+                  [options]="countryOptions()"
+                  [selectedValue]="selectedCountry().code"
+                  placeholder="País"
+                  (valueChanged)="onCountryChange($event)">
+                </ui-dropdown-select>
+              </div>
+              <div class="flex-1">
+                <ui-input label="" [control]="profileForm.get('telefono')" placeholder="Ej: 11 2233 4455"></ui-input>
+              </div>
+            </div>
+
+            @if (profileForm.get('telefono')?.dirty) {
+              <p class="text-[9px] text-amber-600 font-medium tracking-tight mt-1 ml-1 uppercase">Verificación pendiente al guardar</p>
+            }
+          </div>
+        </div>
+
+        <div class="flex items-center justify-between pt-5 border-t border-[var(--c-200)] animate-smooth-enter stagger-5">
+          <div class="flex items-center gap-2">
+            @if (profesionalDirty) {
+              <span class="w-1.5 h-1.5 rounded-full bg-amber-500 shrink-0"></span>
+              <span class="text-xs text-[var(--c-400)]">Cambios sin guardar</span>
+            } @else {
+              <span class="text-xs text-[var(--c-400)]">Sin cambios</span>
+            }
+          </div>
+          <div class="flex gap-2">
+            @if (profesionalDirty) {
+              <button type="button" (click)="onCancelProfesional()"
+                class="text-sm text-[var(--c-600)] bg-transparent border border-[var(--c-200)] rounded-[var(--border-radius-md)] px-4 py-1.5 transition-colors hover:bg-[var(--c-100)]">
+                Cancelar
+              </button>
+            }
+            <ui-button
+              type="submit"
+              label="Guardar y verificar"
+              [isLoading]="isSubmitting()"
+              [disabled]="isSubmitting() || !profesionalDirty">
+            </ui-button>
+          </div>
+        </div>
+      </div>
+      }
+
+      <!-- PANEL: SEGURIDAD -->
+      @if (activeTab === 'seguridad') {
+      <div class="px-10 py-10 flex-1" [formGroup]="passwordForm">
+        <h3 class="text-xl font-light text-[var(--c-800)] leading-tight tracking-tight mb-2 animate-smooth-enter stagger-1">
+          Seguridad y contraseña
+        </h3>
+        <p class="text-xs text-[var(--c-400)] mb-6 animate-smooth-enter stagger-2">Actualizá tu contraseña para mantener tu cuenta segura.</p>
+
+        @if (passwordSuccess()) {
+          <div class="flex items-center gap-3 p-4 mb-6 bg-green-50 border border-green-100 rounded-[12px] animate-smooth-enter">
+            <div class="w-8 h-8 rounded-full bg-green-100 flex items-center justify-center shrink-0">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="text-green-600">
+                <polyline points="20 6 9 17 4 12"/>
+              </svg>
+            </div>
+            <p class="text-xs text-green-800 font-medium tracking-tight">Contraseña actualizada con éxito.</p>
+          </div>
+        }
+
+        @if (passwordError()) {
+          <div class="flex items-center gap-3 p-4 mb-6 bg-red-50 border border-red-100 rounded-[12px] animate-smooth-enter">
+            <div class="w-8 h-8 rounded-full bg-red-100 flex items-center justify-center shrink-0">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="text-red-600">
+                <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" x2="18" y2="18"/>
+              </svg>
+            </div>
+            <p class="text-xs text-red-800 font-medium tracking-tight">{{ passwordError() }}</p>
+          </div>
+        }
+
+        <div class="flex flex-col gap-5 mb-8 max-w-[400px]">
+          <div class="animate-smooth-enter stagger-3">
+            <ui-input
+              label="Contraseña actual"
+              type="password"
+              [control]="passwordForm.get('currentPassword')"
+              placeholder="Ingresá tu contraseña de acceso"
+            ></ui-input>
+          </div>
+          <div class="h-px bg-[var(--c-200)] my-1 animate-smooth-enter stagger-3"></div>
+          <div class="animate-smooth-enter stagger-4">
+            <ui-input
+              label="Nueva contraseña"
+              type="password"
+              [control]="passwordForm.get('newPassword')"
+              placeholder="Mínimo 6 caracteres"
+            ></ui-input>
+          </div>
+          <div class="animate-smooth-enter stagger-5" >
+            <ui-input
+              label="Confirmar contraseña"
+              type="password"
+              [control]="passwordForm.get('confirmPassword')"
+              placeholder="Repetí la contraseña"
+            ></ui-input>
+          </div>
+        </div>
+
+        <div class="pt-5 border-t border-[var(--c-200)] flex justify-end animate-smooth-enter stagger-5">
+          <ui-button
+            type="button"
+            label="Actualizar contraseña"
+            (click)="onChangePassword()"
+            [isLoading]="isSubmitting()"
+            [disabled]="isSubmitting() || passwordForm.invalid">
+          </ui-button>
+        </div>
+      </div>
+      }
+
+    </form>
+  </div>
+</div>

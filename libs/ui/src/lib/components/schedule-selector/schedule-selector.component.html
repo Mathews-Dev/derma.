@@ -1,0 +1,149 @@
+<div class="w-full">
+    <!-- Trigger Button -->
+    <button type="button" (click)="openModal()"
+        class="w-full flex items-center justify-between px-4 py-3 bg-[var(--paper-soft)] border border-[var(--paper-dim)] hover:border-[var(--ink-ghost)] rounded-[var(--radius-md)] transition-all duration-300 group">
+        <span class="font-body text-[0.875rem] font-medium text-[var(--ink-muted)] group-hover:text-[var(--ink)] tracking-wide">
+            {{ hasSchedule() ? 'Horarios configurados' : 'Configurar horarios de atención' }}
+        </span>
+        <div class="flex items-center gap-2">
+            @if (hasSchedule()) {
+            <span class="flex h-2 w-2 rounded-full bg-[var(--ink)]"></span>
+            }
+            <svg class="w-4 h-4 text-[var(--ink-ghost)] group-hover:text-[var(--ink)]" fill="none" viewBox="0 0 24 24"
+                stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
+                    d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+            </svg>
+        </div>
+    </button>
+
+    @if (isOpen()) {
+    <div class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-[var(--paper)]/80 backdrop-blur-sm animate-in">
+        <div class="absolute inset-0 transition-opacity" (click)="closeModal()"></div>
+
+        <div class="relative w-full max-w-[600px] bg-[var(--paper-soft)] rounded-[var(--radius-lg)] shadow-lg flex flex-col overflow-hidden border border-[var(--paper-dim)]">
+            
+            <!-- Geo decorativo -->
+            <div class="geo" aria-hidden="true">
+                <div class="arc-1"></div>
+            </div>
+
+            <!-- Header -->
+            <div class="p-6 border-b border-[var(--paper-dim)] flex justify-between items-start relative z-10">
+                <div>
+                    <h3 class="font-display text-2xl font-light text-[var(--ink)] leading-snug tracking-tight">
+                        Configuración<br>
+                        <strong class="font-semibold">de Agenda</strong>
+                    </h3>
+                </div>
+                <button (click)="closeModal()" class="text-[var(--ink-ghost)] hover:text-[var(--ink)] transition-colors">
+                    <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
+                            d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                </button>
+            </div>
+
+            <!-- Content Area -->
+            <div class="p-6 relative z-10 bg-[var(--paper)]">
+
+                <!-- Day Selector Tabs -->
+                <div class="flex justify-between gap-2 mb-8 overflow-x-auto pb-2 scrollbar-hide">
+                    @for(day of days(); track day.key) {
+                    <button type="button" (click)="selectDay(day.key)"
+                        class="flex flex-col items-center justify-center min-w-[64px] h-[72px] rounded-[var(--radius-md)] transition-all duration-300 border"
+                        [class.bg-[var(--paper-soft)]]="selectedDayKey() !== day.key"
+                        [class.border-[var(--paper-dim)]]="selectedDayKey() !== day.key"
+                        [class.text-[var(--ink-ghost)]]="selectedDayKey() !== day.key && !day.isActive"
+                        [class.text-[var(--ink)]]="selectedDayKey() !== day.key && day.isActive"
+                        [class.bg-[var(--ink)]]="selectedDayKey() === day.key"
+                        [class.text-[var(--paper)]]="selectedDayKey() === day.key"
+                        [class.border-[var(--ink)]]="selectedDayKey() === day.key">
+
+                        <span class="font-body text-[0.75rem] uppercase font-medium tracking-[0.15em]">{{ day.shortLabel }}</span>
+
+                        @if(day.isActive) {
+                            <div class="mt-2 h-1 w-4 rounded-full" [class.bg-[var(--ink)]]="selectedDayKey() !== day.key"
+                                [class.bg-[var(--paper)]]="selectedDayKey() === day.key"></div>
+                        }
+                    </button>
+                    }
+                </div>
+
+                <!-- Active Day Configuration -->
+                <div class="bg-[var(--paper-soft)] rounded-[var(--radius-md)] p-6 border border-[var(--paper-dim)] min-h-[220px]">
+                    <div class="flex items-center justify-between mb-8 pb-4 border-b border-[var(--paper-dim)]">
+                        <h4 class="font-display text-xl font-medium text-[var(--ink)]">{{ selectedDay.label }}</h4>
+
+                        <!-- Toggle Switch custom -->
+                        <button type="button" (click)="toggleDayActive(selectedDay)"
+                            class="relative w-12 h-6 rounded-full transition-colors duration-300 focus:outline-none border"
+                            [class.bg-[var(--ink)]]="selectedDay.isActive" 
+                            [class.border-[var(--ink)]]="selectedDay.isActive"
+                            [class.bg-[var(--paper)]]="!selectedDay.isActive"
+                            [class.border-[var(--paper-dim)]]="!selectedDay.isActive">
+                            <span
+                                class="absolute top-[2px] left-[2px] bg-[var(--paper-soft)] rounded-full w-4 h-4 transition-transform duration-300 shadow-sm"
+                                [class.translate-x-6]="selectedDay.isActive"
+                                [class.translate-x-0]="!selectedDay.isActive">
+                            </span>
+                        </button>
+                    </div>
+
+                    @if (selectedDay.isActive) {
+                    <div class="space-y-4 animate-in">
+                        @for (franja of selectedDay.franjas; track $index) {
+                        <div class="flex items-center gap-4">
+                            <div
+                                class="flex-1 flex items-center justify-center gap-3 bg-[var(--paper)] rounded-[var(--radius-sm)] p-3 border border-[var(--paper-dim)]">
+                                <input type="time" [(ngModel)]="franja.horaInicio"
+                                    class="bg-transparent font-mono text-[0.875rem] text-center w-24 border-none focus:outline-none focus:ring-0 p-0 text-[var(--ink)]">
+                                <span class="text-[var(--ink-ghost)] font-body text-sm px-2">a</span>
+                                <input type="time" [(ngModel)]="franja.horaFin"
+                                    class="bg-transparent font-mono text-[0.875rem] text-center w-24 border-none focus:outline-none focus:ring-0 p-0 text-[var(--ink)]">
+                            </div>
+                            <button (click)="removeFranjaFromSelected($index)"
+                                class="p-3 text-[var(--ink-ghost)] hover:text-[var(--ink)] hover:bg-[var(--paper-dim)] rounded-full transition-colors">
+                                <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
+                                        d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                </svg>
+                            </button>
+                        </div>
+                        }
+
+                        <button type="button" (click)="addFranjaToSelected()"
+                            class="w-full mt-4 py-4 border border-[var(--paper-dim)] rounded-[var(--radius-sm)] text-[var(--ink-muted)] font-body text-[0.75rem] uppercase tracking-[0.15em] hover:bg-[var(--ink)] hover:text-[var(--paper)] hover:border-[var(--ink)] transition-all flex items-center justify-center gap-3">
+                            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
+                                    d="M12 4v16m8-8H4" />
+                            </svg>
+                            Agregar Franja
+                        </button>
+                    </div>
+                    } @else {
+                    <div
+                        class="h-[140px] flex flex-col items-center justify-center text-[var(--ink-ghost)] gap-4 animate-in">
+                        <span class="inline-block w-8 h-[1px] bg-[var(--ink-ghost)]"></span>
+                        <p class="font-body text-[0.875rem] tracking-wide">Día inactivo</p>
+                    </div>
+                    }
+                </div>
+
+            </div>
+
+            <!-- Footer -->
+            <div class="px-6 py-4 border-t border-[var(--paper-dim)] flex justify-end gap-4 bg-[var(--paper-soft)] relative z-10">
+                <button type="button" (click)="closeModal()"
+                    class="bg-transparent border-none text-[var(--ink-muted)] font-body font-medium text-[0.875rem] tracking-[0.08em] px-6 py-3 cursor-pointer hover:text-[var(--ink)] transition-colors">
+                    Cancelar
+                </button>
+                <button type="button" (click)="saveSchedule()"
+                    class="bg-[var(--ink)] text-[var(--paper)] font-body font-medium text-[0.875rem] tracking-[0.08em] px-8 py-3 border-none rounded-[var(--radius-sm)] cursor-pointer hover:opacity-90 transition-opacity">
+                    Guardar
+                </button>
+            </div>
+        </div>
+    </div>
+    }
+</div>

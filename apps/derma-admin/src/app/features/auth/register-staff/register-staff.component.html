@@ -107,7 +107,7 @@
                   </span>
                   <div class="flex gap-2">
                     <!-- Select País (2/5 = 40%) -->
-                    <div class="w-2/5">
+                    <div class="w-2/8">
                       <ui-dropdown-select
                         [options]="countryOptions()"
                         [selectedValue]="countryControl.value"
@@ -120,7 +120,7 @@
                       type="text" 
                       formControlName="telefono" 
                       placeholder="1122334455"
-                      class="w-3/5 h-[44px] bg-[var(--c-50)] border border-[var(--c-200)] text-[0.875rem] text-[var(--c-800)] px-3 rounded-xl outline-none hover:border-[var(--c-400)] focus:border-[var(--c-800)] focus:ring-1 focus:ring-[var(--c-800)] placeholder:text-[var(--c-400)] transition-all duration-200 ease-out">
+                      class="w-3/2 h-[44px] bg-[var(--c-50)] border border-[var(--c-200)] text-[0.875rem] text-[var(--c-800)] px-3 rounded-xl outline-none hover:border-[var(--c-400)] focus:border-[var(--c-800)] focus:ring-1 focus:ring-[var(--c-800)] placeholder:text-[var(--c-400)] transition-all duration-200 ease-out">
                   </div>
                   @if (formulario.get('telefono')?.touched && formulario.get('telefono')?.hasError('required')) {
                     <p class="text-[0.65rem] text-[var(--c-800)] font-light mt-1">Campo requerido</p>

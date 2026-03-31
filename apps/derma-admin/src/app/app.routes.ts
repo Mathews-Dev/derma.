@@ -52,6 +52,10 @@ export const appRoutes: Route[] = [
         loadComponent: () => import('./features/configuracion/configuracion.component').then(m => m.ConfiguracionComponent)
       },
       {
+        path: 'perfil/:uid',
+        loadComponent: () => import('./features/perfil/perfil.component').then(m => m.PerfilComponent)
+      },
+      {
         path: '',
         pathMatch: 'full',
         redirectTo: 'dashboard'

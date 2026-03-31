@@ -9,7 +9,10 @@ import {
   signInWithEmailAndPassword, 
   signInWithPopup, 
   signOut,
-  authState
+  authState,
+  updatePassword,
+  reauthenticateWithCredential,
+  EmailAuthProvider
 } from '@angular/fire/auth';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { Router } from '@angular/router';
@@ -266,6 +269,38 @@ export class AuthService {
     } catch (error) {
       console.error("Error al enviar email de recuperación", error);
       const errMsg = error instanceof Error ? error.message : 'No se pudo enviar el email de recuperación.';
+      throw new Error(errMsg);
+    }
+  }
+
+  async reauthenticate(password: string): Promise<void> {
+    const user = this.auth.currentUser;
+    if (!user || !user.email) throw new Error('No hay usuario autenticado o no tiene email');
+
+    const credential = EmailAuthProvider.credential(user.email, password);
+    try {
+      await reauthenticateWithCredential(user, credential);
+    } catch (error) {
+      console.error('Error en re-autenticación:', error);
+      throw new Error('La contraseña actual es incorrecta.');
+    }
+  }
+
+  async changePassword(newPassword: string, currentPassword?: string): Promise<void> {
+    const user = this.auth.currentUser;
+    if (!user) throw new Error('No hay usuario autenticado');
+
+    try {
+      if (currentPassword) {
+        await this.reauthenticate(currentPassword);
+      }
+      await updatePassword(user, newPassword);
+    } catch (error) {
+      console.error('Error al cambiar la contraseña:', error);
+      if ((error as any).code === 'auth/requires-recent-login') {
+        throw new Error('Por seguridad, debés re-autenticarte antes de cambiar la contraseña.');
+      }
+      const errMsg = error instanceof Error ? error.message : 'No se pudo cambiar la contraseña.';
       throw new Error(errMsg);
     }
   }

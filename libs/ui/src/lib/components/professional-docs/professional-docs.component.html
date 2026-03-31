@@ -1,0 +1,95 @@
+<div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-6">
+    @for (key of docTypes; track key) {
+    <div class="relative group flex flex-col items-center justify-center p-6 bg-[var(--paper-soft)] border border-[var(--paper-dim)] rounded-[var(--radius-md)] transition-shadow duration-300 hover:shadow-md">
+        
+        <!-- Línea de acento al hover -->
+        <div class="absolute top-0 left-0 right-0 h-[2px] bg-[var(--ink)] scale-x-0 group-hover:scale-x-100 transition-transform duration-300 origin-left"></div>
+
+        <!-- Label -->
+        <span class="font-body text-[0.75rem] uppercase tracking-[0.15em] font-medium text-[var(--ink-ghost)] mb-4 text-center">
+            {{ getLabel(key) }}
+        </span>
+
+        <!-- Preview -->
+        <div class="w-full aspect-[4/3] rounded-[var(--radius-sm)] bg-[var(--paper)] border border-[var(--paper-dim)] mb-4 overflow-hidden flex items-center justify-center relative cursor-pointer"
+             (click)="openLightbox(documents?.[key])">
+            
+            @if (documents?.[key]) {
+            <img [src]="documents?.[key]" class="w-full h-full object-cover transition-transform duration-500 hover:scale-105">
+            
+            <!-- Hover Overlay -->
+            <div class="absolute inset-0 bg-[var(--paper)]/80 backdrop-blur-sm opacity-0 hover:opacity-100 transition-opacity duration-300 flex items-center justify-center">
+                <span class="font-body text-[0.75rem] uppercase tracking-[0.15em] font-medium text-[var(--ink)]">
+                    Ampliar
+                </span>
+            </div>
+            } @else {
+            <div class="flex flex-col items-center justify-center text-[var(--ink-ghost)] gap-2">
+                <span class="inline-block w-6 h-[1px] bg-[var(--paper-dim)]"></span>
+                <span class="font-body text-[0.7rem] uppercase tracking-[0.15em]">Vacío</span>
+            </div>
+            }
+        </div>
+
+        <!-- Actions -->
+        @if (editable) {
+            <div class="w-full flex gap-2">
+                <label class="flex-1 cursor-pointer py-2 px-3 border border-[var(--ink)] text-[var(--ink)] bg-transparent hover:bg-[var(--ink)] hover:text-[var(--paper)] transition-colors duration-200 rounded-[var(--radius-sm)] flex items-center justify-center">
+                    <span class="font-body text-[0.75rem] uppercase tracking-[0.12em] font-medium">
+                        {{ documents?.[key] ? 'Cambiar' : 'Subir' }}
+                    </span>
+                    <input type="file" class="hidden" accept="image/*" (change)="onFileSelected($event, key)">
+                </label>
+                
+                @if (documents?.[key]) {
+                <button type="button" (click)="removeDocument(key)"
+                        class="px-3 py-2 border border-[var(--paper-dim)] text-[var(--ink-ghost)] hover:border-[var(--ink)] hover:text-[var(--ink)] transition-colors duration-200 rounded-[var(--radius-sm)] flex items-center justify-center">
+                    <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                </button>
+                }
+            </div>
+        } @else {
+            <div class="w-full text-center">
+                <span class="font-mono text-[0.75rem] tracking-wide"
+                      [class.text-[var(--ink)]]="documents?.[key]"
+                      [class.text-[var(--ink-ghost)]]="!documents?.[key]">
+                    {{ documents?.[key] ? 'VERIFICADO' : 'PENDIENTE' }}
+                </span>
+            </div>
+        }
+    </div>
+    }
+</div>
+
+<!-- Lightbox -->
+@if (viewingImage()) {
+<div class="fixed inset-0 z-[9999] bg-[var(--paper)]/95 backdrop-blur-md flex flex-col items-center justify-center animate-in">
+    <!-- Cierra -->
+    <button type="button" (click)="closeLightbox()"
+            class="absolute top-8 right-8 p-3 text-[var(--ink-muted)] hover:text-[var(--ink)] transition-colors duration-300">
+        <svg class="w-8 h-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1" d="M6 18L18 6M6 6l12 12" />
+        </svg>
+    </button>
+
+    <!-- Imagen -->
+    <div class="w-full max-w-5xl h-[80vh] flex items-center justify-center p-8">
+        <div class="relative bg-[var(--paper-soft)] border border-[var(--paper-dim)] p-4 shadow-2xl max-w-full max-h-full">
+            <img [src]="viewingImage()" class="max-w-full max-h-[70vh] object-contain">
+        </div>
+    </div>
+
+    <!-- Barra de Herramientas -->
+    <div class="mt-6">
+        <button type="button" (click)="downloadImage()"
+                class="bg-[var(--ink)] text-[var(--paper)] font-body font-medium text-[0.875rem] tracking-[0.08em] px-8 py-3 border-none rounded-[var(--radius-sm)] cursor-pointer hover:opacity-90 transition-opacity flex items-center gap-3">
+            <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+            </svg>
+            Descargar Documento
+        </button>
+    </div>
+</div>
+}
