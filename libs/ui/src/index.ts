@@ -25,3 +25,4 @@ export * from './lib/services/loading.service';
 export * from './lib/components/schedule-selector/schedule-selector.component';
 export * from './lib/components/professional-docs/professional-docs.component';
 export * from './lib/components/ui-sticky-footer';
+export * from './lib/components/ui-time-picker/ui-time-picker.component';

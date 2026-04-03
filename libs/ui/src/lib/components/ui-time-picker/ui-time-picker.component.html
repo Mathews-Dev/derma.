@@ -1,0 +1,74 @@
+<div class="inline-flex items-center gap-1 select-none">
+
+  <!-- ── HOURS ─────────────────────────────────────── -->
+  <div class="flex flex-col items-center gap-0.5">
+    <!-- Up -->
+    <button type="button"
+      (click)="incrementHours()"
+      class="flex items-center justify-center w-7 h-5 rounded text-[var(--c-400)] hover:text-[var(--c-800)] hover:bg-[var(--c-100)] transition-all active:scale-90">
+      <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+        <path d="m18 15-6-6-6 6"/>
+      </svg>
+    </button>
+
+    <!-- Input -->
+    <input
+      type="text"
+      inputmode="numeric"
+      maxlength="2"
+      [value]="editingHours() ? rawHours() : displayHours()"
+      (focus)="onHoursFocus()"
+      (input)="onHoursInput($event)"
+      (blur)="onHoursBlur()"
+      (keydown)="onHoursKeydown($event)"
+      class="w-9 h-9 text-center text-base font-semibold text-[var(--c-800)] bg-[var(--c-100)] border border-[var(--c-200)] rounded-lg outline-none focus:border-[var(--c-800)] focus:bg-[var(--c-50)] transition-all cursor-text tracking-tight"
+    />
+
+    <!-- Down -->
+    <button type="button"
+      (click)="decrementHours()"
+      class="flex items-center justify-center w-7 h-5 rounded text-[var(--c-400)] hover:text-[var(--c-800)] hover:bg-[var(--c-100)] transition-all active:scale-90">
+      <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+        <path d="m6 9 6 6 6-6"/>
+      </svg>
+    </button>
+  </div>
+
+  <!-- Separator -->
+  <span class="text-lg font-light text-[var(--c-400)] leading-none mb-0.5 pb-2">:</span>
+
+  <!-- ── MINUTES ────────────────────────────────────── -->
+  <div class="flex flex-col items-center gap-0.5">
+    <!-- Up -->
+    <button type="button"
+      (click)="incrementMinutes()"
+      class="flex items-center justify-center w-7 h-5 rounded text-[var(--c-400)] hover:text-[var(--c-800)] hover:bg-[var(--c-100)] transition-all active:scale-90">
+      <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+        <path d="m18 15-6-6-6 6"/>
+      </svg>
+    </button>
+
+    <!-- Input -->
+    <input
+      type="text"
+      inputmode="numeric"
+      maxlength="2"
+      [value]="editingMinutes() ? rawMinutes() : displayMinutes()"
+      (focus)="onMinutesFocus()"
+      (input)="onMinutesInput($event)"
+      (blur)="onMinutesBlur()"
+      (keydown)="onMinutesKeydown($event)"
+      class="w-9 h-9 text-center text-base font-semibold text-[var(--c-800)] bg-[var(--c-100)] border border-[var(--c-200)] rounded-lg outline-none focus:border-[var(--c-800)] focus:bg-[var(--c-50)] transition-all cursor-text tracking-tight"
+    />
+
+    <!-- Down -->
+    <button type="button"
+      (click)="decrementMinutes()"
+      class="flex items-center justify-center w-7 h-5 rounded text-[var(--c-400)] hover:text-[var(--c-800)] hover:bg-[var(--c-100)] transition-all active:scale-90">
+      <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+        <path d="m6 9 6 6 6-6"/>
+      </svg>
+    </button>
+  </div>
+
+</div>

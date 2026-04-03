@@ -10,6 +10,7 @@ import {
 import { FormsModule } from '@angular/forms';
 import { HorariosLaborales, FranjaHoraria } from '@derma/models';
 import { ToggleComponent } from '../../toggle/toggle.component';
+import { UiTimePickerComponent } from '../ui-time-picker/ui-time-picker.component';
 
 interface DaySchedule {
     key: keyof HorariosLaborales;
@@ -39,7 +40,7 @@ const DEFAULT_DAYS: DaySchedule[] = [
     selector: 'ui-schedule-selector',
     standalone: true,
     changeDetection: ChangeDetectionStrategy.OnPush,
-    imports: [FormsModule, ToggleComponent],
+    imports: [FormsModule, ToggleComponent, UiTimePickerComponent],
     templateUrl: './schedule-selector.component.html',
     styleUrl: './schedule-selector.component.css',
 })

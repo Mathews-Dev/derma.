@@ -72,6 +72,11 @@ export const appRoutes: Route[] = [
         loadComponent: () => import('./features/configuracion/configuracion.component').then(m => m.ConfiguracionComponent)
       },
       {
+        path: 'perfil/profesional',
+        canActivate: [roleGuard([RolUsuario.DERMATOLOGO])],
+        loadComponent: () => import('./features/perfil/perfil-profesional/perfil-profesional.component').then(m => m.PerfilProfesionalComponent)
+      },
+      {
         path: 'perfil/:uid',
         loadComponent: () => import('./features/perfil/perfil.component').then(m => m.PerfilComponent)
       },

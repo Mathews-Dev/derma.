@@ -1,8 +1,8 @@
-import { ChangeDetectionStrategy, Component, inject, input, output, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, inject, input, output, signal } from '@angular/core';
 import { NavigationEnd, Router, RouterLink } from '@angular/router';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { filter, map } from 'rxjs/operators';
-import { Usuario } from '@derma/models';
+import { RolUsuario, Usuario } from '@derma/models';
 
 @Component({
   selector: 'derm-admin-header',
@@ -26,6 +26,14 @@ export class AdminHeaderComponent {
   logout = output<void>();
 
   isUserMenuOpen = signal(false);
+
+  readonly profileRoute = computed(() => {
+    const u = this.user();
+    if (!u) return null;
+    return u.rol === RolUsuario.DERMATOLOGO
+      ? ['/admin/perfil/profesional']
+      : ['/admin/perfil', u.uid];
+  });
 
   breadcrumbs = toSignal(
     this.router.events.pipe(

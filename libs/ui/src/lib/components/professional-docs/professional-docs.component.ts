@@ -20,8 +20,9 @@ import {
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class ProfessionalDocsComponent {
-  documentos = input<DocumentosDetallados | null>(null);
-  editable   = input<boolean>(false);
+  documentos  = input<DocumentosDetallados | null>(null);
+  editable    = input<boolean>(false);
+  canUpload   = input<boolean>(true);
 
   fileSelected   = output<{ key: DocKey; file: File }>();
   estadoChanged  = output<{ key: DocKey; estado: EstadoDocumento; nota?: string }>();

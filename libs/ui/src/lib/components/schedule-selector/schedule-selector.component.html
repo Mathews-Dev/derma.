@@ -107,22 +107,16 @@
                           rounded-xl px-4 py-3 focus-within:border-[var(--c-800)]
                           transition-all duration-300 hover:border-[var(--c-300)] relative">
 
-                <div class="flex-1 flex flex-col items-start min-w-0">
-                  <label class="text-[10px] uppercase font-bold text-[var(--c-500)] tracking-[0.1em] mb-1 pl-0.5 cursor-pointer">Inicio</label>
-                  <input type="time"
-                    [(ngModel)]="franja.horaInicio"
-                    (ngModelChange)="emitChanges()"
-                    class="text-sm font-medium text-[var(--c-800)] bg-transparent outline-none w-full cursor-pointer hover:text-[var(--c-600)] transition-colors" />
+                <div class="flex flex-col items-start gap-1 min-w-0">
+                  <label class="text-[10px] uppercase font-bold text-[var(--c-500)] tracking-[0.1em] pl-0.5">Inicio</label>
+                  <ui-time-picker [(value)]="franja.horaInicio" (valueChange)="emitChanges()" />
                 </div>
 
-                <div class="w-px h-8 bg-gradient-to-b from-transparent via-[var(--c-300)] to-transparent mx-2"></div>
+                <div class="w-px h-12 bg-gradient-to-b from-transparent via-[var(--c-300)] to-transparent mx-2 shrink-0"></div>
 
-                <div class="flex-1 flex flex-col items-start min-w-0">
-                  <label class="text-[10px] uppercase font-bold text-[var(--c-500)] tracking-[0.1em] mb-1 pl-0.5 cursor-pointer">Fin</label>
-                  <input type="time"
-                    [(ngModel)]="franja.horaFin"
-                    (ngModelChange)="emitChanges()"
-                    class="text-sm font-medium text-[var(--c-800)] bg-transparent outline-none w-full cursor-pointer hover:text-[var(--c-600)] transition-colors" />
+                <div class="flex flex-col items-start gap-1 min-w-0">
+                  <label class="text-[10px] uppercase font-bold text-[var(--c-500)] tracking-[0.1em] pl-0.5">Fin</label>
+                  <ui-time-picker [(value)]="franja.horaFin" (valueChange)="emitChanges()" />
                 </div>
 
                 <button type="button"
