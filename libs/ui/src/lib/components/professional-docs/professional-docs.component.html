@@ -1,95 +1,153 @@
-<div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-6">
-    @for (key of docTypes; track key) {
-    <div class="relative group flex flex-col items-center justify-center p-6 bg-[var(--paper-soft)] border border-[var(--paper-dim)] rounded-[var(--radius-md)] transition-shadow duration-300 hover:shadow-md">
-        
-        <!-- Línea de acento al hover -->
-        <div class="absolute top-0 left-0 right-0 h-[2px] bg-[var(--ink)] scale-x-0 group-hover:scale-x-100 transition-transform duration-300 origin-left"></div>
+<!-- ======================================================= DOC GRID -->
+<div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4">
 
-        <!-- Label -->
-        <span class="font-body text-[0.75rem] uppercase tracking-[0.15em] font-medium text-[var(--ink-ghost)] mb-4 text-center">
-            {{ getLabel(key) }}
+  @for (key of docTypes; track key) {
+    @let doc = documentos()?.[key];
+    @let isExpanded = activeAction()?.key === key;
+
+    <div class="relative flex flex-col rounded-xl border bg-[var(--c-50)] overflow-hidden transition-all duration-200"
+         [class.border-[var(--c-800)]]="isExpanded"
+         [class.border-[var(--c-200)]]="!isExpanded">
+
+      <!-- ── Header ── -->
+      <div class="flex items-center justify-between px-4 pt-4 pb-2">
+        <span class="text-[10px] font-semibold uppercase tracking-widest text-[var(--c-500)]">
+          {{ labels[key] }}
         </span>
-
-        <!-- Preview -->
-        <div class="w-full aspect-[4/3] rounded-[var(--radius-sm)] bg-[var(--paper)] border border-[var(--paper-dim)] mb-4 overflow-hidden flex items-center justify-center relative cursor-pointer"
-             (click)="openLightbox(documents?.[key])">
-            
-            @if (documents?.[key]) {
-            <img [src]="documents?.[key]" class="w-full h-full object-cover transition-transform duration-500 hover:scale-105">
-            
-            <!-- Hover Overlay -->
-            <div class="absolute inset-0 bg-[var(--paper)]/80 backdrop-blur-sm opacity-0 hover:opacity-100 transition-opacity duration-300 flex items-center justify-center">
-                <span class="font-body text-[0.75rem] uppercase tracking-[0.15em] font-medium text-[var(--ink)]">
-                    Ampliar
-                </span>
-            </div>
-            } @else {
-            <div class="flex flex-col items-center justify-center text-[var(--ink-ghost)] gap-2">
-                <span class="inline-block w-6 h-[1px] bg-[var(--paper-dim)]"></span>
-                <span class="font-body text-[0.7rem] uppercase tracking-[0.15em]">Vacío</span>
-            </div>
+        <!-- Estado badge -->
+        @if (doc) {
+          @switch (doc.estado) {
+            @case (EstadoDocumento.APROBADO) {
+              <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-[var(--c-800)] text-[var(--c-50)] text-[9px] font-semibold uppercase tracking-widest">
+                <svg width="8" height="8" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+                Aprobado
+              </span>
             }
-        </div>
-
-        <!-- Actions -->
-        @if (editable) {
-            <div class="w-full flex gap-2">
-                <label class="flex-1 cursor-pointer py-2 px-3 border border-[var(--ink)] text-[var(--ink)] bg-transparent hover:bg-[var(--ink)] hover:text-[var(--paper)] transition-colors duration-200 rounded-[var(--radius-sm)] flex items-center justify-center">
-                    <span class="font-body text-[0.75rem] uppercase tracking-[0.12em] font-medium">
-                        {{ documents?.[key] ? 'Cambiar' : 'Subir' }}
-                    </span>
-                    <input type="file" class="hidden" accept="image/*" (change)="onFileSelected($event, key)">
-                </label>
-                
-                @if (documents?.[key]) {
-                <button type="button" (click)="removeDocument(key)"
-                        class="px-3 py-2 border border-[var(--paper-dim)] text-[var(--ink-ghost)] hover:border-[var(--ink)] hover:text-[var(--ink)] transition-colors duration-200 rounded-[var(--radius-sm)] flex items-center justify-center">
-                    <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M6 18L18 6M6 6l12 12" />
-                    </svg>
-                </button>
-                }
-            </div>
+            @case (EstadoDocumento.RECHAZADO) {
+              <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full border border-[var(--c-700)] text-[var(--c-700)] text-[9px] font-semibold uppercase tracking-widest">
+                <svg width="8" height="8" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                Rechazado
+              </span>
+            }
+            @case (EstadoDocumento.SOLICITAR_REENVIO) {
+              <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full border border-[var(--c-400)] text-[var(--c-500)] text-[9px] font-semibold uppercase tracking-widest">
+                <svg width="8" height="8" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-3.5"/></svg>
+                Reenviar
+              </span>
+            }
+            @default {
+              <span class="inline-flex items-center px-2 py-0.5 rounded-full border border-[var(--c-300)] text-[var(--c-400)] text-[9px] font-semibold uppercase tracking-widest">
+                Pendiente
+              </span>
+            }
+          }
         } @else {
-            <div class="w-full text-center">
-                <span class="font-mono text-[0.75rem] tracking-wide"
-                      [class.text-[var(--ink)]]="documents?.[key]"
-                      [class.text-[var(--ink-ghost)]]="!documents?.[key]">
-                    {{ documents?.[key] ? 'VERIFICADO' : 'PENDIENTE' }}
-                </span>
-            </div>
+          <span class="inline-flex items-center px-2 py-0.5 rounded-full bg-[var(--c-100)] text-[var(--c-400)] text-[9px] font-semibold uppercase tracking-widest">
+            Sin subir
+          </span>
         }
-    </div>
-    }
-</div>
+      </div>
 
-<!-- Lightbox -->
-@if (viewingImage()) {
-<div class="fixed inset-0 z-[9999] bg-[var(--paper)]/95 backdrop-blur-md flex flex-col items-center justify-center animate-in">
-    <!-- Cierra -->
-    <button type="button" (click)="closeLightbox()"
-            class="absolute top-8 right-8 p-3 text-[var(--ink-muted)] hover:text-[var(--ink)] transition-colors duration-300">
-        <svg class="w-8 h-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1" d="M6 18L18 6M6 6l12 12" />
-        </svg>
-    </button>
-
-    <!-- Imagen -->
-    <div class="w-full max-w-5xl h-[80vh] flex items-center justify-center p-8">
-        <div class="relative bg-[var(--paper-soft)] border border-[var(--paper-dim)] p-4 shadow-2xl max-w-full max-h-full">
-            <img [src]="viewingImage()" class="max-w-full max-h-[70vh] object-contain">
-        </div>
-    </div>
-
-    <!-- Barra de Herramientas -->
-    <div class="mt-6">
-        <button type="button" (click)="downloadImage()"
-                class="bg-[var(--ink)] text-[var(--paper)] font-body font-medium text-[0.875rem] tracking-[0.08em] px-8 py-3 border-none rounded-[var(--radius-sm)] cursor-pointer hover:opacity-90 transition-opacity flex items-center gap-3">
-            <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+      <!-- ── Preview ── -->
+      <div class="mx-4 mb-3 rounded-lg overflow-hidden bg-[var(--c-100)] aspect-video flex items-center justify-center group cursor-pointer relative"
+           (click)="openLightbox(doc?.url)">
+        @if (doc?.url) {
+          <img [src]="doc!.url" alt="{{ labels[key] }}" class="w-full h-full object-cover" />
+          <div class="absolute inset-0 bg-[var(--c-800)]/0 group-hover:bg-[var(--c-800)]/30 transition-all flex items-center justify-center">
+            <svg class="opacity-0 group-hover:opacity-100 transition-opacity text-[var(--c-50)]" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/>
             </svg>
-            Descargar Documento
-        </button>
+          </div>
+        } @else {
+          <div class="flex flex-col items-center justify-center gap-2 text-[var(--c-300)] py-5">
+            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+              <polyline points="14 2 14 8 20 8"/>
+            </svg>
+            <span class="text-[9px] uppercase tracking-wider">Sin documento</span>
+          </div>
+        }
+      </div>
+
+      <!-- ── Nota admin (si hay) ── -->
+      @if (doc?.notaAdmin) {
+        <div class="mx-4 mb-3 px-3 py-2 rounded-lg bg-[var(--c-100)] border-l-2 border-[var(--c-400)]">
+          <p class="text-[10px] text-[var(--c-500)] leading-relaxed">{{ doc!.notaAdmin }}</p>
+        </div>
+      }
+
+      <!-- ── Acciones admin ── -->
+      @if (editable()) {
+        <div class="px-4 pb-4 flex flex-col gap-2 mt-auto">
+
+          <!-- Botones: Aprobar / Rechazar / Solicitar reenvío -->
+          <div class="flex gap-1.5">
+            <button type="button" (click)="aprobar(key)"
+              class="flex-1 py-1.5 rounded-lg text-[10px] font-semibold uppercase tracking-widest transition-all active:scale-95
+                     bg-[var(--c-800)] text-[var(--c-50)] hover:bg-[var(--c-700)]">
+              Aprobar
+            </button>
+
+            <button type="button" (click)="toggleAction(key, 'rechazar')"
+              class="flex-1 py-1.5 rounded-lg text-[10px] font-semibold uppercase tracking-widest border transition-all active:scale-95"
+              [class.bg-[var(--c-700)]]="activeAction()?.key === key && activeAction()?.type === 'rechazar'"
+              [class.text-[var(--c-50)]]="activeAction()?.key === key && activeAction()?.type === 'rechazar'"
+              [class.border-[var(--c-700)]]="activeAction()?.key === key && activeAction()?.type === 'rechazar'"
+              [class.border-[var(--c-200)]]="!(activeAction()?.key === key && activeAction()?.type === 'rechazar')"
+              [class.text-[var(--c-600)]]="!(activeAction()?.key === key && activeAction()?.type === 'rechazar')"
+              [class.hover:border-[var(--c-700)]]="!(activeAction()?.key === key && activeAction()?.type === 'rechazar')">
+              Rechazar
+            </button>
+
+            <button type="button" (click)="toggleAction(key, 'reenvio')"
+              class="flex-1 py-1.5 rounded-lg text-[10px] font-semibold uppercase tracking-widest border transition-all active:scale-95"
+              [class.bg-[var(--c-600)]]="activeAction()?.key === key && activeAction()?.type === 'reenvio'"
+              [class.text-[var(--c-50)]]="activeAction()?.key === key && activeAction()?.type === 'reenvio'"
+              [class.border-[var(--c-600)]]="activeAction()?.key === key && activeAction()?.type === 'reenvio'"
+              [class.border-[var(--c-200)]]="!(activeAction()?.key === key && activeAction()?.type === 'reenvio')"
+              [class.text-[var(--c-600)]]="!(activeAction()?.key === key && activeAction()?.type === 'reenvio')"
+              [class.hover:border-[var(--c-600)]]="!(activeAction()?.key === key && activeAction()?.type === 'reenvio')">
+              Reenviar
+            </button>
+          </div>
+
+          <!-- Inline nota + confirmar -->
+          @if (activeAction()?.key === key) {
+            <div class="flex flex-col gap-2 pt-1 animate-smooth-enter">
+              <textarea
+                [value]="actionNota()"
+                (input)="actionNota.set($any($event.target).value)"
+                rows="2"
+                class="w-full px-3 py-2 rounded-lg border border-[var(--c-200)] bg-[var(--c-100)] text-xs text-[var(--c-700)] placeholder:text-[var(--c-400)] resize-none focus:outline-none focus:border-[var(--c-800)] transition-colors"
+                [placeholder]="activeAction()?.type === 'rechazar' ? 'Motivo del rechazo (opcional)...' : 'Indicaciones para el profesional (opcional)...'">
+              </textarea>
+              <div class="flex gap-1.5">
+                <button type="button" (click)="confirmarAccion()"
+                  class="flex-1 py-1.5 rounded-lg text-[10px] font-semibold uppercase tracking-widest bg-[var(--c-800)] text-[var(--c-50)] hover:bg-[var(--c-700)] active:scale-95 transition-all">
+                  Confirmar
+                </button>
+                <button type="button" (click)="cancelarAccion()"
+                  class="px-4 py-1.5 rounded-lg text-[10px] font-semibold uppercase tracking-widest border border-[var(--c-200)] text-[var(--c-500)] hover:border-[var(--c-800)] active:scale-95 transition-all">
+                  Cancelar
+                </button>
+              </div>
+            </div>
+          }
+
+          <!-- Subir / Cambiar -->
+          <label class="cursor-pointer w-full py-1.5 border border-dashed border-[var(--c-300)] rounded-lg text-[10px] font-semibold uppercase tracking-widest text-[var(--c-500)] hover:text-[var(--c-800)] hover:border-[var(--c-800)] transition-all flex items-center justify-center gap-1.5">
+            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="16 16 12 12 8 16"/><line x1="12" y1="12" x2="12" y2="21"/>
+              <path d="M20.39 18.39A5 5 0 0 0 18 9h-1.26A8 8 0 1 0 3 16.3"/>
+            </svg>
+            {{ doc?.url ? 'Cambiar archivo' : 'Subir archivo' }}
+            <input type="file" class="hidden" accept="image/*" (change)="onFileSelected($event, key)" />
+          </label>
+
+        </div>
+      }
+
     </div>
+  }
+
 </div>
-}

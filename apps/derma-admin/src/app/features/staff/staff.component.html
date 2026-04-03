@@ -1,5 +1,235 @@
-<section class="space-y-3">
-  <p class="text-[0.75rem] uppercase tracking-[0.18em] text-[var(--c-400)]">Staff</p>
-  <h1 class="text-3xl font-semibold text-[var(--c-800)]">Gestión de staff</h1>
-  <p class="text-[var(--c-600)] max-w-3xl">Invitaciones, roles y permisos del equipo interno. Próximo paso: conectar con flujo de invitaciones y edición de roles.</p>
+<!-- HEADER -->
+<section class="mb-4 animate-smooth-enter enter-delay-1">
+  <ui-page-header
+    title="Directorio de Usuarios"
+    description="Administrá el equipo, roles y accesos al sistema. Editá perfiles, gestioná estados y controlá permisos.">
+  </ui-page-header>
 </section>
+
+<!-- LOADING -->
+@if (isLoading()) {
+  <div class="animate-smooth-enter enter-delay-2">
+    <ui-loader-card message="Cargando usuarios"></ui-loader-card>
+  </div>
+} @else {
+
+  <!-- TABLA CARD -->
+  <div class="bg-[var(--c-50)] rounded-[24px] shadow-[0_20px_40px_-20px_rgba(0,0,0,0.03)] border border-[var(--c-100)] overflow-hidden flex flex-col animate-smooth-enter enter-delay-2">
+
+    <!-- TABLE TOOLBAR -->
+    <div class="px-8 pt-8 pb-6 flex flex-col sm:flex-row items-center justify-between gap-4">
+      <div class="w-full sm:w-auto">
+        <h3 class="text-lg font-medium text-[var(--c-800)] tracking-tight">Registro de accesos</h3>
+        <p class="text-[12px] text-[var(--c-500)] mt-1">Explora y gestiona los miembros del equipo.</p>
+      </div>
+      <!-- Buscador -->
+      <div class="w-full sm:w-72 shrink-0">
+        <div class="relative">
+          <input
+            type="text"
+            (input)="onBusquedaChange($event)"
+            placeholder="Buscar por nombre, email, rol..."
+            class="w-full pl-10 pr-4 py-2.5 bg-[var(--c-50)] border border-[var(--c-200)] rounded-full text-[13px] text-[var(--c-800)] placeholder:text-[var(--c-400)] focus:outline-none focus:border-[var(--c-800)] focus:ring-1 focus:ring-[var(--c-800)] transition-all"
+          />
+          <div class="absolute inset-y-0 left-0 flex items-center pl-3.5 pointer-events-none">
+            <svg class="size-4 text-[var(--c-400)]" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+              <path stroke-linecap="round" stroke-linejoin="round" d="m21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.607 10.607Z" />
+            </svg>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ZONA DE SCROLL HORIZONTAL -->
+    <div class="overflow-x-auto">
+      <table class="min-w-full align-middle">
+
+        <!-- Header Tabla -->
+        <thead class="bg-[#f8f8f8] border-b border-[var(--c-100)] border-t">
+          <tr>
+            <th scope="col" class="px-8 py-4 text-left text-[11px] font-medium text-[var(--c-500)] tracking-wide">
+              Usuario
+            </th>
+            <th scope="col" class="px-8 py-4 text-left text-[11px] font-medium text-[var(--c-500)] tracking-wide hidden sm:table-cell">
+              Contacto
+            </th>
+            <th scope="col" class="px-8 py-4 text-left text-[11px] font-medium text-[var(--c-500)] tracking-wide">
+              Estado
+            </th>
+            <th scope="col" class="px-8 py-4 text-left text-[11px] font-medium text-[var(--c-500)] tracking-wide">
+              Rol
+            </th>
+            <th scope="col" class="px-8 py-4 text-right text-[11px] font-medium text-[var(--c-500)] tracking-wide w-28">
+              Acciones
+            </th>
+          </tr>
+        </thead>
+
+        <!-- Body Tabla -->
+        <tbody class="divide-y divide-[var(--c-50)]">
+          @for (usuario of paginatedUsuarios(); track usuario.uid) {
+            <tr class="group hover:bg-[var(--c-100)]/40 transition-colors duration-300 ease-out">
+
+              <!-- Avatar + Nombre -->
+              <td class="px-8 py-4 whitespace-nowrap">
+                <div class="flex items-center gap-4">
+                  <div class="shrink-0 relative transition-transform duration-300 group-hover:scale-105">
+                    <div class="size-10 rounded-[12px] overflow-hidden border border-[var(--c-200)] shadow-sm">
+                      @if (usuario.fotoPerfil) {
+                        <img class="size-full object-cover" [src]="usuario.fotoPerfil" [alt]="usuario.nombre">
+                      } @else {
+                        <div class="size-full flex items-center justify-center bg-[var(--c-800)] text-[var(--c-50)] text-[10px] font-medium tracking-wider">
+                          {{ usuario.nombre[0] + usuario.apellido[0] }}
+                        </div>
+                      }
+                    </div>
+                  </div>
+                  <div>
+                    <p class="text-[13px] font-medium text-[var(--c-800)] group-hover:text-[var(--c-900)] transition-colors">
+                      {{ usuario.nombre }} {{ usuario.apellido }}
+                    </p>
+                    <p class="text-[11px] text-[var(--c-500)] font-normal tracking-wide mt-0.5">
+                      {{ usuario.email }}
+                    </p>
+                  </div>
+                </div>
+              </td>
+
+              <!-- Contacto + verificación teléfono -->
+              <td class="px-8 py-4 whitespace-nowrap hidden sm:table-cell">
+                <div class="flex items-center gap-1.5">
+                  <p class="text-[12px] font-normal text-[var(--c-600)] tabular-nums">
+                    {{ usuario.telefono || '—' }}
+                  </p>
+                  @if (usuario.correoVerificado) {
+                    <ui-tooltip text="Correo verificado" placement="top">
+                      <div class="size-4 rounded-full bg-emerald-50 border border-emerald-200 flex items-center justify-center cursor-default">
+                        
+                        <svg class="size-2.5 text-emerald-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+  <path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75 11.25 15 15 9.75M21 12c0 1.268-.63 2.39-1.593 3.068a3.745 3.745 0 0 1-1.043 3.296 3.745 3.745 0 0 1-3.296 1.043A3.745 3.745 0 0 1 12 21c-1.268 0-2.39-.63-3.068-1.593a3.746 3.746 0 0 1-3.296-1.043 3.745 3.745 0 0 1-1.043-3.296A3.745 3.745 0 0 1 3 12c0-1.268.63-2.39 1.593-3.068a3.745 3.745 0 0 1 1.043-3.296 3.746 3.746 0 0 1 3.296-1.043A3.746 3.746 0 0 1 12 3c1.268 0 2.39.63 3.068 1.593a3.746 3.746 0 0 1 3.296 1.043 3.746 3.746 0 0 1 1.043 3.296A3.745 3.745 0 0 1 21 12Z" />
+</svg>
+
+                      </div>
+                    </ui-tooltip>
+                  } @else {
+                    <ui-tooltip text="Correo sin verificar" placement="top">
+                      <div class="size-4 rounded-full bg-[var(--c-100)] border border-[var(--c-200)] flex items-center justify-center cursor-default">
+<svg class="size-2.5 text-[var(--c-400)]" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+  <path stroke-linecap="round" stroke-linejoin="round" d="M6 18 18 6M6 6l12 12" />
+</svg>
+
+
+                      </div>
+                    </ui-tooltip>
+                  }
+                </div>
+                @if (usuario.dni) {
+                  <p class="text-[10px] font-medium text-[var(--c-400)] tracking-wide mt-0.5">
+                    DNI · <span class="tabular-nums">{{ usuario.dni }}</span>
+                  </p>
+                }
+              </td>
+
+              <!-- Estado -->
+              <td class="px-8 py-4 whitespace-nowrap">
+                <ui-badge [status]="badgeStatus(usuario.estado)">
+                  {{ usuario.estado }}
+                </ui-badge>
+              </td>
+
+              <!-- Rol -->
+              <td class="px-8 py-4 whitespace-nowrap">
+                @switch (usuario.rol) {
+                  @case (RolUsuario.ADMIN) {
+                    <span class="inline-flex items-center px-2.5 py-1 rounded-md bg-[var(--c-800)] text-[var(--c-50)] text-[9px] font-medium uppercase tracking-widest">Admin</span>
+                  }
+                  @case (RolUsuario.DERMATOLOGO) {
+                    <span class="inline-flex items-center px-2.5 py-1 rounded-md bg-[var(--c-100)] text-[var(--c-700)] text-[9px] font-medium uppercase tracking-widest">Dermató­logo</span>
+                  }
+                  @case (RolUsuario.RECEPCIONISTA) {
+                    <span class="inline-flex items-center px-2.5 py-1 rounded-md border border-[var(--c-300)] text-[var(--c-600)] text-[9px] font-medium uppercase tracking-widest">Recepción</span>
+                  }
+                  @default {
+                    <span class="inline-flex items-center px-2.5 py-1 rounded-md border border-[var(--c-200)] text-[var(--c-500)] text-[9px] font-medium uppercase tracking-widest">{{ usuario.rol }}</span>
+                  }
+                }
+              </td>
+
+              <!-- Acciones inline -->
+              <td class="px-8 py-4 text-right">
+                <div class="flex items-center justify-end gap-1">
+
+                  @if (isAdmin()) {
+                  <!-- Editar -->
+                  <ui-tooltip text="Editar usuario" placement="top">
+                    <button
+                      type="button"
+                      (click)="editarUsuario(usuario)"
+                      class="size-8 inline-flex justify-center items-center rounded-lg text-[var(--c-400)] hover:text-[var(--c-800)] hover:bg-[var(--c-100)] hover:shadow-sm transition-all duration-200 border border-transparent hover:border-[var(--c-200)] group/btn">
+                      <svg class="size-4 group-hover/btn:scale-110 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="m16.862 4.487 1.687-1.688a1.875 1.875 0 1 1 2.652 2.652L10.582 16.07a4.5 4.5 0 0 1-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 0 1 1.13-1.897l8.932-8.931Zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0 1 15.75 21H5.25A2.25 2.25 0 0 1 3 18.75V8.25A2.25 2.25 0 0 1 5.25 6H10" />
+                      </svg>
+                    </button>
+                  </ui-tooltip>
+
+                  <!-- Toggle estado -->
+                  @if (usuario.estado === EstadoUsuario.ACTIVO) {
+                    <ui-tooltip text="Desactivar usuario" placement="top">
+                      <button
+                        type="button"
+                        (click)="confirmarDesactivar(usuario)"
+                        class="size-8 inline-flex justify-center items-center rounded-lg text-[var(--c-400)] hover:text-red-600 hover:bg-red-50 hover:shadow-sm transition-all duration-200 border border-transparent hover:border-red-100 group/btn">
+                        <svg class="size-4 group-hover/btn:scale-110 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+                          <path stroke-linecap="round" stroke-linejoin="round" d="M18.364 18.364A9 9 0 0 0 5.636 5.636m12.728 12.728A9 9 0 0 1 5.636 5.636m12.728 12.728L5.636 5.636" />
+                        </svg>
+                      </button>
+                    </ui-tooltip>
+                  } @else {
+                    <ui-tooltip text="Activar usuario" placement="top">
+                      <button
+                        type="button"
+                        (click)="toggleEstado(usuario)"
+                        class="size-8 inline-flex justify-center items-center rounded-lg text-[var(--c-400)] hover:text-emerald-600 hover:bg-emerald-50 hover:shadow-sm transition-all duration-200 border border-transparent hover:border-emerald-100 group/btn">
+                        <svg class="size-4 group-hover/btn:scale-110 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+                          <path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75 11.25 15 15 9.75M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
+                        </svg>
+                      </button>
+                    </ui-tooltip>
+                  }
+                  } @else {
+                    <span class="text-[11px] text-[var(--c-300)] italic">—</span>
+                  }
+
+                </div>
+              </td>
+
+            </tr>
+          } @empty {
+            <tr>
+              <td colspan="5" class="py-20 text-center">
+                <ui-empty-state message="No se encontraron usuarios"></ui-empty-state>
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+
+    <!-- PAGINACIÓN -->
+    <ui-pagination
+      [totalItems]="totalUsuarios()"
+      [pageSize]="pageSize"
+      [currentPage]="currentPage()"
+      (pageChange)="onPageChange($event)"
+    ></ui-pagination>
+
+  </div>
+
+}
+
+<!-- Modal desactivar -->
+<app-delete-profile-modal
+  [isOpen]="modalOpen()"
+  [profileName]="(usuarioSeleccionado()?.nombre ?? '') + ' ' + (usuarioSeleccionado()?.apellido ?? '')"
+  (confirmed)="onConfirmDesactivar()"
+/>

@@ -1,0 +1,6 @@
+.geo { position: absolute; inset: 0; pointer-events: none; overflow: hidden; z-index: 0; }
+.arc-1 { position: absolute; width: 280px; height: 280px; border-radius: 50%; border: 1px solid var(--c-200); top: -120px; right: -80px; }
+.arc-2 { position: absolute; width: 160px; height: 160px; border-radius: 50%; border: 1px solid var(--c-100); top: -40px; right: 10px; }
+.diag  { position: absolute; bottom: -10px; left: -10px; width: 140px; height: 140px; opacity: 0.4;
+         background-image: repeating-linear-gradient(45deg, var(--c-200) 0, var(--c-200) 1px, transparent 0, transparent 50%);
+         background-size: 10px 10px; }

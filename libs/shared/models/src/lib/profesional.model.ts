@@ -1,4 +1,4 @@
-import { Usuario, HorariosLaborales, HonorariosPorTratamiento, DocumentosProfesional } from './usuario.model';
+import { Usuario, HorariosLaborales, HonorariosPorTratamiento, DocumentosProfesional, DocumentosDetallados } from './usuario.model';
 
 export interface Profesional extends Usuario {
     numeroMatriculaNacional: string;
@@ -10,4 +10,5 @@ export interface Profesional extends Usuario {
     duracionConsulta: number; // minutos
     honorarios: HonorariosPorTratamiento[];
     documentos?: DocumentosProfesional;
+    documentosDetalle?: DocumentosDetallados;
 }

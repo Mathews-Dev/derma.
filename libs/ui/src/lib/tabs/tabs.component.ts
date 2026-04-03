@@ -1,37 +1,39 @@
-import { Component, input, signal, AfterViewInit, ViewChildren, QueryList, ElementRef, ChangeDetectionStrategy } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  input,
+  model,
+} from '@angular/core';
 
-export interface TabItem {
+export type VerticalTabIcon =
+  | 'user'
+  | 'phone'
+  | 'shield'
+  | 'briefcase'
+  | 'calendar'
+  | 'lock'
+  | 'mail'
+  | 'file'
+  | 'tag';
+
+export interface VerticalTabItem {
   id: string;
   label: string;
-  content: string;
+  icon?: VerticalTabIcon;
+  /** Muestra un punto ámbar (ej. "cambios sin guardar") */
+  badge?: boolean;
 }
 
 @Component({
-  selector: 'app-tabs',
+  selector: 'ui-vertical-tabs',
+  standalone: true,
   templateUrl: './tabs.component.html',
   styleUrl: './tabs.component.css',
-  standalone: true,
-  imports: [CommonModule],
-  changeDetection: ChangeDetectionStrategy.OnPush
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class TabsComponent implements AfterViewInit {
-  tabs = input<TabItem[]>([]);
-  activeTab = signal<string>(this.tabs()[0]?.id || '');
-
-  @ViewChildren('tabButton') tabButtons!: QueryList<ElementRef>;
-
-  ngAfterViewInit() {
-    // Inicialización si es necesaria
-  }
-
-  selectTab(tabId: string) {
-    this.activeTab.set(tabId);
-  }
-
-  private updateIndicator() {
-    // La barra ahora se mantiene dentro de cada botón, sin movimiento global
-  }
+export class UiVerticalTabsComponent {
+  tabs   = input.required<VerticalTabItem[]>();
+  /** Valor del tab activo — soporta two-way binding: [(active)]="mySignal" */
+  active = model<string>('');
 }
-
 

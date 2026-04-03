@@ -1,6 +1,7 @@
-import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, effect, inject, signal } from '@angular/core';
 import { RouterOutlet } from '@angular/router';
 import { AuthService } from '@derma/firebase';
+import { LayoutStateService } from '../../core/services/layout-state.service';
 import { AdminHeaderComponent } from './header/admin-header.component';
 import { AdminSidebarComponent } from './sidebar/admin-sidebar.component';
 
@@ -14,17 +15,18 @@ import { AdminSidebarComponent } from './sidebar/admin-sidebar.component';
 })
 export class PrivateLayoutComponent {
   private readonly authService = inject(AuthService);
+  private readonly layoutState = inject(LayoutStateService);
 
   readonly user = computed(() => this.authService.currentUser());
   readonly sidebarOpen = signal(false);
-  readonly isSidebarCollapsed = signal(false);
+  readonly isSidebarCollapsed = this.layoutState.isSidebarCollapsed;
 
   toggleSidebar(): void {
     this.sidebarOpen.update(open => !open);
   }
 
   toggleSidebarCollapse(): void {
-    this.isSidebarCollapsed.update(c => !c);
+    this.layoutState.toggle();
   }
 
   closeSidebar(): void {

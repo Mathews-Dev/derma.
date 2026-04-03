@@ -5,7 +5,7 @@ import { ActivatedRoute } from '@angular/router';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { AuthService, FirestoreService } from '@derma/firebase';
 import { Usuario } from '@derma/models';
-import { UiInputComponent, UiButtonComponent, UiPageHeaderComponent, UiDropdownSelectComponent, SelectOption, TooltipComponent } from '@derma/ui';
+import { UiInputComponent, UiButtonComponent, UiPageHeaderComponent, UiDropdownSelectComponent, SelectOption, TooltipComponent, UiVerticalTabsComponent, VerticalTabItem, UiProfileAvatarComponent } from '@derma/ui';
 
 interface Country {
   code: string;
@@ -24,7 +24,9 @@ interface Country {
     UiButtonComponent, 
     UiPageHeaderComponent, 
     UiDropdownSelectComponent, 
-    TooltipComponent
+    TooltipComponent,
+    UiVerticalTabsComponent,
+    UiProfileAvatarComponent,
   ],
   templateUrl: './perfil.component.html',
   styleUrl: './perfil.component.css',
@@ -40,9 +42,15 @@ export class PerfilComponent {
   currentUser = signal<Usuario | null>(null);
   profileForm: FormGroup;
 
-  activeTab: 'basica' | 'profesional' | 'seguridad' = 'basica';
+  activeTab = signal<string>('basica');
   emailVerified = true;
   telefonoVerified = true;
+
+  readonly tabs: VerticalTabItem[] = [
+    { id: 'basica',      label: 'Información básica',  icon: 'user'      },
+    { id: 'profesional', label: 'Contacto profesional', icon: 'briefcase' },
+    { id: 'seguridad',   label: 'Seguridad',            icon: 'lock'      },
+  ];
 
   passwordForm: FormGroup;
   passwordError = signal<string | null>(null);
@@ -185,15 +193,12 @@ export class PerfilComponent {
     }
   }
 
-  onFileSelected(event: any): void {
-    const file = event.target.files[0];
-    if (file) {
-      this.readFile(file).then(result => {
-        this.imagenBase64Preview.set(result);
-        this.profileForm.patchValue({ perfil: result });
-        this.profileForm.markAsDirty();
-      });
-    }
+  onAvatarFileSelected(file: File): void {
+    this.readFile(file).then(result => {
+      this.imagenBase64Preview.set(result);
+      this.profileForm.patchValue({ perfil: result });
+      this.profileForm.markAsDirty();
+    });
   }
 
   async onSubmit(): Promise<void> {

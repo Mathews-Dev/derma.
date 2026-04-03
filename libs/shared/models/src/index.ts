@@ -1,4 +1,5 @@
 export * from './lib/models';
+export * from './lib/clinica.model';
 export * from './lib/environment.model';
 export * from './lib/usuario.model';
 export * from './lib/profesional.model';

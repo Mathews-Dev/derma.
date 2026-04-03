@@ -1,21 +1,25 @@
-/* Decoración abstracta */
-.geo { position: absolute; inset: 0; pointer-events: none; overflow: hidden; }
-.arc-1 { position: absolute; width: 400px; height: 400px; border-radius: 50%; border: 1px solid var(--paper-dim); top: -200px; right: -150px; }
+/* Estilos mínimos — la mayoría está en Tailwind */
 
-/* Ocultar scrollbar */
-.scrollbar-hide::-webkit-scrollbar {
+/* Inputs de tipo time */
+input[type="time"] {
+    color-scheme: light;
+    font-family: 'Space Grotesk', monospace;
+}
+
+input[type="time"]::-webkit-calendar-picker-indicator {
     display: none;
 }
-.scrollbar-hide {
-    -ms-overflow-style: none;
-    scrollbar-width: none;
+
+/* Toggle button focus */
+app-toggle button:focus {
+    outline: 2px solid var(--c-600);
+    outline-offset: 2px;
 }
 
-@keyframes fadeUp {
-  from { opacity: 0; transform: translateY(16px); }
-  to   { opacity: 1; transform: translateY(0); }
+/* Gradiente suave */
+.gradient-bg {
+    background: linear-gradient(135deg, #f8f9fa 0%, #f0f0f0 100%);
 }
 
-.animate-in {
-  animation: fadeUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
-}
+
+

@@ -48,6 +48,16 @@ export const appRoutes: Route[] = [
         loadComponent: () => import('./features/staff/staff.component').then(m => m.StaffComponent)
       },
       {
+        path: 'staff/editar/:uid',
+        canActivate: [roleGuard(RolUsuario.ADMIN)],
+        loadComponent: () => import('./features/staff/editar-usuario/editar-usuario.component').then(m => m.EditarUsuarioComponent)
+      },
+      {
+        path: 'staff/editar-profesional/:uid',
+        canActivate: [roleGuard(RolUsuario.ADMIN)],
+        loadComponent: () => import('./features/staff/editar-profesional/editar-profesional.component').then(m => m.EditarProfesionalComponent)
+      },
+      {
         path: 'configuracion',
         loadComponent: () => import('./features/configuracion/configuracion.component').then(m => m.ConfiguracionComponent)
       },
