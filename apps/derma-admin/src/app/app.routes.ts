@@ -38,6 +38,16 @@ export const appRoutes: Route[] = [
         loadComponent: () => import('./features/tratamientos/tratamientos.component').then(m => m.TratamientosComponent)
       },
       {
+        path: 'tratamientos/nuevo',
+        canActivate: [roleGuard(RolUsuario.ADMIN)],
+        loadComponent: () => import('./features/tratamientos/editar-tratamiento/editar-tratamiento.component').then(m => m.EditarTratamientoComponent)
+      },
+      {
+        path: 'tratamientos/:id',
+        canActivate: [roleGuard([RolUsuario.ADMIN, RolUsuario.DERMATOLOGO])],
+        loadComponent: () => import('./features/tratamientos/editar-tratamiento/editar-tratamiento.component').then(m => m.EditarTratamientoComponent)
+      },
+      {
         path: 'invitaciones',
         canActivate: [roleGuard(RolUsuario.ADMIN)],
         loadComponent: () => import('./features/invitaciones/invitaciones.component').then(m => m.InvitacionesComponent)
@@ -46,6 +56,16 @@ export const appRoutes: Route[] = [
         path: 'staff',
         canActivate: [roleGuard(RolUsuario.ADMIN)],
         loadComponent: () => import('./features/staff/staff.component').then(m => m.StaffComponent)
+      },
+      {
+        path: 'staff/editar/:uid',
+        canActivate: [roleGuard(RolUsuario.ADMIN)],
+        loadComponent: () => import('./features/staff/editar-usuario/editar-usuario.component').then(m => m.EditarUsuarioComponent)
+      },
+      {
+        path: 'staff/editar-profesional/:uid',
+        canActivate: [roleGuard(RolUsuario.ADMIN)],
+        loadComponent: () => import('./features/staff/editar-profesional/editar-profesional.component').then(m => m.EditarProfesionalComponent)
       },
       {
         path: 'configuracion',

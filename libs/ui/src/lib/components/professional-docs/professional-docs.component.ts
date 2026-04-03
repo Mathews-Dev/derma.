@@ -1,85 +1,99 @@
-import { Component, EventEmitter, Input, Output, signal, WritableSignal } from '@angular/core';
-import { CommonModule } from '@angular/common';
-import { DocumentosProfesional } from '@derma/models';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  input,
+  output,
+  signal,
+} from '@angular/core';
+import {
+  DocKey,
+  DocumentosDetallados,
+  EstadoDocumento,
+} from '@derma/models';
 
 @Component({
-    selector: 'ui-professional-docs',
-    standalone: true,
-    imports: [CommonModule],
-    templateUrl: './professional-docs.component.html',
-    styleUrl: './professional-docs.component.css'
+  selector: 'ui-professional-docs',
+  standalone: true,
+  imports: [],
+  templateUrl: './professional-docs.component.html',
+  styleUrl: './professional-docs.component.css',
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class ProfessionalDocsComponent {
-    @Input() documents: DocumentosProfesional | undefined | null = {};
-    @Input() editable: boolean = false;
-    @Output() documentsChange = new EventEmitter<DocumentosProfesional>();
+  documentos = input<DocumentosDetallados | null>(null);
+  editable   = input<boolean>(false);
 
-    viewingImage: WritableSignal<string | null> = signal(null);
+  fileSelected   = output<{ key: DocKey; file: File }>();
+  estadoChanged  = output<{ key: DocKey; estado: EstadoDocumento; nota?: string }>();
 
-    docTypes: (keyof DocumentosProfesional)[] = ['dniFrente', 'dniReverso', 'matriculaNacional', 'matriculaProvincial', 'diploma'];
+  readonly EstadoDocumento = EstadoDocumento;
 
-    getLabel(key: string): string {
-        switch (key) {
-            case 'dniFrente': return 'DNI Frente';
-            case 'dniReverso': return 'DNI Reverso';
-            case 'matriculaNacional': return 'M. Nacional';
-            case 'matriculaProvincial': return 'M. Provincial';
-            case 'diploma': return 'Diploma';
-            default: return key;
-        }
+  readonly docTypes: DocKey[] = [
+    'dniFrente',
+    'dniReverso',
+    'matriculaNacional',
+    'matriculaProvincial',
+    'diploma',
+  ];
+
+  readonly labels: Record<DocKey, string> = {
+    dniFrente:          'DNI Frente',
+    dniReverso:         'DNI Reverso',
+    matriculaNacional:  'M. Nacional',
+    matriculaProvincial:'M. Provincial',
+    diploma:            'Diploma',
+  };
+
+  // Lightbox — emite hacia el padre para que lo renderice fuera de transforms
+  imageOpened = output<string>();
+
+  // Inline action: which card+action is expanded
+  activeAction = signal<{ key: DocKey; type: 'rechazar' | 'reenvio' } | null>(null);
+  actionNota   = signal<string>('');
+
+  // Upload loading state per doc
+  uploadingKey = signal<DocKey | null>(null);
+
+  onFileSelected(event: Event, key: DocKey): void {
+    const el = event.target as HTMLInputElement;
+    if (el.files?.[0]) {
+      this.fileSelected.emit({ key, file: el.files[0] });
     }
+    el.value = '';
+  }
 
-    onFileSelected(event: Event, key: keyof DocumentosProfesional) {
-        if (!this.editable) return;
+  aprobar(key: DocKey): void {
+    this.estadoChanged.emit({ key, estado: EstadoDocumento.APROBADO });
+    this.cancelarAccion();
+  }
 
-        const input = event.target as HTMLInputElement;
-        if (input.files && input.files[0]) {
-            const file = input.files[0];
-            this.readFile(file).then(base64 => {
-                this.updateDocument(key, base64);
-            });
-        }
+  toggleAction(key: DocKey, type: 'rechazar' | 'reenvio'): void {
+    const cur = this.activeAction();
+    if (cur?.key === key && cur?.type === type) {
+      this.cancelarAccion();
+    } else {
+      this.activeAction.set({ key, type });
+      this.actionNota.set('');
     }
+  }
 
-    removeDocument(key: keyof DocumentosProfesional) {
-        if (!this.editable) return;
-        this.updateDocument(key, undefined);
-    }
+  confirmarAccion(): void {
+    const action = this.activeAction();
+    if (!action) return;
+    const estado = action.type === 'rechazar'
+      ? EstadoDocumento.RECHAZADO
+      : EstadoDocumento.SOLICITAR_REENVIO;
+    this.estadoChanged.emit({ key: action.key, estado, nota: this.actionNota() || undefined });
+    this.cancelarAccion();
+  }
 
-    private updateDocument(key: keyof DocumentosProfesional, value: string | undefined) {
-        const newDocs = { ...this.documents, [key]: value };
-        this.documents = newDocs;
-        this.documentsChange.emit(newDocs);
-    }
+  cancelarAccion(): void {
+    this.activeAction.set(null);
+    this.actionNota.set('');
+  }
 
-    openLightbox(base64: string | undefined) {
-        if (base64) {
-            this.viewingImage.set(base64);
-        }
-    }
-
-    closeLightbox() {
-        this.viewingImage.set(null);
-    }
-
-    downloadImage() {
-        const base64 = this.viewingImage();
-        if (!base64) return;
-
-        const link = document.createElement('a');
-        link.href = base64;
-        link.download = `documento_${new Date().getTime()}.jpg`;
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
-    }
-
-    private readFile(file: File): Promise<string> {
-        return new Promise((resolve, reject) => {
-            const reader = new FileReader();
-            reader.onload = () => resolve(reader.result as string);
-            reader.onerror = reject;
-            reader.readAsDataURL(file);
-        });
-    }
+  openLightbox(url: string | undefined): void {
+    if (url) this.imageOpened.emit(url);
+  }
 }
+

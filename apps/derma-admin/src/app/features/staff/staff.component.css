@@ -1,0 +1,13 @@
+@keyframes smoothEnter {
+  0%   { opacity: 0; transform: translateY(12px); }
+  100% { opacity: 1; transform: translateY(0); }
+}
+
+.animate-smooth-enter {
+  opacity: 0;
+  animation: smoothEnter 0.7s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.enter-delay-1 { animation-delay: 100ms; }
+.enter-delay-2 { animation-delay: 200ms; }
+.enter-delay-3 { animation-delay: 300ms; }

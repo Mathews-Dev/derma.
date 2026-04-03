@@ -47,9 +47,27 @@ export interface HonorariosPorTratamiento {
 }
 
 export interface DocumentosProfesional {
-    dniFrente?: string; // Firebase Storage URL
-    dniReverso?: string; // Firebase Storage URL
-    matriculaNacional?: string; // Firebase Storage URL
-    matriculaProvincial?: string; // Firebase Storage URL
-    diploma?: string; // Firebase Storage URL
+    dniFrente?: string; // Cloudinary Storage URL
+    dniReverso?: string; // Cloudinary Storage URL
+    matriculaNacional?: string; // Cloudinary Storage URL
+    matriculaProvincial?: string; // Cloudinary Storage URL
+    diploma?: string; // Cloudinary Storage URL
 }
+
+export enum EstadoDocumento {
+    PENDIENTE          = 'pendiente',
+    APROBADO           = 'aprobado',
+    RECHAZADO          = 'rechazado',
+    SOLICITAR_REENVIO  = 'solicitar_reenvio',
+}
+
+export interface DocumentoDetalle {
+    url?: string;       // Cloudinary secure_url
+    publicId?: string;  // Cloudinary public_id
+    estado: EstadoDocumento;
+    notaAdmin?: string; // Visible al profesional
+    fechaRevision?: string; // ISO date de última acción admin
+}
+
+export type DocKey = keyof DocumentosProfesional;
+export type DocumentosDetallados = Partial<Record<DocKey, DocumentoDetalle>>;

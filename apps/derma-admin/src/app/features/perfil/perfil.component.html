@@ -24,7 +24,7 @@
 </section>
 }
 
-<div class="relative bg-[var(--c-50)] rounded-[var(--border-radius-lg)] border border-[var(--c-200)] overflow-hidden animate-smooth-enter stagger-1 min-h-[600px]">
+<div class="relative bg-[var(--c-50)] rounded-[var(--border-radius-lg)] border border-[var(--c-200)] overflow-hidden animate-smooth-enter stagger-1 min-h-[600px] mb-28">
   <!-- Geometría decorativa -->
   <div class="absolute inset-0 pointer-events-none overflow-hidden" aria-hidden="true">
     <div class="arc-1"></div>
@@ -40,22 +40,12 @@
       <!-- PERFIL SIDEBAR INFO -->
       <div class="px-7 mb-10 flex items-center gap-5">
         <!-- Avatar -->
-        <div class="relative w-20 h-20 shrink-0 rounded-2xl border-2 border-[var(--c-200)] bg-[var(--c-50)] flex items-center justify-center cursor-pointer overflow-hidden group/av shadow-sm"
-             (click)="fileInput.click()">
-          @if (imagenBase64Preview()) {
-            <img [src]="imagenBase64Preview()" alt="Foto de perfil" class="absolute inset-0 w-full h-full object-cover transition-transform duration-500 group-hover/av:scale-110" />
-          } @else {
-            <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="text-[var(--c-300)]">
-              <path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/>
-            </svg>
-          }
-          <div class="absolute inset-0 bg-[var(--c-800)]/60 flex items-center justify-center opacity-0 group-hover/av:opacity-100 transition-opacity duration-300">
-            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" x2="12" y1="3" y2="15"/>
-            </svg>
-          </div>
-          <input #fileInput type="file" (change)="onFileSelected($event)" accept="image/*" class="hidden" />
-        </div>
+        <ui-profile-avatar
+          [photoUrl]="imagenBase64Preview() ?? ''"
+          shape="rounded"
+          [canRemove]="false"
+          (fileSelected)="onAvatarFileSelected($event)"
+        />
 
         <!-- Text Data -->
         <div class="flex flex-col min-w-0">
@@ -78,90 +68,19 @@
         <div class="h-px bg-gradient-to-r from-[var(--c-200)] to-transparent"></div>
       </div>
 
-      <div class="flex flex-col gap-1">
-        <button type="button"
-          (click)="activeTab = 'basica'"
-          [class.active]="activeTab === 'basica'"
-          class="w-full flex items-center gap-3 px-7 py-3 text-sm transition-all relative overflow-hidden group
-                 text-[var(--c-500)] hover:text-[var(--c-800)]
-                 active:scale-[0.98] outline-none">
-          
-          <!-- Barra indicadora animada -->
-          <span class="absolute left-0 top-1/2 -translate-y-1/2 w-[2.5px] bg-[var(--c-800)] transition-all duration-300 ease-out"
-                [class.h-5]="activeTab === 'basica'"
-                [class.h-0]="activeTab !== 'basica'"
-                [class.opacity-100]="activeTab === 'basica'"
-                [class.opacity-0]="activeTab !== 'basica'">
-          </span>
-
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"
-               [class.text-[var(--c-800)]]="activeTab === 'basica'"
-               class="transition-colors group-hover:scale-110">
-            <path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/>
-          </svg>
-          <span [class.text-[var(--c-800)]]="activeTab === 'basica'" [class.font-medium]="activeTab === 'basica'" class="transition-all tracking-tight">Información básica</span>
-          
-          @if (basicaDirty) {
-            <span class="absolute right-5 top-1/2 -translate-y-1/2 w-1.5 h-1.5 rounded-full bg-amber-500 shadow-sm border border-white"></span>
-          }
-        </button>
-
-        <button type="button"
-          (click)="activeTab = 'profesional'"
-          [class.active]="activeTab === 'profesional'"
-          class="w-full flex items-center gap-3 px-7 py-3 text-sm transition-all relative overflow-hidden group
-                 text-[var(--c-500)] hover:text-[var(--c-800)]
-                 active:scale-[0.98] outline-none">
-          
-          <span class="absolute left-0 top-1/2 -translate-y-1/2 w-[2.5px] bg-[var(--c-800)] transition-all duration-300 ease-out"
-                [class.h-5]="activeTab === 'profesional'"
-                [class.h-0]="activeTab !== 'profesional'"
-                [class.opacity-100]="activeTab === 'profesional'"
-                [class.opacity-0]="activeTab !== 'profesional'">
-          </span>
-
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"
-               [class.text-[var(--c-800)]]="activeTab === 'profesional'"
-               class="transition-colors group-hover:scale-110">
-            <rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2"/>
-            <line x1="12" y1="12" x2="12" y2="16"/><line x1="10" y1="14" x2="14" y2="14"/>
-          </svg>
-          <span [class.text-[var(--c-800)]]="activeTab === 'profesional'" [class.font-medium]="activeTab === 'profesional'" class="transition-all tracking-tight">Contacto profesional</span>
-          
-          @if (profesionalDirty) {
-            <span class="absolute right-5 top-1/2 -translate-y-1/2 w-1.5 h-1.5 rounded-full bg-amber-500 shadow-sm border border-white"></span>
-          }
-        </button>
-
-        <button type="button"
-          (click)="activeTab = 'seguridad'"
-          [class.active]="activeTab === 'seguridad'"
-          class="w-full flex items-center gap-3 px-7 py-3 text-sm transition-all relative overflow-hidden group
-                 text-[var(--c-500)] hover:text-[var(--c-800)]
-                 active:scale-[0.98] outline-none">
-          
-          <span class="absolute left-0 top-1/2 -translate-y-1/2 w-[2.5px] bg-[var(--c-800)] transition-all duration-300 ease-out"
-                [class.h-5]="activeTab === 'seguridad'"
-                [class.h-0]="activeTab !== 'seguridad'"
-                [class.opacity-100]="activeTab === 'seguridad'"
-                [class.opacity-0]="activeTab !== 'seguridad'">
-          </span>
-
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"
-               [class.text-[var(--c-800)]]="activeTab === 'seguridad'"
-               class="transition-colors group-hover:scale-110">
-            <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/>
-          </svg>
-          <span [class.text-[var(--c-800)]]="activeTab === 'seguridad'" [class.font-medium]="activeTab === 'seguridad'" class="transition-all tracking-tight">Seguridad</span>
-        </button>
+      <div class="-mx-0">
+        <ui-vertical-tabs
+          [tabs]="tabs"
+          [(active)]="activeTab"
+        />
       </div>
     </nav>
 
     <!-- PANEL -->
-    <form [formGroup]="profileForm" (submit)="onSubmit()" class="flex-1 min-w-0 p-7">
+    <form id="perfilForm" [formGroup]="profileForm" (submit)="onSubmit()" class="flex-1 min-w-0 p-7">
 
       <!-- PANEL: BÁSICA -->
-      @if (activeTab === 'basica') {
+      @if (activeTab() === 'basica') {
       <div class="px-10 py-10 flex-1">
         <h3 class="text-xl font-light text-[var(--c-800)] leading-tight tracking-tight mb-2 animate-smooth-enter stagger-1">
           Información básica
@@ -180,35 +99,11 @@
           </div>
         </div>
 
-        <div class="flex items-center justify-between pt-5 border-t border-[var(--c-200)] animate-smooth-enter stagger-5">
-          <div class="flex items-center gap-2">
-            @if (basicaDirty) {
-              <span class="w-1.5 h-1.5 rounded-full bg-amber-500 shrink-0"></span>
-              <span class="text-xs text-[var(--c-400)] font-medium tracking-tight">CAMBIOS SIN GUARDAR</span>
-            } @else {
-              <span class="text-[10px] text-[var(--c-400)] font-semibold tracking-wider">DATOS ACTUALIZADOS</span>
-            }
-          </div>
-          <div class="flex gap-2">
-            @if (basicaDirty) {
-              <button type="button" (click)="onCancelBasica()"
-                class="text-xs font-medium text-[var(--c-600)] bg-transparent border border-[var(--c-200)] rounded-[10px] px-4 py-1.5 transition-all hover:bg-[var(--c-100)] active:scale-95">
-                Descartar
-              </button>
-            }
-            <ui-button
-              type="submit"
-              label="Guardar"
-              [isLoading]="isSubmitting()"
-              [disabled]="isSubmitting() || !basicaDirty">
-            </ui-button>
-          </div>
-        </div>
       </div>
       }
 
       <!-- PANEL: PROFESIONAL -->
-      @if (activeTab === 'profesional') {
+      @if (activeTab() === 'profesional') {
       <div class="px-10 py-10 flex-1">
         <h3 class="text-xl font-light text-[var(--c-800)] leading-tight tracking-tight mb-2 animate-smooth-enter stagger-1">
           Contacto profesional
@@ -287,35 +182,11 @@
           </div>
         </div>
 
-        <div class="flex items-center justify-between pt-5 border-t border-[var(--c-200)] animate-smooth-enter stagger-5">
-          <div class="flex items-center gap-2">
-            @if (profesionalDirty) {
-              <span class="w-1.5 h-1.5 rounded-full bg-amber-500 shrink-0"></span>
-              <span class="text-xs text-[var(--c-400)]">Cambios sin guardar</span>
-            } @else {
-              <span class="text-xs text-[var(--c-400)]">Sin cambios</span>
-            }
-          </div>
-          <div class="flex gap-2">
-            @if (profesionalDirty) {
-              <button type="button" (click)="onCancelProfesional()"
-                class="text-sm text-[var(--c-600)] bg-transparent border border-[var(--c-200)] rounded-[var(--border-radius-md)] px-4 py-1.5 transition-colors hover:bg-[var(--c-100)]">
-                Cancelar
-              </button>
-            }
-            <ui-button
-              type="submit"
-              label="Guardar y verificar"
-              [isLoading]="isSubmitting()"
-              [disabled]="isSubmitting() || !profesionalDirty">
-            </ui-button>
-          </div>
-        </div>
       </div>
       }
 
       <!-- PANEL: SEGURIDAD -->
-      @if (activeTab === 'seguridad') {
+      @if (activeTab() === 'seguridad') {
       <div class="px-10 py-10 flex-1" [formGroup]="passwordForm">
         <h3 class="text-xl font-light text-[var(--c-800)] leading-tight tracking-tight mb-2 animate-smooth-enter stagger-1">
           Seguridad y contraseña
@@ -387,3 +258,13 @@
     </form>
   </div>
 </div>
+
+@if (activeTab() !== 'seguridad') {
+  <ui-sticky-footer
+    formId="perfilForm"
+    [isSubmitting]="isSubmitting()"
+    [isDirty]="profileForm.dirty"
+    [isSidebarCollapsed]="isSidebarCollapsed()"
+    [submitDisabled]="!profileForm.dirty"
+  />
+}
