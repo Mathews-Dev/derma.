@@ -62,6 +62,14 @@ export class AuthService {
   // Computed properties
   public isLoggedIn = computed(() => !!this.currentUser());
 
+  // Resolves once Firebase finishes its first auth state check.
+  // Consumed by the app shell via LoadingService.showWhile() so the
+  // entry animation (progress bar + wave fill) plays during startup.
+  private _authLoadedResolve!: () => void;
+  readonly authLoaded: Promise<void> = new Promise<void>(resolve => {
+    this._authLoadedResolve = resolve;
+  });
+
   constructor() {
     onAuthStateChanged(this.auth, async (fbUser) => {
       if (fbUser) {
@@ -78,7 +86,12 @@ export class AuthService {
       } else {
         this.currentUser.set(null);
       }
-      this.isAuthStatusLoaded.set(true);
+      // Push to next macrotask so the browser paints at least one frame with
+      // the loading screen before the guards are unblocked.
+      setTimeout(() => {
+        this.isAuthStatusLoaded.set(true);
+        this._authLoadedResolve();
+      });
     });
   }
 
