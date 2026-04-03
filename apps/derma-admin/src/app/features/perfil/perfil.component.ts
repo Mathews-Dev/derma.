@@ -5,7 +5,8 @@ import { ActivatedRoute } from '@angular/router';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { AuthService, FirestoreService } from '@derma/firebase';
 import { Usuario } from '@derma/models';
-import { UiInputComponent, UiButtonComponent, UiPageHeaderComponent, UiDropdownSelectComponent, SelectOption, TooltipComponent, UiVerticalTabsComponent, VerticalTabItem, UiProfileAvatarComponent } from '@derma/ui';
+import { UiInputComponent, UiButtonComponent, UiPageHeaderComponent, UiDropdownSelectComponent, SelectOption, TooltipComponent, UiVerticalTabsComponent, VerticalTabItem, UiProfileAvatarComponent, UiStickyFooterComponent } from '@derma/ui';
+import { LayoutStateService } from '../../core/services/layout-state.service';
 
 interface Country {
   code: string;
@@ -25,6 +26,7 @@ interface Country {
     UiPageHeaderComponent, 
     UiDropdownSelectComponent, 
     TooltipComponent,
+    UiStickyFooterComponent,
     UiVerticalTabsComponent,
     UiProfileAvatarComponent,
   ],
@@ -37,6 +39,9 @@ export class PerfilComponent {
   public authService = inject(AuthService);
   private firestoreService = inject(FirestoreService);
   private route = inject(ActivatedRoute);
+  private readonly layoutState = inject(LayoutStateService);
+
+  readonly isSidebarCollapsed = this.layoutState.isSidebarCollapsed;
 
   routeParams = toSignal(this.route.paramMap);
   currentUser = signal<Usuario | null>(null);

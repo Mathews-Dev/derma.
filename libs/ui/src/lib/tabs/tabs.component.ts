@@ -14,7 +14,11 @@ export type VerticalTabIcon =
   | 'lock'
   | 'mail'
   | 'file'
-  | 'tag';
+  | 'tag'
+  | 'image'
+  | 'globe'
+  | 'list'
+  | 'users';
 
 export interface VerticalTabItem {
   id: string;

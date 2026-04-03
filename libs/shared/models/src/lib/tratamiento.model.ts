@@ -2,6 +2,12 @@ import { Timestamp } from 'firebase/firestore';
 
 export type CategoriaTratamiento = 'facial' | 'corporal' | 'piel' | 'capilar' | 'bienestar' | 'quirurgico' | 'otro';
 
+export enum EstadoTratamiento {
+    BORRADOR  = 'borrador',
+    ACTIVO    = 'activo',
+    ARCHIVADO = 'archivado',
+}
+
 export enum EstadoTratamientoPaciente {
     PROGRAMADO = 'programado',
     EN_CURSO = 'en_curso',
@@ -10,29 +16,55 @@ export enum EstadoTratamientoPaciente {
     PAUSADO = 'pausado'
 }
 
+export interface RedesSociales {
+    youtube?:   string;
+    instagram?: string;
+    tiktok?:    string;
+}
+
+export interface GaleriaItem {
+    url:      string;
+    publicId: string;
+    alt?:     string;
+}
+
+export interface FaqItem {
+    pregunta:  string;
+    respuesta: string;
+}
+
 export interface Tratamiento {
     id: string;
     nombre: string;
+    slug?: string;
     categoria: CategoriaTratamiento;
     etiquetas?: string[];
     descripcion: string;
     descripcionCorta: string;
     beneficios: string[];
     duracion: number;
+    duracionDisplay?: string;
     sesionesRecomendadas: number;
+    sesionesDisplay?: string;
     precio: number;
-    imagenes: string[];
-    imagenPrincipal: string; // URL
-    videoUrl?: string; // URL
+    precioDesde?: number;
+    galeria?: GaleriaItem[];
+    imagenPrincipal: string;
+    redesSociales?: RedesSociales;
     contraindicaciones: string[];
     instruccionesPre: string[];
     instruccionesPost: string[];
     resultadosEsperados: string;
     tiempoRecuperacion: string;
-    activo: boolean;
+    faqs?: FaqItem[];
+    estado: EstadoTratamiento;
     destacado: boolean;
     orden: number;
+    metaDescripcion?: string;
     profesionalesSugeridos?: string[];
+    creadoEn?: Timestamp;
+    actualizadoEn?: Timestamp;
+    creadoPor?: string;
 }
 
 export interface TratamientoPaciente {

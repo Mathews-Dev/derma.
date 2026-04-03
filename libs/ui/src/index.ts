@@ -17,9 +17,11 @@ export { SelectWithSearchComponent } from './lib/select-with-search/select-with-
 export * from './lib/tabs/tabs.component';
 export * from './lib/profile-avatar/profile-avatar.component';
 export * from './lib/toast-container/toast-container.component';
+
 export * from './lib/toggle/toggle.component';
 export * from './lib/tooltip/tooltip.component';
 export * from './lib/services/toast.service';
 export * from './lib/services/loading.service';
 export * from './lib/components/schedule-selector/schedule-selector.component';
 export * from './lib/components/professional-docs/professional-docs.component';
+export * from './lib/components/ui-sticky-footer';
