@@ -146,7 +146,7 @@ export class LoadingComponent {
         this.currentProgress.set(clampProgress(this.progress()));
       } else if (this.isVisible()) {
         this.isAnimatingOut.set(true);
-        setTimeout(() => this.isVisible.set(false), 500); // duración de animación de salida
+        setTimeout(() => this.isVisible.set(false), 500);
       }
     });
 
