@@ -14,7 +14,8 @@ import {
   setDoc,
   updateDoc,
   where,
-  onSnapshot
+  onSnapshot,
+  writeBatch,
 } from '@angular/fire/firestore';
 import { Observable } from 'rxjs';
 
@@ -87,6 +88,33 @@ export class FirestoreService {
           observer.next(data);
         },
         (error) => observer.error(error)
+      );
+      return () => unsubscribe();
+    });
+  }
+
+  /** Atomic batch update — up to 500 writes. */
+  async batchUpdate(updates: Array<{ path: string; id: string; data: Record<string, unknown> }>): Promise<void> {
+    const batch = writeBatch(this.firestore);
+    for (const u of updates) {
+      const ref = doc(this.firestore, u.path, u.id);
+      batch.update(ref, u.data);
+    }
+    return batch.commit();
+  }
+
+  /** Tiempo real — filtra documentos donde un campo ARRAY contiene el valor (array-contains). */
+  getCollectionSnapshotByArrayContains<T>(path: string, fieldName: string, value: unknown): Observable<T[]> {
+    const collectionRef = collection(this.firestore, path);
+    const q = query(collectionRef, where(fieldName, 'array-contains', value));
+
+    return new Observable<T[]>(observer => {
+      const unsubscribe = onSnapshot(q,
+        snapshot => {
+          const data = snapshot.docs.map(snap => ({ id: snap.id, ...snap.data() } as T));
+          observer.next(data);
+        },
+        error => observer.error(error),
       );
       return () => unsubscribe();
     });

@@ -13,3 +13,4 @@ export * from './lib/notificacion.model';
 export * from './lib/solicitud-invitacion.model';
 export * from './lib/invitacion.model';
 export * from './lib/timestamp.utils';
+export * from './lib/tarea.model';

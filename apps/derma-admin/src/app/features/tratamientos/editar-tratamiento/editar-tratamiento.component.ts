@@ -322,7 +322,9 @@ export class EditarTratamientoComponent {
         this.toastService.show('Tratamiento creado correctamente', 'success');
         this.volver();
       }
-    } catch {
+    } catch (error) {
+      console.log(error);
+      
       this.toastService.show('Error al guardar el tratamiento', 'error');
     } finally {
       this.isSubmitting.set(false);
