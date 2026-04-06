@@ -1,0 +1,547 @@
+﻿<!-- HEADER -->
+<section class="mb-5 animate-smooth-enter enter-delay-1 pb-4 border-b border-[var(--c-100)]">
+  <ui-page-header
+    title="Gestion de Tareas"
+    description="Panel Kanban para asignar, seguir y completar tareas del equipo de la clinica.">
+  </ui-page-header>
+</section>
+
+<!-- STATS BAR -->
+<div class="mb-10 animate-smooth-enter enter-delay-1 bg-[var(--c-50)] border border-[var(--c-200)] rounded-[16px] overflow-hidden">
+  <div class="grid grid-cols-2 lg:grid-cols-5 divide-y lg:divide-y-0 lg:divide-x divide-[var(--c-200)] text-center lg:text-left">
+    
+    <div class="flex flex-col p-4 lg:p-5 border-t-[3px] border-t-[var(--c-800)]">
+      <span class="text-[10px] uppercase tracking-[0.12em] font-medium text-[var(--c-500)] mb-1">Pendientes</span>
+      <span class="text-3xl lg:text-4xl font-light text-[var(--c-800)] tracking-tight">{{ totalPendientes() }}</span>
+    </div>
+    
+    <div class="flex flex-col p-4 lg:p-5 border-t-[3px] border-t-red-500">
+      <span class="text-[10px] uppercase tracking-[0.12em] font-medium text-[var(--c-500)] mb-1">Urgentes</span>
+      <span class="text-3xl lg:text-4xl font-light text-[var(--c-800)] tracking-tight">{{ totalUrgentes() }}</span>
+    </div>
+
+    <div class="flex flex-col p-4 lg:p-5 border-t-[3px] border-t-orange-500">
+      <span class="text-[10px] uppercase tracking-[0.12em] font-medium text-[var(--c-500)] mb-1">Vencidas</span>
+      <span class="text-3xl lg:text-4xl font-light text-[var(--c-800)] tracking-tight">{{ totalVencidas() }}</span>
+    </div>
+
+    <div class="flex flex-col p-4 lg:p-5 border-t-[3px] border-t-amber-500">
+      <span class="text-[10px] uppercase tracking-[0.12em] font-medium text-[var(--c-500)] mb-1">En Revisión</span>
+      <span class="text-3xl lg:text-4xl font-light text-[var(--c-800)] tracking-tight">{{ totalEnRevision() }}</span>
+    </div>
+
+    <div class="flex flex-col p-4 lg:p-5 border-t-[3px] border-t-green-500 col-span-2 lg:col-span-1">
+      <span class="text-[10px] uppercase tracking-[0.12em] font-medium text-[var(--c-500)] mb-1">Completadas mes</span>
+      <span class="text-3xl lg:text-4xl font-light text-[var(--c-800)] tracking-tight">{{ totalCompletadasMes() }}</span>
+    </div>
+
+  </div>
+</div>
+
+<!-- TOOLBAR -->
+<div class="mb-6 animate-smooth-enter enter-delay-2">
+  <div class="flex flex-col md:flex-row items-start md:items-center justify-between gap-6 px-1">
+    
+    <!-- Left: Filtros y Toggles -->
+    <div class="flex items-center gap-5 flex-wrap">
+      <ui-dropdown-select
+        [options]="empleadosOptions()"
+        [selectedValue]="filtroUid()"
+        (valueChanged)="filtroUid.set($any($event).id)"
+      ></ui-dropdown-select>
+
+      <ui-dropdown-select
+        [options]="prioridadesOptions"
+        [selectedValue]="filtroPrioridad()"
+        (valueChanged)="filtroPrioridad.set($any($event).id)"
+      ></ui-dropdown-select>
+      
+      <!-- Toggle completadas usando app-toggle -->
+      <label class="flex items-center gap-2 pl-2 md:pl-4 border-l border-[var(--c-200)] cursor-pointer">
+        <app-toggle 
+          [isChecked]="mostrarCompletadas()" 
+          (change)="mostrarCompletadas.set($event)">
+        </app-toggle>
+        <span class="text-[11px] font-medium tracking-wide uppercase text-[var(--c-600)]">Completadas</span>
+      </label>
+    </div>
+    
+    <!-- Right: Acciones Principales -->
+    <div class="flex items-center gap-3 w-full md:w-auto mt-4 md:mt-0">
+      <a routerLink="historial"
+         class="px-5 py-2.5 rounded-full border border-[var(--c-300)] text-[var(--c-600)] text-[12px] font-medium hover:border-[var(--c-800)] hover:text-[var(--c-800)] transition-all tracking-wide text-center flex-1 md:flex-none">
+        Historial
+      </a>
+
+      <button
+        type="button"
+        (click)="panelConfigAbierto.set(!panelConfigAbierto())"
+        class="flex items-center justify-center size-9 rounded-full border transition-all shrink-0"
+        [class]="panelConfigAbierto() ? 'bg-[var(--c-100)] border-[var(--c-800)] text-[var(--c-800)]' : 'bg-[var(--c-50)] border-[var(--c-300)] text-[var(--c-600)] hover:border-[var(--c-800)] hover:text-[var(--c-800)]'"
+        title="Configuración">
+        <svg class="size-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 0 0 2.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 0 0 1.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 0 0-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 0 0-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 0 0-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 0 0-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 0 0 1.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+          <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0z" />
+        </svg>
+      </button>
+      
+      <button
+        type="button"
+        (click)="abrirCrear()"
+        class="px-6 py-2.5 rounded-full bg-[var(--c-800)] text-[var(--c-50)] text-[12px] font-medium hover:bg-[var(--c-700)] transition-all tracking-wide flex-1 md:flex-none">
+        Nueva tarea
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- PANEL CONFIG (colapsable) -->
+<div 
+  class="animate-smooth-enter grid transition-[grid-template-rows,margin] duration-300 ease-out"
+  [class.grid-rows-[1fr]]="panelConfigAbierto()"
+  [class.grid-rows-[0fr]]="!panelConfigAbierto()"
+  [class.mb-8]="panelConfigAbierto()"
+  [class.mb-4]="!panelConfigAbierto()">
+  <div class="overflow-hidden">
+    <div class="rounded-[12px] border border-[var(--c-200)] bg-[var(--c-50)] p-5 md:p-6 mt-2 shadow-[0_4px_24px_rgba(0,0,0,0.02)]">
+      <div class="flex flex-col md:flex-row md:items-center gap-6">
+        
+        <div class="flex items-center gap-4">
+          <span class="text-[11px] font-medium tracking-[0.1em] text-[var(--c-500)] uppercase">Auto-archivado</span>
+          <label class="flex items-center gap-2 cursor-pointer">
+            <app-toggle
+              [isChecked]="config().autoArchivarHabilitado || false"
+              (change)="setConfigField('autoArchivarHabilitado', $event)">
+            </app-toggle>
+            <span class="text-[12px] font-light text-[var(--c-800)]">{{ config().autoArchivarHabilitado ? 'Habilitado' : 'Deshabilitado' }}</span>
+          </label>
+        </div>
+
+        <div class="h-px w-full md:h-10 md:w-px bg-[var(--c-200)] hidden md:block"></div>
+
+        <div class="flex flex-wrap items-center gap-3">
+          <span class="text-[12px] font-light text-[var(--c-600)]">Archivar completadas tras</span>
+          
+          <div class="flex items-center gap-2">
+            <!-- Up/Down Container -->
+            <div class="flex flex-col items-center gap-0.5 select-none">
+              <!-- Up -->
+              <button type="button"
+                (click)="setConfigField('autoArchivarDias', Math.min(365, (config().autoArchivarDias || 1) + 1))"
+                class="flex items-center justify-center w-7 h-4 rounded text-[var(--c-400)] hover:text-[var(--c-800)] hover:bg-[var(--c-100)] transition-all active:scale-90">
+                <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="m18 15-6-6-6 6"/>
+                </svg>
+              </button>
+
+              <!-- Input -->
+              <input
+                type="text"
+                inputmode="numeric"
+                maxlength="3"
+                [value]="config().autoArchivarDias"
+                (change)="setConfigField('autoArchivarDias', Math.max(1, +$any($event.target).value))"
+                class="w-10 h-8 text-center text-[13px] font-semibold text-[var(--c-800)] bg-[var(--c-100)] border border-[var(--c-200)] rounded-lg outline-none focus:border-[var(--c-800)] focus:bg-[var(--c-50)] transition-all cursor-text tracking-tight"
+              />
+
+              <!-- Down -->
+              <button type="button"
+                (click)="setConfigField('autoArchivarDias', Math.max(1, (config().autoArchivarDias || 1) - 1))"
+                class="flex items-center justify-center w-7 h-4 rounded text-[var(--c-400)] hover:text-[var(--c-800)] hover:bg-[var(--c-100)] transition-all active:scale-90">
+                <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="m6 9 6 6 6-6"/>
+                </svg>
+              </button>
+            </div>
+            <span class="text-[12px] font-light text-[var(--c-600)]">días</span>
+          </div>
+        </div>
+
+        @if (configDirty()) {
+          <div class="md:ml-auto mt-2 md:mt-0 w-full md:w-auto">
+            <button
+              type="button"
+              (click)="guardarConfig()"
+              class="px-5 py-2.5 rounded-full bg-[var(--c-800)] text-[var(--c-50)] text-[12px] font-medium hover:bg-[var(--c-700)] transition-all tracking-wide w-full md:w-auto shadow-[0_4px_12px_rgba(0,0,0,0.1)]">
+              Guardar cambios
+            </button>
+          </div>
+        }
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- LOADING -->
+@if (isLoading()) {
+  <div class="animate-smooth-enter enter-delay-2">
+    <ui-loader-card message="Cargando tablero"></ui-loader-card>
+  </div>
+} @else {
+
+<!-- KANBAN BOARD -->
+<div class="animate-smooth-enter enter-delay-2 pb-6">
+  <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4" style="min-height: 60vh;">
+
+    @for (columna of COLUMNAS; track columna.estado) {
+      <div class="flex flex-col min-w-0">
+
+        <!-- Columna Header -->
+        <div class="flex items-center justify-between mb-5 px-1">
+          <div class="flex items-center gap-2">
+            <!-- Icono decorativo de columna -->
+            <div class="size-6 flex items-center justify-center rounded-[8px] bg-[var(--c-100)] border border-[var(--c-200)] shadow-sm text-[var(--c-600)]">
+              <svg class="size-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                @if (columna.estado === EstadoTarea.PENDIENTE) {
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
+                } @else if (columna.estado === EstadoTarea.EN_PROGRESO) {
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0 3.181 3.183a8.25 8.25 0 0 0 13.803-3.7M4.031 9.865a8.25 8.25 0 0 1 13.803-3.7l3.181 3.182m0-4.991v4.99" />
+                } @else if (columna.estado === EstadoTarea.EN_REVISION) {
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M2.036 12.322a1.012 1.012 0 0 1 0-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178Z" />
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" />
+                } @else {
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75 11.25 15 15 9.75M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
+                }
+              </svg>
+            </div>
+            <h3 class="text-[13px] font-semibold text-[var(--c-800)] tracking-wide uppercase">
+              {{ columna.label }}
+            </h3>
+            <span class="inline-flex items-center justify-center px-2 min-w-[24px] h-5 rounded-full bg-[var(--c-800)] text-[10px] font-bold text-[var(--c-50)] shadow-sm">
+              {{ columnaMap()[columna.estado].length }}
+            </span>
+          </div>
+          <div class="flex items-center gap-1.5">
+            @if (columna.estado === EstadoTarea.EN_REVISION && totalEnRevision() > 0) {
+              <span class="px-2 py-1 bg-amber-50 border border-amber-200 text-amber-700 text-[9px] font-bold rounded flex items-center gap-1 uppercase tracking-widest">
+                <span class="size-1.5 rounded-full bg-amber-500 animate-pulse"></span> Revisión
+              </span>
+            }
+          </div>
+        </div>
+
+        <!-- Drop zone -->
+        <div
+          cdkDropList
+          [id]="'col-' + columna.estado"
+          [cdkDropListData]="columnaMap()[columna.estado]"
+          [cdkDropListConnectedTo]="columnIds()"
+          (cdkDropListDropped)="onDrop($event, columna.estado)"
+          class="flex flex-col gap-3 flex-1 p-2.5 rounded-[16px] min-h-32 transition-colors duration-200 border border-[var(--c-200)] bg-[var(--c-100)]/50">
+
+          @for (tarea of columnaMap()[columna.estado]; track tarea.id) {
+            <div cdkDrag [cdkDragData]="tarea"
+                 (click)="onAdminCardClick(tarea)"
+                 (cdkDragStarted)="onAdminDragStarted()"
+                 (cdkDragEnded)="onAdminDragEnded()"
+                 class="group relative">
+              <app-tarea-card
+                [tarea]="tarea"
+                [editable]="true"
+                (editClicked)="abrirEditar($event)"
+                (deleteClicked)="confirmarEliminar($event)"
+                (approveClicked)="aprobar($event)">
+              </app-tarea-card>
+            </div>
+          } @empty {
+            <div class="flex flex-col items-center justify-center flex-1 py-8 text-center rounded-xl bg-[var(--c-50)] border-none shadow-sm">
+              <div class="size-8 rounded-full bg-[var(--c-100)] flex items-center justify-center mb-2">
+                <svg class="size-4 text-[var(--c-400)]" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+                  <path stroke-linecap="round" stroke-linejoin="round"
+                    d="M9 12h3.75M9 15h3.75M9 18h3.75m3 .75H18a2.25 2.25 0 0 0 2.25-2.25V6.108c0-1.135-.845-2.098-1.976-2.192a48.424 48.424 0 0 0-1.123-.08m-5.801 0c-.065.21-.1.433-.1.664 0 .414.336.75.75.75h4.5a.75.75 0 0 0 .75-.75 2.25 2.25 0 0 0-.1-.664m-5.8 0A2.251 2.251 0 0 1 13.5 2.25H15c1.012 0 1.867.668 2.15 1.586m-5.8 0c-.376.023-.75.05-1.124.08C9.095 4.01 8.25 4.973 8.25 6.108V8.25m0 0H4.875c-.621 0-1.125.504-1.125 1.125v11.25c0 .621.504 1.125 1.125 1.125h9.75c.621 0 1.125-.504 1.125-1.125V9.375c0-.621-.504-1.125-1.125-1.125H8.25Z" />
+                </svg>
+              </div>
+              <p class="text-[11px] text-[var(--c-400)]">Sin tareas</p>
+              @if (columna.estado === EstadoTarea.COMPLETADA && !mostrarCompletadas()) {
+                <a routerLink="historial"
+                   class="mt-1 text-[10px] text-[var(--c-500)] underline hover:text-[var(--c-800)] transition-colors">
+                  Ver historial
+                </a>
+              }
+            </div>
+          }
+
+          <!-- Boton archivar todo en completadas -->
+          @if (columna.estado === EstadoTarea.COMPLETADA && columnaMap()[EstadoTarea.COMPLETADA].length > 0) {
+            <button
+              type="button"
+              (click)="archivar(columnaMap()[EstadoTarea.COMPLETADA][0])"
+              class="mt-1 w-full text-center text-[10px] text-[var(--c-400)] hover:text-[var(--c-700)] transition-colors py-1">
+              Archivar completadas →
+            </button>
+          }
+
+        </div>
+      </div>
+    }
+
+  </div>
+</div>
+}
+
+<!-- ADMIN DETAIL PANEL -->
+@if (adminTareaActiva(); as tarea) {
+  <!-- Backdrop -->
+  <div class="fixed inset-0 z-40 bg-black/20" (click)="cerrarDetalleAdmin()"></div>
+
+  <!-- Panel -->
+  <aside class="fixed right-0 top-0 bottom-0 z-50 w-full max-w-[440px] bg-[var(--c-50)] flex flex-col shadow-2xl overflow-x-hidden">
+    <!-- Header -->
+    <div class="flex items-start gap-3 px-5 pt-5 pb-4 border-b border-[var(--c-200)]">
+      <div class="flex-1 min-w-0">
+        <p class="text-[11px] font-medium uppercase tracking-wider text-[var(--c-400)] mb-0.5">{{ tarea.categoria }}</p>
+        <h2 class="text-base font-semibold text-[var(--c-800)] leading-snug">{{ tarea.titulo }}</h2>
+      </div>
+      <button type="button" (click)="cerrarDetalleAdmin()"
+              class="size-7 flex items-center justify-center rounded-lg text-[var(--c-400)] hover:bg-[var(--c-200)] hover:text-[var(--c-700)] transition-colors flex-shrink-0">
+        <svg class="size-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M6 18 18 6M6 6l12 12"/>
+        </svg>
+      </button>
+    </div>
+
+    <!-- Body -->
+    <div class="flex-1 overflow-y-auto overflow-x-hidden px-5 py-4 space-y-4">
+
+      <!-- Estado badge + prioridad -->
+      <div class="flex items-center gap-2 flex-wrap">
+        <span class="inline-block px-2.5 py-1 rounded-full bg-[var(--c-200)] text-[var(--c-700)] text-[11px] font-semibold uppercase tracking-wide">
+          {{ estadoLabel(tarea.estado) }}
+        </span>
+        @if (tarea.esUrgente) {
+          <span class="inline-block px-2 py-0.5 rounded-full bg-red-100 text-red-600 text-[10px] font-bold uppercase tracking-wide">Urgente</span>
+        }
+        <span class="text-[11px] text-[var(--c-400)] ml-auto">{{ tarea.progreso }}%</span>
+      </div>
+
+      <!-- Descripcion -->
+      @if (tarea.descripcion) {
+        <p class="text-sm text-[var(--c-600)] leading-relaxed">{{ tarea.descripcion }}</p>
+      }
+
+      <!-- Etiquetas -->
+      @if (tarea.etiquetas && tarea.etiquetas.length > 0) {
+        <div class="flex flex-wrap gap-1.5">
+          @for (tag of tarea.etiquetas; track tag) {
+            <span class="inline-block px-2.5 py-0.5 rounded-full bg-[var(--c-200)] text-[var(--c-700)] text-[11px] font-medium">
+              {{ tag }}
+            </span>
+          }
+        </div>
+      }
+
+      <!-- Asignados -->
+      @if (tarea.asignadaA.length > 0) {
+        <div>
+          <p class="text-[11px] font-semibold uppercase tracking-wider text-[var(--c-400)] mb-1.5">Asignados</p>
+          <div class="flex flex-wrap gap-1.5">
+            @for (uid of tarea.asignadaA; track uid) {
+              <span class="inline-block px-2 py-0.5 rounded-full bg-[var(--c-100)] text-[var(--c-600)] text-[11px] font-medium border border-[var(--c-200)]">
+                {{ nombreEmpleado(uid) }}
+              </span>
+            }
+          </div>
+        </div>
+      }
+
+      <!-- Fechas -->
+      <div class="grid grid-cols-2 gap-x-4 gap-y-1 text-[11px]">
+        @if (tarea.fechaCreacion) {
+          <span class="text-[var(--c-400)]">Creada</span>
+          <span class="text-[var(--c-600)]">{{ tarea.fechaCreacion.toDate() | date:'dd/MM/yyyy' }}</span>
+        }
+        @if (tarea.fechaVencimiento) {
+          <span class="text-[var(--c-400)]">Vence</span>
+          <span class="text-[var(--c-600)]">{{ tarea.fechaVencimiento.toDate() | date:'dd/MM/yyyy' }}</span>
+        }
+      </div>
+
+      <!-- Comentarios -->
+      <div class="mt-4">
+        <h4 class="text-[10px] font-bold text-[var(--c-400)] uppercase tracking-widest flex items-center gap-1.5 mb-4">
+          <svg class="size-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M8.625 12a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Zm0 0H8.25m4.125 0a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Zm0 0H12m4.125 0a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Zm0 0h-.375M21 12c0 4.556-4.03 8.25-9 8.25a9.764 9.764 0 0 1-2.555-.337A5.972 5.972 0 0 1 5.41 20.97a5.969 5.969 0 0 1-.474-.065 4.48 4.48 0 0 0 .978-2.025c.09-.457-.133-.901-.467-1.226C3.93 16.178 3 14.189 3 12c0-4.556 4.03-8.25 9-8.25s9 3.694 9 8.25Z" />
+          </svg>
+          Comentarios ({{ tarea.comentarios.length }})
+        </h4>
+
+        <div class="space-y-4 mb-5">
+          @for (c of tarea.comentarios; track c.id) {
+            <div class="flex gap-3 group">
+              <!-- Avatar -->
+              <div class="size-8 shrink-0 rounded-full bg-[var(--c-100)] border border-[var(--c-200)] flex items-center justify-center text-[10px] font-bold text-[var(--c-600)] shadow-sm">
+                {{ c.autorNombre.charAt(0) }}
+              </div>
+              <!-- Contenido -->
+              <div class="flex-1 bg-white border border-[var(--c-200)] rounded-tl-none rounded-2xl p-3.5 shadow-sm relative">
+                <div class="flex items-start justify-between mb-1.5">
+                  <span class="text-[12px] font-bold text-[var(--c-700)]">{{ c.autorNombre }}</span>
+                  <div class="flex items-center gap-2">
+                    <span class="text-[10px] text-[var(--c-400)] tabular-nums">{{ c.fecha.toDate() | date:'dd MMM · HH:mm' }}</span>
+                    <button type="button" (click)="eliminarComentarioAdmin(tarea, c.id)"
+                            class="opacity-0 group-hover:opacity-100 size-5 flex items-center justify-center rounded bg-red-50 text-red-600 hover:bg-red-100 transition-all border border-red-100" title="Eliminar">
+                      <svg class="size-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M6 18 18 6M6 6l12 12"/>
+                      </svg>
+                    </button>
+                  </div>
+                </div>
+                <p class="text-[13px] text-[var(--c-600)] leading-relaxed">{{ c.texto }}</p>
+              </div>
+            </div>
+          } @empty {
+            <div class="flex flex-col items-center justify-center py-6 bg-white border border-dashed border-[var(--c-200)] rounded-2xl text-center">
+              <div class="size-10 rounded-full bg-[var(--c-50)] mb-2 flex items-center justify-center">
+                <svg class="size-5 text-[var(--c-300)]" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M8.625 12a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Zm0 0H8.25m4.125 0a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Zm0 0H12m4.125 0a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Zm0 0h-.375M21 12c0 4.556-4.03 8.25-9 8.25a9.764 9.764 0 0 1-2.555-.337A5.972 5.972 0 0 1 5.41 20.97a5.969 5.969 0 0 1-.474-.065 4.48 4.48 0 0 0 .978-2.025c.09-.457-.133-.901-.467-1.226C3.93 16.178 3 14.189 3 12c0-4.556 4.03-8.25 9-8.25s9 3.694 9 8.25Z" />
+                </svg>
+              </div>
+              <p class="text-[12px] font-medium text-[var(--c-500)]">No hay comentarios</p>
+              <p class="text-[11px] text-[var(--c-400)]">Sé el primero en aportar a esta tarea.</p>
+            </div>
+          }
+        </div>
+
+        <!-- Nueva respuesta admin -->
+        <div class="bg-white p-1 rounded-2xl border border-[var(--c-200)] shadow-sm flex items-end focus-within:ring-2 focus-within:ring-[var(--c-800)] focus-within:border-[var(--c-800)] transition-all">
+          <textarea
+            rows="1"
+            [ngModel]="adminComentarioTexto()"
+            (ngModelChange)="adminComentarioTexto.set($event)"
+            (keydown.enter)="$event.preventDefault(); enviarComentarioAdmin()"
+            placeholder="Escribí un comentario..."
+            class="flex-1 text-[13px] bg-transparent text-[var(--c-800)] placeholder:text-[var(--c-400)] placeholder:font-light resize-none focus:outline-none px-4 py-3 min-h-[44px]"
+          ></textarea>
+          <div class="p-1">
+            <button type="button" (click)="enviarComentarioAdmin()"
+                    [disabled]="!adminComentarioTexto().trim() || isSavingAdminComentario()"
+                    class="size-9 rounded-xl bg-[var(--c-800)] text-[var(--c-50)] text-sm font-medium hover:bg-[var(--c-700)] disabled:opacity-40 disabled:cursor-not-allowed transition-all flex items-center justify-center shadow-sm">
+              <svg class="size-4 -ml-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M6 12 3.269 3.125A59.769 59.769 0 0 1 21.485 12 59.768 59.768 0 0 1 3.27 20.875L5.999 12Zm0 0h7.5" />
+              </svg>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </aside>
+}
+
+<!-- MODAL CREAR / EDITAR -->
+@if (modalOpen()) {
+  <app-tarea-form-modal
+    [tarea]="tareaEditando()"
+    [empleados]="empleados()"
+    [adminUid]="adminUid()"
+    [isSaving]="isSaving()"
+    (closed)="cerrarModal()"
+    (saved)="onSaved($event)">
+  </app-tarea-form-modal>
+}
+
+<!-- MODAL CONFIRMAR ELIMINAR -->
+@if (tareaAEliminar()) {
+  <div class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-[var(--c-100)]/70 backdrop-blur-sm"
+       (click)="tareaAEliminar.set(null)">
+    <div class="relative bg-[var(--c-50)] rounded-2xl border border-[var(--c-200)] p-8 max-w-sm w-full shadow-xl"
+         (click)="$event.stopPropagation()">
+      <h3 class="text-xl font-light text-[var(--c-800)] leading-snug mb-2">
+        Eliminar<br><strong class="font-semibold">esta tarea?</strong>
+      </h3>
+      <p class="text-[13px] text-[var(--c-500)] mb-6 leading-relaxed">
+        "{{ tareaAEliminar()?.titulo }}" sera eliminada permanentemente.
+      </p>
+      <div class="flex items-center justify-end gap-3">
+        <button (click)="tareaAEliminar.set(null)"
+                class="text-[12px] font-medium text-[var(--c-500)] hover:text-[var(--c-800)] transition-colors flex items-center gap-1.5">
+          <span class="inline-block w-4 h-px bg-current"></span>
+          Cancelar
+        </button>
+        <button (click)="eliminar()"
+                class="px-4 py-2 bg-red-600 text-white text-[12px] font-medium rounded-full hover:bg-red-700 transition-colors">
+          Eliminar
+        </button>
+      </div>
+    </div>
+  </div>
+}
+
+<!-- MODAL CONFIRMAR RE-ABRIR -->
+@if (tareaAReabrir()) {
+  <!-- OVERLAY -->
+  <div 
+    class="fixed inset-0 z-[100] flex items-center justify-center p-4 modal-backdrop"
+    [class.animate-backdrop-in]="!isClosingReabrir()"
+    [class.animate-backdrop-out]="isClosingReabrir()"
+    style="background-color: rgba(78, 62, 118, 0.05); backdrop-filter: blur(8px) saturate(150%);"
+    (click)="triggerCancelarReabrir()"
+  >
+    <!-- MODAL CONTAINER -->
+    <div 
+      class="relative w-full max-w-[420px] bg-[var(--c-50)] rounded-[20px] overflow-hidden border border-[var(--c-200)] shadow-xl"
+      [class.animate-modal-in]="!isClosingReabrir()"
+      [class.animate-modal-out]="isClosingReabrir()"
+      style="padding: 2.25rem 2rem 1.75rem;"
+      (click)="$event.stopPropagation()"
+    >
+      
+      <!-- Geometría decorativa -->
+      <div class="geo" aria-hidden="true" style="position: absolute; inset: 0; pointer-events: none; overflow: hidden;">
+        <div style="position: absolute; width: 280px; height: 280px; border-radius: 50%; border: 1px solid var(--c-200); top: -120px; right: -80px;"></div>
+        <div style="position: absolute; width: 160px; height: 160px; border-radius: 50%; border: 1px solid var(--c-100); top: -40px; right: 10px;"></div>
+        <div style="position: absolute; bottom: -10px; left: -10px; width: 180px; height: 140px; opacity: 0.5; background-image: repeating-linear-gradient(45deg, var(--c-300) 0, var(--c-300) 1px, transparent 0, transparent 10px); mask-image: linear-gradient(45deg, rgba(0,0,0,0.9) 0%, rgba(0,0,0,0.6) 30%, rgba(0,0,0,0) 100%); -webkit-mask-image: linear-gradient(45deg, rgba(0,0,0,0.9) 0%, rgba(0,0,0,0.6) 30%, rgba(0,0,0,0) 100%);"></div>
+      </div>
+
+      <!-- Botón cerrar -->
+      <button 
+        (click)="triggerCancelarReabrir()" 
+        class="absolute top-5 right-5 w-7 h-7 rounded-lg border border-[var(--c-200)] bg-transparent cursor-pointer flex items-center justify-center transition-colors z-10 hover:bg-[var(--c-800)] hover:border-[var(--c-800)] text-[var(--c-500)] hover:text-[var(--c-50)]"
+        aria-label="Cerrar">
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" style="width: 12px; height: 12px;">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M6 18 18 6M6 6l12 12" />
+        </svg>
+      </button>
+
+      <!-- Ícono -->
+      <div class="relative z-10 w-12 h-12 rounded-xl border-2 border-[var(--c-300)] flex items-center justify-center mb-6" [class.stagger-1]="!isClosingReabrir()">
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5 text-[var(--c-600)]">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0 3.181 3.183a8.25 8.25 0 0 0 13.803-3.7M4.031 9.865a8.25 8.25 0 0 1 13.803-3.7l3.181 3.182m0-4.991v4.99" />
+        </svg>
+      </div>
+
+      <!-- Título multilínea -->
+      <h2 class="relative z-10 font-[Space_Grotesk,system-ui,sans-serif] text-2xl font-light text-[var(--c-800)] tracking-[-0.02em] leading-[1.2] mb-2.5" [class.stagger-2]="!isClosingReabrir()">
+        Re-abrir<br>
+        <strong class="font-semibold">esta tarea?</strong>
+      </h2>
+
+      <!-- Descripción -->
+      <p class="relative z-10 font-[Space_Grotesk,system-ui,sans-serif] text-[13px] font-light text-[var(--c-500)] leading-[1.8] mb-8" [class.stagger-3]="!isClosingReabrir()">
+        La tarea <strong class="text-[var(--c-600)] font-medium">&ldquo;{{ tareaAReabrir()?.titulo }}&rdquo;</strong>
+        volverá a <strong class="text-[var(--c-600)] font-medium">{{ estadoDestinoLabel() }}</strong>.
+      </p>
+
+      <!-- Divider -->
+      <div class="relative z-10 h-px bg-[var(--c-200)] my-6" [class.stagger-4]="!isClosingReabrir()"></div>
+
+      <!-- ACCIÓN -->
+      <div class="relative z-10 flex items-center justify-end gap-3 w-full" [class.stagger-5]="!isClosingReabrir()">
+        <button 
+          type="button" 
+          (click)="triggerCancelarReabrir()" 
+          class="px-5 py-2 rounded-full border border-[var(--c-300)] text-[var(--c-600)] text-[12px] font-medium hover:border-[var(--c-800)] hover:text-[var(--c-800)] hover:bg-[var(--c-100)] transition-all tracking-wide"
+        >
+          Cancelar
+        </button>
+
+        <button 
+          type="button" 
+          (click)="triggerConfirmarReabrir()" 
+          class="px-6 py-2 rounded-full bg-[var(--c-800)] text-[var(--c-50)] text-[12px] font-medium hover:bg-[var(--c-700)] shadow-lg transition-all tracking-wide flex items-center gap-2"
+        >
+          Re-abrir tarea
+        </button>
+      </div>
+    </div>
+  </div>
+}

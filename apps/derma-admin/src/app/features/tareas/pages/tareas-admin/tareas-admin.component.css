@@ -1,0 +1,102 @@
+/* ─── CDK drag-drop custom styles ─── */
+.cdk-drag-preview {
+  border-radius: 16px;
+  box-shadow: 0 12px 40px rgba(0,0,0,0.15);
+  opacity: 0.95;
+}
+
+.cdk-drag-animating {
+  transition: transform 250ms cubic-bezier(0, 0, 0.2, 1);
+}
+
+.cdk-drag-placeholder {
+  opacity: 0.3 !important;
+}
+
+.cdk-drop-list-dragging app-tarea-card:not(.cdk-drag-placeholder) {
+  transition: transform 250ms cubic-bezier(0, 0, 0.2, 1);
+}
+
+.cdk-drop-list-receiving {
+  background-color: var(--c-100) !important;
+  border-color: var(--c-300) !important;
+}
+
+/* ─── Auto-resize textarea ─── */
+.textarea-auto {
+  field-sizing: content;
+  min-height: 2.5rem;
+  max-height: 10rem;
+  overflow-y: auto;
+  resize: none;
+}
+
+/* ─── Admin comment card ─── */
+.admin-comment-card {
+  background: var(--c-100);
+  border: 1px solid var(--c-200);
+  border-radius: 0.5rem;
+  padding: 0.625rem 0.75rem;
+  width: 100%;
+  min-width: 0;
+  box-sizing: border-box;
+  overflow: hidden;
+}
+
+.admin-comment-meta {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 0.25rem;
+  margin-bottom: 0.25rem;
+  min-width: 0;
+}
+
+.admin-comment-autor {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--c-700);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  min-width: 0;
+  flex: 1;
+}
+
+.admin-comment-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  flex-shrink: 0;
+}
+
+.admin-comment-fecha {
+  font-size: 0.625rem;
+  color: var(--c-400);
+  white-space: nowrap;
+}
+
+.admin-comment-btn {
+  width: 1rem;
+  height: 1rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 0.25rem;
+  color: var(--c-400);
+  transition: background-color 150ms, color 150ms;
+  flex-shrink: 0;
+}
+.admin-comment-btn--delete:hover {
+  background: #fee2e2;
+  color: #ef4444;
+}
+
+.admin-comment-text {
+  font-size: 0.875rem;
+  color: var(--c-600);
+  word-break: break-all;
+  overflow-wrap: anywhere;
+  overflow: hidden;
+  width: 100%;
+}

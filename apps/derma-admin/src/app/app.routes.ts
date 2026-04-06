@@ -68,6 +68,16 @@ export const appRoutes: Route[] = [
         loadComponent: () => import('./features/staff/editar-profesional/editar-profesional.component').then(m => m.EditarProfesionalComponent)
       },
       {
+        path: 'tareas',
+        canActivate: [roleGuard([RolUsuario.ADMIN])],
+        loadChildren: () => import('./features/tareas/tareas.routes').then(m => m.tareasRoutes),
+      },
+      {
+        path: 'mis-tareas',
+        canActivate: [roleGuard([RolUsuario.DERMATOLOGO, RolUsuario.RECEPCIONISTA, RolUsuario.EMPLEADO])],
+        loadChildren: () => import('./features/tareas/tareas.routes').then(m => m.misTareasRoutes),
+      },
+      {
         path: 'configuracion',
         loadComponent: () => import('./features/configuracion/configuracion.component').then(m => m.ConfiguracionComponent)
       },

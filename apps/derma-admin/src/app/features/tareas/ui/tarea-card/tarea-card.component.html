@@ -1,0 +1,157 @@
+<article
+  class="relative bg-[var(--c-50)] rounded-xl p-4 transition-all duration-200 group overflow-hidden select-none border shadow-sm border-[var(--c-200)]"
+  [class.opacity-60]="isCompletada()"
+  [class.cursor-default]="isCompletada()"
+  [class.cursor-grab]="!isCompletada()"
+  [class.active:cursor-grabbing]="!isCompletada()"
+  [class.hover:border-[var(--c-300)]]="!isCompletada()"
+  [class.hover:shadow-md]="!isCompletada()"
+  [class.border-[var(--c-800)]]="isActive()"
+  [class.ring-1]="isActive()"
+  [class.ring-[var(--c-800)]]="isActive()">
+
+  <!-- Urgente stripe -->
+  @if (tarea().esUrgente) {
+    <div class="absolute top-0 left-0 bottom-0 w-[4px] bg-red-500 rounded-l-xl"></div>
+  }
+
+  <!-- Header: Prioridad + Categoria + Acciones -->
+  <div class="flex items-start justify-between gap-3 mb-2" [class.pl-1.5]="tarea().esUrgente">
+    <div class="flex items-center flex-wrap gap-2 pt-0.5">
+      <!-- Badge de prioridad -->
+      <span class="inline-flex items-center px-2 py-0.5 rounded-sm bg-white border border-[var(--c-200)] text-[9px] font-bold text-[var(--c-700)] uppercase tracking-widest shadow-sm">
+        {{ prioridadLabel() }}
+      </span>
+      <!-- Divisor -->
+      <span class="w-0.5 h-0.5 rounded-full bg-[var(--c-300)]"></span>
+      <!-- Categoria -->
+      <span class="inline-flex items-center gap-1 text-[10px] font-semibold text-[var(--c-500)] uppercase tracking-widest leading-none">
+        <svg class="size-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M9.568 3H5.25A2.25 2.25 0 0 0 3 5.25v4.318c0 .597.237 1.17.659 1.591l9.581 9.581c.699.699 1.78.872 2.607.33a18.095 18.095 0 0 0 5.223-5.223c.542-.827.369-1.908-.33-2.607L11.16 3.66A2.25 2.25 0 0 0 9.568 3Z" />
+        </svg>
+        {{ categoriaLabel() }}
+      </span>
+    </div>
+
+    @if (editable()) {
+      <div class="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity shrink-0">
+        <!-- Aprobar (solo en EN_REVISION) -->
+        @if (isEnRevision()) {
+          <ui-tooltip text="Aprobar tarea" placement="top">
+            <button
+              type="button"
+              (click)="$event.stopPropagation(); approveClicked.emit(tarea())"
+              class="flex items-center justify-center size-6 rounded-md hover:bg-emerald-50 text-emerald-600 transition-colors border border-transparent hover:border-emerald-200">
+              <svg class="size-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                <path stroke-linecap="round" stroke-linejoin="round" d="m4.5 12.75 6 6 9-13.5" />
+              </svg>
+            </button>
+          </ui-tooltip>
+        }
+        <ui-tooltip text="Editar tarea" placement="top">
+          <button
+            type="button"
+            (click)="$event.stopPropagation(); editClicked.emit(tarea())"
+            class="flex items-center justify-center size-6 rounded-md hover:bg-[var(--c-100)] text-[var(--c-500)] hover:text-[var(--c-800)] transition-colors border border-transparent hover:border-[var(--c-200)]">
+            <svg class="size-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+              <path stroke-linecap="round" stroke-linejoin="round"
+                d="m16.862 4.487 1.687-1.688a1.875 1.875 0 1 1 2.652 2.652L10.582 16.07a4.5 4.5 0 0 1-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 0 1 1.13-1.897l8.932-8.931Zm0 0L19.5 7.125" />
+            </svg>
+          </button>
+        </ui-tooltip>
+      </div>
+    }
+  </div>
+
+  <div [class.pl-1.5]="tarea().esUrgente" class="flex flex-col h-full">
+    <div class="mb-auto">
+      <!-- Título -->
+      <h4 class="text-[14px] font-semibold text-[var(--c-800)] leading-snug tracking-tight mb-1.5 line-clamp-2 transition-colors">
+        {{ tarea().titulo }}
+      </h4>
+
+      <!-- Descripción -->
+      @if (tarea().descripcion) {
+        <p class="text-[12px] text-[var(--c-500)] leading-normal line-clamp-2 mb-4 font-light">
+          {{ tarea().descripcion }}
+        </p>
+      } @else {
+        <div class="mb-4"></div>
+      }
+    </div>
+
+    <!-- Footer: progreso + avatars + vencimiento -->
+    <div class="flex flex-col gap-3 pt-3 border-t border-[var(--c-100)] mt-2">
+      <!-- Barra de progreso (condicional) -->
+      @if (tarea().progreso > 0) {
+        <div class="w-full mb-1">
+          <div class="flex items-center justify-between mb-1.5">
+            <span class="text-[9px] text-[var(--c-400)] uppercase tracking-widest font-bold">Progreso</span>
+            <span class="text-[10px] font-bold text-[var(--c-800)]">{{ progresoBar() }}%</span>
+          </div>
+          <div class="h-1.5 bg-[var(--c-100)] rounded-full overflow-hidden">
+            <div class="h-full bg-[var(--c-800)] rounded-full transition-all duration-500"
+                 [style.width.%]="progresoBar()"></div>
+          </div>
+        </div>
+      }
+
+      <div class="flex items-center justify-between gap-2 mt-1">
+        <!-- Vencimiento -->
+        <div class="flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-widest px-2 py-1 rounded bg-[var(--c-50)] border border-[var(--c-100)] shadow-sm">
+          @if (diasRestantes() !== null) {
+            <svg class="size-3" [class]="vencimientoColor()" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
+            </svg>
+            <span [class]="vencimientoColor()">
+              @if (diasRestantes()! < 0) { Vencida }
+              @else if (diasRestantes() === 0) { Hoy }
+              @else if (diasRestantes() === 1) { 1 día }
+              @else { {{ diasRestantes() }} d }
+            </span>
+          } @else {
+            <span class="text-[var(--c-400)]">—</span>
+          }
+        </div>
+
+        <div class="flex items-center gap-3">
+          <!-- Comentarios count -->
+          @if (tarea().comentarios.length > 0) {
+            <ui-tooltip [text]="tarea().comentarios.length + ' Comentarios'" placement="top">
+              <div class="flex items-center gap-1 opacity-80 group-hover:opacity-100 transition-opacity bg-[var(--c-100)] px-2 py-0.5 rounded-full border border-[var(--c-200)] shadow-sm cursor-help">
+                <svg class="size-3 text-[var(--c-600)]" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M2.25 12.76c0 1.6 1.123 2.994 2.707 3.227 1.087.16 2.185.283 3.293.369V21l4.076-4.076a1.526 1.526 0 0 1 1.037-.443 48.282 48.282 0 0 0 5.68-.494c1.584-.233 2.707-1.626 2.707-3.228V6.741c0-1.602-1.123-2.995-2.707-3.228A48.394 48.394 0 0 0 12 3c-2.392 0-4.744.175-7.043.513C3.373 3.746 2.25 5.14 2.25 6.741v6.018Z" />
+                </svg>
+                <span class="text-[10px] text-[var(--c-700)] font-bold tabular-nums">{{ tarea().comentarios.length }}</span>
+              </div>
+            </ui-tooltip>
+          }
+
+          <!-- Avatares empleados -->
+          @if (tarea().asignadaANombres.length > 0) {
+            <div class="flex items-center">
+              @for (nombre of tarea().asignadaANombres.slice(0, 3); track nombre) {
+                <ui-tooltip [text]="nombre" placement="top">
+                  <div class="size-6 rounded-full bg-[var(--c-800)] text-[var(--c-50)] text-[9px] font-bold flex items-center justify-center ring-2 ring-[var(--c-50)] -ml-1.5 first:ml-0 relative z-10 hover:z-20 transition-transform hover:scale-110 cursor-help">
+                    {{ nombre.charAt(0).toUpperCase() }}
+                  </div>
+                </ui-tooltip>
+              }
+              @if (tarea().asignadaANombres.length > 3) {
+                <span class="text-[9px] font-medium text-[var(--c-500)] ml-1">
+                  +{{ tarea().asignadaANombres.length - 3 }}
+                </span>
+              }
+            </div>
+          } @else {
+            <div class="size-6 rounded-full bg-[var(--c-100)] border border-dashed border-[var(--c-300)] flex items-center justify-center" title="Sin asignar">
+              <svg class="size-3 text-[var(--c-400)]" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 6a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5 0ZM4.501 20.118a7.5 7.5 0 0 1 14.998 0A17.933 17.933 0 0 1 12 21.75c-2.676 0-5.216-.584-7.499-1.632Z" />
+              </svg>
+            </div>
+          }
+        </div>
+      </div>
+    </div>
+  </div>
+</article>
