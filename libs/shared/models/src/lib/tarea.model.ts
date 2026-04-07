@@ -85,6 +85,10 @@ export interface Tarea {
   archivada: boolean;
   fechaArchivado?: Timestamp;
   archivadaPor?: string;
+
+  // Notificaciones de vencimiento (deduplicación)
+  notifVencidaEnviada?: boolean;
+  notifProntoVencerEnviada?: boolean;
 }
 
 export type TareaInput = Omit<Tarea, 'id'>;

@@ -1,0 +1,146 @@
+<ui-page-header title="Notificaciones" description="Tus alertas de tareas y actividad reciente." />
+
+<div class="mt-8 space-y-6 animate-smooth-enter enter-delay-1">
+
+  <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+    <div class="flex items-center gap-1.5 flex-wrap">
+      <button
+        type="button"
+        (click)="setFiltroEstado('todas')"
+        class="filter-chip"
+        [class.active]="filtroEstado() === 'todas'"
+      >Todas</button>
+      <button
+        type="button"
+        (click)="setFiltroEstado('no_leidas')"
+        class="filter-chip"
+        [class.active]="filtroEstado() === 'no_leidas'"
+      >
+        No leídas
+        @if (state.conteoNoLeidas() > 0) {
+          <span class="chip-badge">{{ state.conteoNoLeidas() }}</span>
+        }
+      </button>
+      <button
+        type="button"
+        (click)="setFiltroEstado('leidas')"
+        class="filter-chip"
+        [class.active]="filtroEstado() === 'leidas'"
+      >Leídas</button>
+
+      <div class="w-px h-4 bg-[var(--c-200)] mx-1"></div>
+
+      @for (f of tiposFiltros; track f.value) {
+        @if (f.value !== 'todos') {
+          <button
+            type="button"
+            (click)="setFiltroTipo(f.value)"
+            class="filter-chip"
+            [class.active]="filtroTipo() === f.value"
+          >{{ f.label }}</button>
+        }
+      }
+      @if (filtroTipo() !== 'todos') {
+        <button
+          type="button"
+          (click)="setFiltroTipo('todos')"
+          class="filter-chip"
+        >
+          <svg class="size-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M6 18 18 6M6 6l12 12" />
+          </svg>
+          Limpiar filtro
+        </button>
+      }
+    </div>
+
+    <div class="flex items-center gap-2 shrink-0">
+      @if (state.hayNoLeidas()) {
+        <button
+          type="button"
+          (click)="state.marcarTodasLeidas()"
+          class="btn-secondary"
+        >
+          Marcar todo leído
+        </button>
+      }
+      @if (state.todas().length > 0) {
+        <button
+          type="button"
+          (click)="showModal.set(true)"
+          class="btn-danger"
+        >
+          Eliminar todas
+        </button>
+      }
+    </div>
+  </div>
+
+  @if (haySeleccion()) {
+    <div class="flex items-center gap-3 px-4 py-2.5 rounded-xl border border-[var(--c-200)] bg-[var(--c-50)] shadow-sm animate-smooth-enter">
+      <span class="text-[11px] text-[var(--c-600)] font-medium">
+        {{ seleccionadas().size }} seleccionada{{ seleccionadas().size !== 1 ? 's' : '' }}
+      </span>
+      <div class="flex-1"></div>
+      <button
+        type="button"
+        [disabled]="isBulkLoading()"
+        (click)="marcarSeleccionadasLeidas()"
+        class="btn-secondary text-[11px]"
+      >Marcar leídas</button>
+      <button
+        type="button"
+        [disabled]="isBulkLoading()"
+        (click)="eliminarSeleccionadas()"
+        class="btn-danger text-[11px]"
+      >Eliminar</button>
+      <button
+        type="button"
+        (click)="clearSeleccion()"
+        class="text-[var(--c-400)] hover:text-[var(--c-800)] transition-colors"
+      >
+        <svg class="size-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M6 18 18 6M6 6l12 12" />
+        </svg>
+      </button>
+    </div>
+  }
+
+  <div class="flex items-center gap-2 mb-3">
+    <input
+      type="checkbox"
+      [checked]="todasSeleccionadas()"
+      (change)="toggleSeleccionarTodas()"
+      class="size-3.5 accent-[var(--c-800)] cursor-pointer"
+      [disabled]="filtradas().length === 0"
+    />
+    <span class="text-[10px] uppercase tracking-widest text-[var(--c-400)] font-medium">
+      Seleccionar todas ({{ filtradas().length }})
+    </span>
+  </div>
+
+  <div class="flex flex-col gap-2">
+    @for (notif of filtradas(); track notif.id; let i = $index) {
+      <div [class]="'stagger-' + ((i % 6) + 1)">
+        <app-notificacion-item
+          [notif]="notif"
+          [selectable]="true"
+          [selected]="isSelected(notif.id)"
+          (accion)="onAccion(notif, $event)"
+          (selChange)="toggleSeleccion(notif.id, $event)"
+        />
+      </div>
+    } @empty {
+      <div class="flex flex-col items-center justify-center py-20">
+        <ui-empty-state message="Sin notificaciones" />
+      </div>
+    }
+  </div>
+</div>
+
+@if (showModal()) {
+  <app-confirm-eliminar-notif-modal
+    (confirmed)="onEliminarTodas()"
+    (cancelled)="showModal.set(false)"
+  />
+}

@@ -108,9 +108,12 @@ export class TareasAdminComponent implements OnInit, OnDestroy {
   adminComentarioTexto     = signal('');
   isSavingAdminComentario  = signal(false);
   isDraggingAdmin          = signal(false);
+  isClosingPanel           = signal(false);
 
   readonly estadoLabel = TareasService.estadoLabel;
   protected readonly Math = Math;
+
+  private vencimientosVerificados = false;
 
   // Filtros
   filtroUid       = signal<string>('');
@@ -202,6 +205,10 @@ export class TareasAdminComponent implements OnInit, OnDestroy {
           this.allTareas.set(tareas);
           this.isLoading.set(false);
           this.runAutoArchive();
+          if (!this.vencimientosVerificados) {
+            this.vencimientosVerificados = true;
+            this.tareasService.verificarVencimientos(tareas);
+          }
         },
         error: () => {
           this.toast.error('Error al cargar tareas');
@@ -249,7 +256,7 @@ export class TareasAdminComponent implements OnInit, OnDestroy {
     transferArrayItem(event.previousContainer.data, event.container.data, event.previousIndex, event.currentIndex);
     this.allTareas.update(list => list.map(t => t.id === tarea.id ? { ...t, estado: nuevoEstado } : t));
     try {
-      await this.tareasService.cambiarEstado(tarea.id, nuevoEstado, this.adminUid());
+      await this.tareasService.cambiarEstado(tarea.id, nuevoEstado, this.adminUid(), tarea);
     } catch {
       this.toast.error('No se pudo mover la tarea');
       this.allTareas.update(list => list.map(t => t.id === tarea.id ? { ...t, estado: tarea.estado } : t));
@@ -258,7 +265,7 @@ export class TareasAdminComponent implements OnInit, OnDestroy {
 
   async aprobar(tarea: Tarea): Promise<void> {
     try {
-      await this.tareasService.aprobar(tarea.id, this.adminUid());
+      await this.tareasService.aprobar(tarea.id, this.adminUid(), tarea);
       this.toast.success(`"${tarea.titulo}" aprobada`);
       this.allTareas.update(list => list.map(t => t.id === tarea.id
         ? { ...t, estado: EstadoTarea.COMPLETADA, progreso: 100, aprobadaPor: this.adminUid() }
@@ -278,7 +285,7 @@ export class TareasAdminComponent implements OnInit, OnDestroy {
     this.tareaAReabrir.set(null);
     this.estadoDestinoReabrir.set(null);
     try {
-      await this.tareasService.cambiarEstado(tarea.id, estado, this.adminUid());
+      await this.tareasService.cambiarEstado(tarea.id, estado, this.adminUid(), tarea);
     } catch {
       this.toast.error('No se pudo re-abrir la tarea');
       this.allTareas.update(list => list.map(t => t.id === tarea.id ? { ...t, estado: prevEstado } : t));
@@ -313,8 +320,12 @@ export class TareasAdminComponent implements OnInit, OnDestroy {
   }
 
   cerrarDetalleAdmin(): void {
-    this.adminActivaId.set(null);
-    this.adminComentarioTexto.set('');
+    this.isClosingPanel.set(true);
+    setTimeout(() => {
+      this.adminActivaId.set(null);
+      this.adminComentarioTexto.set('');
+      this.isClosingPanel.set(false);
+    }, 380);
   }
 
   onAdminDragStarted(): void {
@@ -343,7 +354,7 @@ export class TareasAdminComponent implements OnInit, OnDestroy {
       fecha:       Timestamp.now(),
     };
     try {
-      await this.tareasService.agregarComentario(tarea.id, comentario);
+      await this.tareasService.agregarComentario(tarea.id, comentario, tarea);
       this.adminComentarioTexto.set('');
     } catch {
       this.toast.error('No se pudo enviar el comentario');
@@ -399,7 +410,7 @@ export class TareasAdminComponent implements OnInit, OnDestroy {
       }
       this.cerrarModal();
     } catch (error) {
-      console.error(error);
+      console.error('Error al guardar la tarea: ', error);
       this.toast.error('Error al guardar la tarea');
     } finally {
       this.isSaving.set(false);

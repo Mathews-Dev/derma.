@@ -9,6 +9,43 @@
   transition: transform 250ms cubic-bezier(0, 0, 0.2, 1);
 }
 
+/* ─── Admin detail panel animations ─── */
+@keyframes panel-slide-in {
+  from { opacity: 0; transform: translateX(32px); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+
+@keyframes panel-slide-out {
+  from { opacity: 1; transform: translateX(0); }
+  to   { opacity: 0; transform: translateX(32px); }
+}
+
+@keyframes panel-backdrop-in {
+  from { opacity: 0; backdrop-filter: blur(0px) saturate(100%); }
+  to   { opacity: 1; backdrop-filter: blur(8px) saturate(150%); }
+}
+
+@keyframes panel-backdrop-out {
+  from { opacity: 1; backdrop-filter: blur(8px) saturate(150%); }
+  to   { opacity: 0; backdrop-filter: blur(0px) saturate(100%); }
+}
+
+.panel-animate-in {
+  animation: panel-slide-in 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+}
+
+.panel-animate-out {
+  animation: panel-slide-out 0.38s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+}
+
+.panel-backdrop-animate-in {
+  animation: panel-backdrop-in 0.4s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+}
+
+.panel-backdrop-animate-out {
+  animation: panel-backdrop-out 0.38s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+}
+
 .cdk-drag-placeholder {
   opacity: 0.3 !important;
 }
@@ -90,6 +127,37 @@
 .admin-comment-btn--delete:hover {
   background: #fee2e2;
   color: #ef4444;
+}
+
+/* ─── Subtle overlay scrollbar ─── */
+.scroll-subtle {
+  scrollbar-width: thin;
+  scrollbar-color: transparent transparent;
+  overflow: overlay;
+  transition: scrollbar-color 0.3s ease;
+}
+
+.scroll-subtle:hover {
+  scrollbar-color: var(--c-300) transparent;
+}
+
+/* Webkit (Chrome/Safari/Edge) */
+.scroll-subtle::-webkit-scrollbar {
+  width: 4px;
+}
+
+.scroll-subtle::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.scroll-subtle::-webkit-scrollbar-thumb {
+  background-color: transparent;
+  border-radius: 99px;
+  transition: background-color 0.3s ease;
+}
+
+.scroll-subtle:hover::-webkit-scrollbar-thumb {
+  background-color: var(--c-300);
 }
 
 .admin-comment-text {
