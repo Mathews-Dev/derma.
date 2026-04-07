@@ -3,11 +3,12 @@ import { NavigationEnd, Router, RouterLink } from '@angular/router';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { filter, map } from 'rxjs/operators';
 import { RolUsuario, Usuario } from '@derma/models';
+import { NotificacionBellComponent } from './notificacion-bell/notificacion-bell.component';
 
 @Component({
   selector: 'derm-admin-header',
   standalone: true,
-  imports: [RouterLink],
+  imports: [RouterLink, NotificacionBellComponent],
   templateUrl: './admin-header.component.html',
   styleUrl: './admin-header.component.css',
   changeDetection: ChangeDetectionStrategy.OnPush,

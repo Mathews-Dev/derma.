@@ -47,6 +47,7 @@ export class MisTareasComponent implements OnInit, OnDestroy {
   private readonly authService   = inject(AuthService);
   private readonly toast         = inject(ToastService);
   private readonly destroy$      = new Subject<void>();
+  private progresoTimer: ReturnType<typeof setTimeout> | null = null;
 
   readonly COLUMNAS    = KANBAN_COLUMNAS;
   readonly EstadoTarea = EstadoTarea;
@@ -60,6 +61,12 @@ export class MisTareasComponent implements OnInit, OnDestroy {
   tareaActiva        = computed(() => this.allTareas().find(t => t.id === this.activaTareaId()) ?? null);
   comentarioTexto    = signal('');
   isSavingComentario = signal(false);
+  isClosingPanel     = signal(false);
+
+  // Accordion open states
+  descAbierta          = signal(true);
+  etiquetasAbiertas    = signal(false);
+  comentariosAbiertos  = signal(true);
 
   // Edicion de comentarios
   comentarioEditandoId    = signal<string | null>(null);
@@ -106,6 +113,7 @@ export class MisTareasComponent implements OnInit, OnDestroy {
   ngOnDestroy(): void {
     this.destroy$.next();
     this.destroy$.complete();
+    if (this.progresoTimer !== null) clearTimeout(this.progresoTimer);
   }
 
   async onDrop(event: CdkDragDrop<Tarea[]>, nuevoEstado: EstadoTarea): Promise<void> {
@@ -127,7 +135,7 @@ export class MisTareasComponent implements OnInit, OnDestroy {
       list.map(t => t.id === tarea.id ? { ...t, estado: nuevoEstado } : t),
     );
     try {
-      await this.tareasService.cambiarEstado(tarea.id, nuevoEstado);
+      await this.tareasService.cambiarEstado(tarea.id, nuevoEstado, this.uid(), tarea);
     } catch {
       this.toast.error('No se pudo mover la tarea');
       this.allTareas.update(list =>
@@ -157,13 +165,17 @@ export class MisTareasComponent implements OnInit, OnDestroy {
   }
 
   cerrarDetalle(): void {
-    this.activaTareaId.set(null);
-    this.comentarioEditandoId.set(null);
+    this.isClosingPanel.set(true);
+    setTimeout(() => {
+      this.activaTareaId.set(null);
+      this.comentarioEditandoId.set(null);
+      this.isClosingPanel.set(false);
+    }, 380);
   }
 
   async cambiarEstado(tarea: Tarea, estado: EstadoTarea): Promise<void> {
     try {
-      await this.tareasService.cambiarEstado(tarea.id, estado);
+      await this.tareasService.cambiarEstado(tarea.id, estado, this.uid(), tarea);
       this.toast.success('Estado actualizado');
       this.allTareas.update(list => list.map(t => t.id === tarea.id ? { ...t, estado } : t));
     } catch {
@@ -171,13 +183,22 @@ export class MisTareasComponent implements OnInit, OnDestroy {
     }
   }
 
-  async actualizarProgreso(tarea: Tarea, progreso: number): Promise<void> {
-    try {
-      await this.tareasService.actualizarProgreso(tarea.id, progreso);
-      this.allTareas.update(list => list.map(t => t.id === tarea.id ? { ...t, progreso } : t));
-    } catch {
-      this.toast.error('No se pudo actualizar el progreso');
-    }
+  actualizarProgreso(tarea: Tarea, progreso: number): void {
+    // Optimistic update — moves the thumb instantly, no snap-back
+    this.allTareas.update(list => list.map(t => t.id === tarea.id ? { ...t, progreso } : t));
+
+    // Debounce the Firestore write so rapid dragging doesn't hammer the DB
+    if (this.progresoTimer !== null) clearTimeout(this.progresoTimer);
+    this.progresoTimer = setTimeout(async () => {
+      this.progresoTimer = null;
+      try {
+        await this.tareasService.actualizarProgreso(tarea.id, progreso);
+      } catch {
+        this.toast.error('No se pudo actualizar el progreso');
+        // Revert on failure
+        this.allTareas.update(list => list.map(t => t.id === tarea.id ? { ...t, progreso: tarea.progreso } : t));
+      }
+    }, 600);
   }
 
   async enviarComentario(): Promise<void> {
@@ -193,7 +214,7 @@ export class MisTareasComponent implements OnInit, OnDestroy {
       fecha:       Timestamp.now(),
     };
     try {
-      await this.tareasService.agregarComentario(tarea.id, comentario);
+      await this.tareasService.agregarComentario(tarea.id, comentario, tarea);
       this.comentarioTexto.set('');
       this.toast.success('Comentario agregado');
     } catch {

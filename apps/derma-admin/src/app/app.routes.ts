@@ -1,6 +1,7 @@
 import { Route } from '@angular/router';
 import { authGuard, noAuthGuard, roleGuard } from '@derma/guards';
 import { RolUsuario } from '@derma/models';
+import { NotificacionesStateService } from './core/services/notificaciones-state.service';
 
 export const appRoutes: Route[] = [
   {
@@ -11,6 +12,7 @@ export const appRoutes: Route[] = [
   {
     path: 'admin',
     canActivate: [authGuard, roleGuard([RolUsuario.ADMIN, RolUsuario.DERMATOLOGO, RolUsuario.RECEPCIONISTA, RolUsuario.EMPLEADO])],
+    providers: [NotificacionesStateService],
     loadComponent: () => import('./layouts/private-layout/private-layout.component').then(m => m.PrivateLayoutComponent),
     children: [
       {
@@ -76,6 +78,11 @@ export const appRoutes: Route[] = [
         path: 'mis-tareas',
         canActivate: [roleGuard([RolUsuario.DERMATOLOGO, RolUsuario.RECEPCIONISTA, RolUsuario.EMPLEADO])],
         loadChildren: () => import('./features/tareas/tareas.routes').then(m => m.misTareasRoutes),
+      },
+      {
+        path: 'notificaciones',
+        canActivate: [roleGuard([RolUsuario.ADMIN, RolUsuario.EMPLEADO])],
+        loadChildren: () => import('./features/notificaciones/notificaciones.routes').then(m => m.notificacionesRoutes),
       },
       {
         path: 'configuracion',

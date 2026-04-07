@@ -1,0 +1,116 @@
+<div class="relative">
+
+  <!-- ─── Bell button ─── -->
+  <button
+    type="button"
+    (click)="toggle($event)"
+    class="relative flex items-center justify-center size-9 rounded-full border border-[var(--c-200)] text-[var(--c-600)] hover:bg-[var(--c-100)] hover:text-[var(--c-800)] transition-all duration-200 bell-btn"
+    [class.bell-btn--open]="isOpen()"
+    aria-label="Notificaciones"
+  >
+    <svg class="size-[18px]" [class.bell-shake]="state.hayNoLeidas()" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+      <path stroke-linecap="round" stroke-linejoin="round" d="M14.857 17.082a23.848 23.848 0 0 0 5.454-1.31A8.967 8.967 0 0 1 18 9.75V9A6 6 0 0 0 6 9v.75a8.967 8.967 0 0 1-2.312 6.022c1.733.64 3.56 1.085 5.455 1.31m5.714 0a24.255 24.255 0 0 1-5.714 0m5.714 0a3 3 0 1 1-5.714 0" />
+    </svg>
+
+    @if (state.conteoBadge()) {
+      <span class="badge-pop absolute -top-1 -right-1 flex items-center justify-center min-w-[16px] h-4 px-1 rounded-full bg-[var(--c-800)] text-[var(--c-50)] text-[9px] font-bold leading-none border-2 border-[var(--c-50)]">
+        {{ state.conteoBadge() }}
+      </span>
+    }
+  </button>
+
+  <!-- ─── Dropdown panel ─── -->
+  @if (isOpen() || isClosing()) {
+    <div
+      class="absolute right-0 top-full mt-2 w-[380px] bg-[var(--c-50)] rounded-[20px] shadow-[0_16px_48px_rgba(0,0,0,0.1)] border border-[var(--c-200)] overflow-hidden origin-top-right z-50"
+      [class.dropdown-animate-in]="!isClosing()"
+      [class.dropdown-animate-out]="isClosing()"
+      (click)="$event.stopPropagation()"
+    >
+
+      <!-- Geometría decorativa (igual que invitation-modal) -->
+      <div aria-hidden="true" class="absolute inset-0 pointer-events-none overflow-hidden">
+        <div style="position:absolute;width:240px;height:240px;border-radius:50%;border:1px solid var(--c-200);top:-100px;right:-60px;"></div>
+        <div style="position:absolute;width:130px;height:130px;border-radius:50%;border:1px solid var(--c-100);top:-30px;right:20px;"></div>
+      </div>
+
+      <!-- Header -->
+      <div class="relative z-10 flex items-center justify-between px-5 pt-5 pb-4">
+        <div class="flex items-center gap-2.5">
+          <div class="size-8 flex items-center justify-center rounded-[10px] border border-[var(--c-200)] bg-[var(--c-50)] text-[var(--c-600)]">
+            <svg class="size-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M14.857 17.082a23.848 23.848 0 0 0 5.454-1.31A8.967 8.967 0 0 1 18 9.75V9A6 6 0 0 0 6 9v.75a8.967 8.967 0 0 1-2.312 6.022c1.733.64 3.56 1.085 5.455 1.31m5.714 0a24.255 24.255 0 0 1-5.714 0m5.714 0a3 3 0 1 1-5.714 0" />
+            </svg>
+          </div>
+          <div>
+            <span class="text-[12px] font-semibold text-[var(--c-800)] tracking-tight block leading-tight">Notificaciones</span>
+            @if (state.conteoNoLeidas() > 0) {
+              <span class="text-[10px] text-[var(--c-400)] uppercase tracking-widest font-medium">
+                {{ state.conteoNoLeidas() }} sin leer
+              </span>
+            } @else {
+              <span class="text-[10px] text-[var(--c-400)] uppercase tracking-widest font-medium">Todo al día</span>
+            }
+          </div>
+        </div>
+
+        <div class="flex items-center gap-2">
+          @if (state.hayNoLeidas()) {
+            <button type="button" (click)="marcarTodasLeidas()"
+              class="text-[9px] uppercase tracking-widest font-semibold px-3 py-1.5 rounded-full border border-[var(--c-200)] text-[var(--c-600)] hover:border-[var(--c-800)] hover:text-[var(--c-800)] transition-all">
+              Marcar leídas
+            </button>
+          }
+          <button type="button" (click)="close()"
+            class="size-6 flex items-center justify-center rounded-lg text-[var(--c-400)] hover:text-[var(--c-800)] hover:bg-[var(--c-100)] transition-colors">
+            <svg class="size-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M6 18 18 6M6 6l12 12"/>
+            </svg>
+          </button>
+        </div>
+      </div>
+
+      <div class="mx-5 h-px bg-[var(--c-200)]"></div>
+
+      <!-- Lista -->
+      <div class="scroll-subtle max-h-[360px] overflow-y-auto flex flex-col gap-1.5 p-3 relative z-10">
+        @for (notif of state.recientes(); track notif.id) {
+          <app-notificacion-item
+            [notif]="notif"
+            [compact]="true"
+            (accion)="$event === 'navegar' ? onNavegar(notif) : $event === 'marcar_leida' ? onMarcarLeida(notif) : onEliminar(notif)"
+          />
+        } @empty {
+          <div class="flex flex-col items-center justify-center text-center py-10 px-6">
+            <div class="w-px h-10 bg-[var(--c-200)] mb-5"></div>
+            <p class="text-[13px] text-[var(--c-500)] font-medium" style="font-family: var(--font-body)">
+              Sin notificaciones
+            </p>
+            <p class="text-[10px] text-[var(--c-400)] mt-1 uppercase tracking-widest">
+              Todo al día
+            </p>
+          </div>
+        }
+      </div>
+
+      <!-- Footer -->
+      <div class="relative z-10 mx-5 h-px bg-[var(--c-200)]"></div>
+      <div class="relative z-10 flex items-center justify-between px-5 py-3">
+        @if (state.hayLeidas()) {
+          <button type="button" (click)="eliminarLeidas()"
+            class="text-[9px] uppercase tracking-widest font-medium text-[var(--c-400)] hover:text-[var(--c-800)] transition-colors">
+            Limpiar leídas
+          </button>
+        } @else {
+          <span></span>
+        }
+        <a routerLink="/admin/notificaciones" (click)="close()"
+          class="text-[9px] uppercase tracking-widest font-semibold text-[var(--c-600)] hover:text-[var(--c-800)] transition-colors">
+          Ver todas →
+        </a>
+      </div>
+
+    </div>
+  }
+
+</div>

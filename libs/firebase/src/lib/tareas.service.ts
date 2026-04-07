@@ -13,6 +13,7 @@ import {
 } from '@angular/fire/firestore';
 import { map, Observable } from 'rxjs';
 import { FirestoreService } from './firestore.service';
+import { NotificacionAdminService } from './notificacion-admin.service';
 import {
   CATEGORIA_LABELS,
   CategoriaTarea,
@@ -47,8 +48,9 @@ export interface HistorialFiltros {
 
 @Injectable({ providedIn: 'root' })
 export class TareasService {
-  private readonly fs       = inject(FirestoreService);
+  private readonly fs        = inject(FirestoreService);
   private readonly firestore = inject(Firestore);
+  private readonly notifSvc  = inject(NotificacionAdminService);
 
   private static readonly COL       = 'tareas';
   private static readonly USERS_COL = 'usuarios';
@@ -87,11 +89,28 @@ export class TareasService {
   // Escritura
   // ──────────────────────────────────────────────
 
-  async crear(data: TareaInput): Promise<string> {
+  async crear(data: TareaInput, remitenteUid?: string, remitenteNombre?: string): Promise<string> {
     const ref = await this.fs.addDocument(TareasService.COL, {
       ...data,
       archivada: false,
     } as never);
+
+    if (data.asignadaA?.length) {
+      const venc     = data.fechaVencimiento?.toDate();
+      const meses    = ['ene','feb','mar','abr','may','jun','jul','ago','sep','oct','nov','dic'];
+      const vencMsg  = venc ? `. Vence el ${venc.getDate()} ${meses[venc.getMonth()]}` : '';
+      const notifs   = data.asignadaA.map(uid =>
+        this.notifSvc.buildNotif(
+          'tarea_asignada',
+          uid,
+          'Nueva tarea asignada',
+          data.titulo + vencMsg,
+          { remitenteUid, remitenteNombre, accionUrl: '/admin/mis-tareas', accionTexto: 'Ver tarea', relacionadoId: ref.id, relacionadoTipo: 'tarea', prioridad: data.prioridad },
+        )
+      );
+      await this.notifSvc.crearBatch(notifs);
+    }
+
     return ref.id;
   }
 
@@ -99,7 +118,7 @@ export class TareasService {
     return this.fs.updateDocument<Tarea>(TareasService.COL, id, data);
   }
 
-  async cambiarEstado(id: string, estado: EstadoTarea, autorUid = ''): Promise<void> {
+  async cambiarEstado(id: string, estado: EstadoTarea, autorUid = '', tarea?: Pick<Tarea, 'titulo' | 'creadaPor' | 'asignadaA' | 'asignadaANombres' | 'prioridad' | 'fechaVencimiento'>): Promise<void> {
     const extra: Partial<Tarea> = {};
     const now = Timestamp.now();
 
@@ -108,23 +127,87 @@ export class TareasService {
 
     const entrada: HistorialEstadoTarea = { estado, cambiadoPor: autorUid, fecha: now };
 
-    return this.fs.updateDocument<Tarea>(TareasService.COL, id, {
+    await this.fs.updateDocument<Tarea>(TareasService.COL, id, {
       estado,
       ...extra,
       // @ts-expect-error arrayUnion is a FieldValue, TS doesn't narrow it
       historial: arrayUnion(entrada),
     });
+
+    if (!tarea) return;
+
+    const idx        = tarea.asignadaA.indexOf(autorUid);
+    const autorNombre = idx >= 0 ? tarea.asignadaANombres[idx] : undefined;
+
+    const venc    = tarea.fechaVencimiento?.toDate();
+    const meses   = ['ene','feb','mar','abr','may','jun','jul','ago','sep','oct','nov','dic'];
+    const vencMsg = venc ? `. Vence el ${venc.getDate()} ${meses[venc.getMonth()]}` : '';
+
+    if (estado === EstadoTarea.EN_PROGRESO && tarea.creadaPor) {
+      await this.notifSvc.crear(
+        this.notifSvc.buildNotif(
+          'tarea_en_progreso',
+          tarea.creadaPor,
+          'Tarea iniciada',
+          tarea.titulo + vencMsg,
+          { remitenteUid: autorUid, remitenteNombre: autorNombre, accionUrl: '/admin/tareas', accionTexto: 'Ver tablero', relacionadoId: id, relacionadoTipo: 'tarea', prioridad: tarea.prioridad },
+        )
+      );
+    }
+
+    if (estado === EstadoTarea.EN_REVISION && tarea.creadaPor) {
+      await this.notifSvc.crear(
+        this.notifSvc.buildNotif(
+          'tarea_en_revision',
+          tarea.creadaPor,
+          'Lista para revisar',
+          tarea.titulo + vencMsg,
+          { remitenteUid: autorUid, remitenteNombre: autorNombre, accionUrl: '/admin/tareas', accionTexto: 'Revisar', relacionadoId: id, relacionadoTipo: 'tarea', prioridad: tarea.prioridad },
+        )
+      );
+    }
+
+    if (estado === EstadoTarea.COMPLETADA && tarea.asignadaA?.length) {
+      const notifs = tarea.asignadaA.map(uid =>
+        this.notifSvc.buildNotif(
+          'tarea_completada',
+          uid,
+          '¡Tarea completada!',
+          tarea.titulo,
+          { remitenteUid: autorUid, remitenteNombre: autorNombre, accionUrl: '/admin/mis-tareas', accionTexto: 'Ver tarea', relacionadoId: id, relacionadoTipo: 'tarea', prioridad: tarea.prioridad },
+        )
+      );
+      await this.notifSvc.crearBatch(notifs);
+    }
   }
 
   async actualizarProgreso(id: string, progreso: number): Promise<void> {
     return this.fs.updateDocument<Tarea>(TareasService.COL, id, { progreso });
   }
 
-  async agregarComentario(id: string, comentario: ComentarioTarea): Promise<void> {
-    return this.fs.updateDocument<Tarea>(TareasService.COL, id, {
+  async agregarComentario(id: string, comentario: ComentarioTarea, tarea?: Pick<Tarea, 'titulo' | 'asignadaA' | 'creadaPor' | 'prioridad'>): Promise<void> {
+    await this.fs.updateDocument<Tarea>(TareasService.COL, id, {
       // @ts-expect-error arrayUnion is a FieldValue
       comentarios: arrayUnion(comentario),
     });
+
+    if (tarea) {
+      const destinatarios = [...(tarea.asignadaA ?? []), tarea.creadaPor]
+        .filter((uid, i, arr) => uid !== comentario.autorUid && arr.indexOf(uid) === i);
+      if (destinatarios.length) {
+        const texto = comentario.texto.slice(0, 80);
+        const notifs = destinatarios.map(uid =>
+          this.notifSvc.buildNotif(
+            'tarea_comentario',
+            uid,
+            `Comentario en "${tarea.titulo}"`,
+            `${comentario.autorNombre}: «${texto}»`,
+            { remitenteUid: comentario.autorUid, remitenteNombre: comentario.autorNombre, accionUrl: '/admin/mis-tareas', accionTexto: 'Ver comentario', relacionadoId: id, relacionadoTipo: 'tarea', prioridad: tarea.prioridad },
+          )
+        );
+        await this.notifSvc.crearBatch(notifs);
+      }
+    }
   }
 
   async actualizarComentarios(id: string, comentarios: ComentarioTarea[]): Promise<void> {
@@ -132,14 +215,14 @@ export class TareasService {
   }
 
   /** Admin aprueba una tarea en EN_REVISION → la mueve a COMPLETADA. */
-  async aprobar(id: string, adminUid: string): Promise<void> {
+  async aprobar(id: string, adminUid: string, tarea?: Pick<Tarea, 'titulo' | 'asignadaA' | 'prioridad'>): Promise<void> {
     const now = Timestamp.now();
     const entrada: HistorialEstadoTarea = {
       estado:      EstadoTarea.COMPLETADA,
       cambiadoPor: adminUid,
       fecha:       now,
     };
-    return this.fs.updateDocument<Tarea>(TareasService.COL, id, {
+    await this.fs.updateDocument<Tarea>(TareasService.COL, id, {
       estado:          EstadoTarea.COMPLETADA,
       fechaCompletada: now,
       progreso:        100,
@@ -148,6 +231,86 @@ export class TareasService {
       // @ts-expect-error arrayUnion is a FieldValue
       historial:       arrayUnion(entrada),
     });
+
+    if (tarea?.asignadaA?.length) {
+      const notifs = tarea.asignadaA.map(uid =>
+        this.notifSvc.buildNotif(
+          'tarea_aprobada',
+          uid,
+          '¡Tarea aprobada!',
+          tarea.titulo,
+          { remitenteUid: adminUid, accionUrl: '/admin/mis-tareas', accionTexto: 'Ver tarea', relacionadoId: id, relacionadoTipo: 'tarea', prioridad: tarea.prioridad },
+        )
+      );
+      await this.notifSvc.crearBatch(notifs);
+    }
+  }
+
+  /**
+   * Verifica tareas vencidas o próximas a vencer y envía notificaciones únicas.
+   * Usa flags en la tarea (notifVencidaEnviada / notifProntoVencerEnviada) para evitar duplicados.
+   * Debe llamarse una vez por sesión de admin, no en cada snapshot.
+   */
+  async verificarVencimientos(tareas: Tarea[]): Promise<void> {
+    const now   = Date.now();
+    const meses = ['ene','feb','mar','abr','may','jun','jul','ago','sep','oct','nov','dic'];
+
+    const vencidas:      Tarea[] = [];
+    const prontoVencer:  Tarea[] = [];
+
+    for (const tarea of tareas) {
+      if (!tarea.fechaVencimiento) continue;
+      if (tarea.estado === EstadoTarea.COMPLETADA || tarea.estado === EstadoTarea.CANCELADA) continue;
+
+      const vencMs  = tarea.fechaVencimiento.toDate().getTime();
+      const deltaMs = now - vencMs;                    // positive = ya venció
+
+      if (deltaMs > 0 && !tarea.notifVencidaEnviada) {
+        vencidas.push(tarea);
+      } else if (deltaMs <= 0 && deltaMs >= -24 * 3_600_000 && !tarea.notifProntoVencerEnviada) {
+        prontoVencer.push(tarea);
+      }
+    }
+
+    if (!vencidas.length && !prontoVencer.length) return;
+
+    const notifs: Omit<import('@derma/models').NotificacionAdmin, 'id'>[] = [];
+    const updates: Promise<void>[] = [];
+
+    for (const tarea of vencidas) {
+      const destinatarios = [...(tarea.asignadaA ?? []), tarea.creadaPor]
+        .filter((uid, i, arr) => uid && arr.indexOf(uid) === i);
+      for (const uid of destinatarios) {
+        notifs.push(this.notifSvc.buildNotif(
+          'tarea_vencida',
+          uid,
+          '¡Tarea vencida!',
+          tarea.titulo,
+          { accionUrl: '/admin/mis-tareas', accionTexto: 'Ver tarea', relacionadoId: tarea.id, relacionadoTipo: 'tarea', prioridad: tarea.prioridad },
+        ));
+      }
+      updates.push(this.fs.updateDocument<Tarea>(TareasService.COL, tarea.id, { notifVencidaEnviada: true } as Partial<Tarea>));
+    }
+
+    for (const tarea of prontoVencer) {
+      const venc     = tarea.fechaVencimiento!.toDate();
+      const vencLabel = `${venc.getDate()} ${meses[venc.getMonth()]}`;
+      const destinatarios = [...(tarea.asignadaA ?? []), tarea.creadaPor]
+        .filter((uid, i, arr) => uid && arr.indexOf(uid) === i);
+      for (const uid of destinatarios) {
+        notifs.push(this.notifSvc.buildNotif(
+          'tarea_por_vencer',
+          uid,
+          'Tarea próxima a vencer',
+          `${tarea.titulo} · vence el ${vencLabel}`,
+          { accionUrl: '/admin/mis-tareas', accionTexto: 'Ver tarea', relacionadoId: tarea.id, relacionadoTipo: 'tarea', prioridad: tarea.prioridad },
+        ));
+      }
+      updates.push(this.fs.updateDocument<Tarea>(TareasService.COL, tarea.id, { notifProntoVencerEnviada: true } as Partial<Tarea>));
+    }
+
+    if (notifs.length) await this.notifSvc.crearBatch(notifs);
+    await Promise.all(updates);
   }
 
   /** Archivar una tarea individual. */
