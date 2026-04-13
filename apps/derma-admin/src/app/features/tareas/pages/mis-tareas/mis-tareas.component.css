@@ -310,6 +310,8 @@
   .kanban-columns {
     overflow-x: auto;
     -webkit-overflow-scrolling: touch;
+  }
+}
 
 .comment-text {
   font-size: 0.875rem;

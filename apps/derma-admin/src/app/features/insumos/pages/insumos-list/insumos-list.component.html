@@ -1,0 +1,106 @@
+<!-- HEADER -->
+<section class="mb-5 animate-smooth-enter enter-delay-1 pb-4 border-b border-[var(--c-100)]">
+  <ui-page-header
+    title="Gestión de Insumos"
+    description="Control de stock, movimientos y alertas de vencimiento."
+  />
+</section>
+
+<!-- STATS BAR -->
+<div class="mb-8 animate-smooth-enter enter-delay-1 bg-[var(--c-50)] border border-[var(--c-200)] rounded-[16px] overflow-hidden">
+  <div class="grid grid-cols-2 lg:grid-cols-4 divide-y lg:divide-y-0 lg:divide-x divide-[var(--c-200)] text-center lg:text-left">
+
+    <button
+      (click)="filtroEstado.set('todos')"
+      class="flex flex-col p-4 lg:p-5 border-t-[3px] text-left transition-colors hover:bg-[var(--c-100)]"
+      [class.border-t-[var(--c-800)]]="filtroEstado() === 'todos'"
+      [class.border-t-transparent]="filtroEstado() !== 'todos'"
+    >
+      <span class="text-[10px] uppercase tracking-[0.12em] font-medium text-[var(--c-500)] mb-1">Total</span>
+      <span class="text-3xl lg:text-4xl font-light text-[var(--c-800)] tracking-tight">{{ contadores().total }}</span>
+    </button>
+
+    <button
+      (click)="filtroEstado.set('bajo_minimo')"
+      class="flex flex-col p-4 lg:p-5 border-t-[3px] text-left transition-colors hover:bg-amber-50"
+      [class.border-t-amber-500]="filtroEstado() === 'bajo_minimo'"
+      [class.border-t-transparent]="filtroEstado() !== 'bajo_minimo'"
+    >
+      <span class="text-[10px] uppercase tracking-[0.12em] font-medium text-[var(--c-500)] mb-1">Stock bajo</span>
+      <span class="text-3xl lg:text-4xl font-light text-amber-600 tracking-tight">{{ contadores().bajos }}</span>
+    </button>
+
+    <button
+      (click)="filtroEstado.set('sin_stock')"
+      class="flex flex-col p-4 lg:p-5 border-t-[3px] text-left transition-colors hover:bg-red-50"
+      [class.border-t-red-500]="filtroEstado() === 'sin_stock'"
+      [class.border-t-transparent]="filtroEstado() !== 'sin_stock'"
+    >
+      <span class="text-[10px] uppercase tracking-[0.12em] font-medium text-[var(--c-500)] mb-1">Sin stock</span>
+      <span class="text-3xl lg:text-4xl font-light text-red-600 tracking-tight">{{ contadores().sinStock }}</span>
+    </button>
+
+    <div class="flex flex-col p-4 lg:p-5 border-t-[3px] border-t-orange-400 col-span-2 lg:col-span-1">
+      <span class="text-[10px] uppercase tracking-[0.12em] font-medium text-[var(--c-500)] mb-1">Por vencer</span>
+      <span class="text-3xl lg:text-4xl font-light text-orange-500 tracking-tight">{{ contadores().porVencer }}</span>
+    </div>
+
+  </div>
+</div>
+
+<!-- TOOLBAR -->
+<div class="mb-6 animate-smooth-enter enter-delay-2">
+  <div class="flex flex-col sm:flex-row gap-3 items-stretch sm:items-center">
+
+    <!-- Búsqueda -->
+    <div class="relative flex-1 max-w-sm">
+      <input
+        type="text"
+        (input)="busqueda.set($any($event.target).value)"
+        [value]="busqueda()"
+        placeholder="Buscar por nombre o código..."
+        class="w-full pl-10 pr-4 py-2.5 bg-[var(--c-50)] border border-[var(--c-200)] rounded-full text-[13px] text-[var(--c-800)] placeholder:text-[var(--c-400)] focus:outline-none focus:border-[var(--c-800)] focus:ring-1 focus:ring-[var(--c-800)] transition-all"
+      />
+      <div class="absolute inset-y-0 left-0 flex items-center pl-3.5 pointer-events-none">
+        <svg class="size-4 text-[var(--c-400)]" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+          <path stroke-linecap="round" stroke-linejoin="round" d="m21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.607 10.607Z" />
+        </svg>
+      </div>
+    </div>
+
+    <!-- Categoría + Botón nuevo (siempre al extremo derecho) -->
+    <div class="flex items-center gap-3 sm:ml-auto">
+      <ui-dropdown-select
+        [options]="categoriaOptions()"
+        placeholder="Todas las categorías"
+        [selectedValue]="filtroCategoria()"
+        (valueChanged)="filtroCategoria.set($any($event).id)"
+      />
+
+      @if (canEdit()) {
+        <a
+          routerLink="/admin/insumos/nuevo"
+          class="shrink-0 flex items-center gap-2 px-4 py-2.5 bg-[var(--c-800)] text-[var(--c-50)] text-[12px] font-medium rounded-full hover:bg-[var(--c-700)] transition-colors tracking-wide whitespace-nowrap"
+        >
+          <svg class="size-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+            <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
+          </svg>
+          Nuevo insumo
+        </a>
+      }
+    </div>
+  </div>
+</div>
+
+<!-- Grid de insumos -->
+<div class="animate-smooth-enter enter-delay-3">
+  @if (insumosFiltrados().length > 0) {
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+      @for (insumo of insumosFiltrados(); track insumo.id) {
+        <app-insumo-card [insumo]="insumo" [canEdit]="canEdit()" />
+      }
+    </div>
+  } @else {
+    <ui-empty-state message="No hay insumos que coincidan con los filtros aplicados." />
+  }
+</div>

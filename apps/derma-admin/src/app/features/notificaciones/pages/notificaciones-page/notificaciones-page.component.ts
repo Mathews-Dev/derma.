@@ -60,6 +60,10 @@ export class NotificacionesPageComponent {
     { value: 'tarea_comentario',  label: 'Comentarios'},
     { value: 'tarea_por_vencer',  label: 'Por vencer' },
     { value: 'tarea_vencida',     label: 'Vencidas'   },
+    { value: 'inventario_bajo',                  label: 'Stock bajo'    },
+    { value: 'inventario_por_vencer',            label: 'Por vencer'   },
+    { value: 'inventario_vencido',               label: 'Vencidos'     },
+    { value: 'inventario_solicitud_reposicion',  label: 'Reposición'   },
   ];
 
   setFiltroEstado(f: FiltroEstado): void {

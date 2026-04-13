@@ -24,7 +24,6 @@ type ConfigTab = 'clinica' | 'horarios' | 'sistema';
   imports: [
     ReactiveFormsModule,
     UiInputComponent,
-    UiButtonComponent,
     UiPageHeaderComponent,
     UiLoaderCardComponent,
   ],

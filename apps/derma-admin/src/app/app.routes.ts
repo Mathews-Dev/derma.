@@ -80,6 +80,10 @@ export const appRoutes: Route[] = [
         loadChildren: () => import('./features/tareas/tareas.routes').then(m => m.misTareasRoutes),
       },
       {
+        path: 'insumos',
+        loadChildren: () => import('./features/insumos/insumos.routes').then(m => m.insumosRoutes),
+      },
+      {
         path: 'notificaciones',
         canActivate: [roleGuard([RolUsuario.ADMIN, RolUsuario.EMPLEADO])],
         loadChildren: () => import('./features/notificaciones/notificaciones.routes').then(m => m.notificacionesRoutes),

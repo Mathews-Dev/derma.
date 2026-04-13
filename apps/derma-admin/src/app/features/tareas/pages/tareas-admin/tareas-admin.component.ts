@@ -52,7 +52,6 @@ import { TareaFormModalComponent } from '../../ui/tarea-form-modal/tarea-form-mo
     UiLoaderCardComponent,
     TareaCardComponent,
     TareaFormModalComponent,
-    UiButtonComponent,
     ToggleComponent,
     UiDropdownSelectComponent,
     TooltipComponent,
