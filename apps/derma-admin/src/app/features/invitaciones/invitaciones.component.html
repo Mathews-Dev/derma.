@@ -82,10 +82,10 @@
                   <td class="px-8 py-4 whitespace-nowrap hidden sm:table-cell">
                     <div class="flex flex-col gap-0.5">
                       <p class="text-[12px] font-normal text-[var(--c-600)] tabular-nums">
-                        Generado: {{ inv.fechaCreacion?.toDate() | date:'dd MMM yyyy, HH:mm' }}
+                        Generado: {{ inv.fechaCreacion.toDate() | date:'dd MMM yyyy, HH:mm' }}
                       </p>
                       <p class="text-[10px] font-medium text-[var(--c-400)] tracking-wide">
-                        Expira: <span class="tabular-nums">{{ inv.fechaExpiracion?.toDate() | date:'dd MMM yyyy, HH:mm' }}</span>
+                        Expira: <span class="tabular-nums">{{ inv.fechaExpiracion.toDate() | date:'dd MMM yyyy, HH:mm' }}</span>
                       </p>
                     </div>
                   </td>

@@ -23,6 +23,7 @@ export type CategoriaTarea =
   | 'administrativo'
   | 'clinico'
   | 'inventario'
+  | 'compras'
   | 'otro';
 
 export interface ComentarioTarea {
@@ -107,5 +108,6 @@ export const CATEGORIA_LABELS: Record<CategoriaTarea, string> = {
   administrativo: 'Administrativo',
   clinico:        'Clinico',
   inventario:     'Inventario',
+  compras:        'Compras',
   otro:           'Otro',
 };

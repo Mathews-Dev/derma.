@@ -9,7 +9,7 @@ import { Subject, takeUntil } from 'rxjs';
 @Component({
   selector: 'derma-admin-invitaciones',
   standalone: true,
-  imports: [CommonModule, UiButtonComponent, LoadingComponent, InvitationModalComponent, UiPaginationComponent, TooltipComponent, UiPageHeaderComponent, UiLoaderCardComponent, UiBadgeComponent, UiEmptyStateComponent],
+  imports: [CommonModule, UiButtonComponent, InvitationModalComponent, UiPaginationComponent, TooltipComponent, UiPageHeaderComponent, UiLoaderCardComponent, UiBadgeComponent, UiEmptyStateComponent],
   templateUrl: './invitaciones.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })

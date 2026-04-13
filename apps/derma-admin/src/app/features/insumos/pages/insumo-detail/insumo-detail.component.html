@@ -1,0 +1,387 @@
+﻿<div class="relative w-full">
+  <div class="relative w-full mx-auto pt-6 pb-28">
+
+@if (insumo(); as ins) {
+  <div class="flex flex-col gap-6 mx-auto">
+
+    <!-- HEADER — mismo patrón que editar-usuario -->
+    <div class="animate-smooth-enter enter-delay-1 flex items-center justify-between gap-4 mb-2 pb-5 border-b border-[var(--c-100)]">
+      <div class="flex items-center gap-4">
+        <a
+          routerLink="/admin/insumos"
+          class="group flex items-center justify-center size-9 rounded-full border border-[var(--c-200)] text-[var(--c-500)] hover:text-[var(--c-800)] hover:border-[var(--c-800)] transition-all duration-200 shrink-0"
+        >
+          <svg class="size-4 group-hover:-translate-x-0.5 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M10.5 19.5 3 12m0 0 7.5-7.5M3 12h18" />
+          </svg>
+        </a>
+        <div>
+          <h1 class="text-xl font-light text-[var(--c-800)] leading-tight tracking-tight">{{ ins.nombre }}</h1>
+          <p class="text-xs text-[var(--c-500)] mt-0.5">{{ categoriaLabel() }}</p>
+        </div>
+      </div>
+
+      <div class="flex items-center gap-2">
+        @if (canEdit()) {
+          <a
+            [routerLink]="['/admin/insumos', ins.id, 'solicitar']"
+            class="px-4 py-2 text-[12px] font-medium text-[var(--c-600)] border border-[var(--c-200)] rounded-full hover:border-[var(--c-800)] hover:text-[var(--c-800)] transition-all tracking-wide"
+          >
+            Solicitar reposición
+          </a>
+          <a
+            [routerLink]="['/admin/insumos', ins.id, 'editar']"
+            class="px-4 py-2 text-[12px] font-medium bg-[var(--c-800)] text-[var(--c-50)] rounded-full hover:bg-[var(--c-700)] transition-colors tracking-wide"
+          >
+            Editar
+          </a>
+        }
+        @if (canAdmin()) {
+          <button
+            (click)="showDesactivarConfirm.set(true)"
+            class="px-4 py-2 text-[12px] font-medium text-red-600 border border-red-200 rounded-full hover:bg-red-50 transition-colors tracking-wide"
+          >
+            Desactivar
+          </button>
+        }
+      </div>
+    </div>
+
+    <!-- Datos y stock -->
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 animate-smooth-enter enter-delay-2">
+
+      <!-- Foto + datos básicos -->
+      <div class="md:col-span-2 bg-[var(--c-50)] border border-[var(--c-200)] rounded-2xl p-5 flex gap-5">
+        @if (ins.fotoUrl) {
+          <img [src]="ins.fotoUrl" [alt]="ins.nombre" class="w-24 h-24 object-cover rounded-xl border border-[var(--c-200)] flex-shrink-0" />
+        }
+        <div class="flex flex-col gap-2 flex-1 min-w-0">
+          @if (ins.descripcion) {
+            <p class="text-[13px] text-[var(--c-600)]">{{ ins.descripcion }}</p>
+          }
+          @if (ins.codigo) {
+            <p class="text-[11px] font-mono text-[var(--c-500)]">Código: {{ ins.codigo }}</p>
+          }
+          @if (ins.ubicacion) {
+            <p class="text-[12px] text-[var(--c-500)] flex items-center gap-1">
+              <svg class="w-3.5 h-3.5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M15 10.5a3 3 0 11-6 0 3 3 0 016 0z" />
+                <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1115 0z" />
+              </svg>
+              {{ ins.ubicacion }}
+            </p>
+          }
+          @if (ins.loteActual) {
+            <p class="text-[11px] text-[var(--c-500)]">Lote: {{ ins.loteActual }}</p>
+          }
+          @if (ins.proveedor) {
+            <div class="mt-1 p-3 bg-[var(--c-100)] border border-[var(--c-200)] rounded-xl">
+              <p class="text-[10px] font-semibold text-[var(--c-500)] uppercase tracking-widest mb-1.5">Proveedor</p>
+              <p class="text-[13px] font-medium text-[var(--c-800)]">{{ ins.proveedor.nombre }}</p>
+              @if (ins.proveedor.telefono) {
+                <p class="text-[11px] text-[var(--c-500)] mt-0.5">{{ ins.proveedor.telefono }}</p>
+              }
+              @if (ins.proveedor.email) {
+                <a [href]="'mailto:' + ins.proveedor.email" class="text-[11px] text-[var(--c-600)] hover:text-[var(--c-800)] hover:underline">{{ ins.proveedor.email }}</a>
+              }
+            </div>
+          }
+        </div>
+      </div>
+
+      <!-- Stock panel -->
+      <div class="bg-[var(--c-50)] border border-[var(--c-200)] rounded-2xl p-5 flex flex-col gap-4">
+        <div class="flex items-center justify-between">
+          <span class="text-[10px] font-medium uppercase tracking-[0.12em] text-[var(--c-500)]">Stock</span>
+          <app-stock-indicator [insumo]="ins" />
+        </div>
+
+        <div class="flex flex-col items-center py-3">
+          <span class="text-[48px] font-light text-[var(--c-800)] font-mono leading-none tracking-tight">{{ ins.stockActual }}</span>
+          <span class="text-[12px] text-[var(--c-500)] mt-1 uppercase tracking-widest">{{ ins.unidadMedida }}</span>
+        </div>
+
+        <div class="grid grid-cols-2 gap-2 text-center text-[11px]">
+          <div class="p-2 bg-[var(--c-100)] rounded-lg border border-[var(--c-200)]">
+            <p class="font-medium text-[var(--c-800)] text-[13px] font-mono">{{ ins.stockMinimo }}</p>
+            <p class="text-[var(--c-500)] uppercase tracking-widest text-[9px] mt-0.5">Mínimo</p>
+          </div>
+          <div class="p-2 bg-[var(--c-100)] rounded-lg border border-[var(--c-200)]">
+            <p class="font-medium text-[var(--c-800)] text-[13px] font-mono">{{ ins.stockMaximo ?? '—' }}</p>
+            <p class="text-[var(--c-500)] uppercase tracking-widest text-[9px] mt-0.5">Máximo</p>
+          </div>
+          @if (ins.precioUnitario) {
+            <div class="col-span-2 p-2 bg-[var(--c-100)] rounded-lg border border-[var(--c-200)]">
+              <p class="font-medium text-[var(--c-800)] text-[13px] font-mono">${{ ins.precioUnitario | number:'1.2-2' }}</p>
+              <p class="text-[var(--c-500)] uppercase tracking-widest text-[9px] mt-0.5">Precio unitario</p>
+            </div>
+          }
+        </div>
+
+        @if (ins.fechaVencimiento) {
+          <div class="text-center">
+            @if (ins.fechaVencimiento.toDate() < today) {
+              <span class="text-[11px] font-medium text-red-600">⚠ Vencido</span>
+            } @else {
+              <span class="text-[11px] text-[var(--c-500)]">Vence: {{ ins.fechaVencimiento.toDate() | date:'dd/MM/yyyy' }}</span>
+            }
+          </div>
+        }
+
+        <!-- Botones de movimiento -->
+        @if (canEdit()) {
+          <div class="flex flex-col gap-2 mt-auto">
+            <button
+              (click)="abrirMovModal('salida')"
+              class="w-full py-2 text-[12px] font-medium bg-[var(--c-800)] text-[var(--c-50)] rounded-full hover:bg-[var(--c-700)] transition-colors tracking-wide">
+              Registrar salida
+            </button>
+            <button
+              (click)="abrirMovModal('entrada')"
+              class="w-full py-2 text-[12px] font-medium border border-[var(--c-300)] text-[var(--c-700)] rounded-full hover:border-[var(--c-800)] hover:text-[var(--c-800)] transition-all tracking-wide">
+              Registrar entrada
+            </button>
+            <button
+              (click)="abrirMovModal('ajuste')"
+              class="w-full py-2 text-[12px] font-medium text-[var(--c-500)] hover:text-[var(--c-800)] transition-colors tracking-wide">
+              Ajuste de inventario
+            </button>
+          </div>
+        }
+      </div>
+    </div>
+
+    <!-- Historial de movimientos -->
+    <section class="bg-[var(--c-50)] border border-[var(--c-200)] rounded-2xl p-5 animate-smooth-enter enter-delay-3">
+      <h2 class="text-[10px] font-medium uppercase tracking-[0.12em] text-[var(--c-500)] mb-4">Historial de movimientos</h2>
+      @if (movimientos().length > 0) {
+        @for (mov of movimientos(); track mov.id) {
+          <app-movimiento-item [mov]="mov" />
+        }
+      } @else {
+        <p class="text-[12px] text-[var(--c-500)] text-center py-6">Sin movimientos registrados.</p>
+      }
+    </section>
+  </div>
+
+  <!-- Modal de movimiento -->
+  @if (showMovModal()) {
+    <div
+      class="fixed inset-0 z-50 flex items-center justify-center p-4"
+      style="background-color: rgba(78, 62, 118, 0.05); backdrop-filter: blur(8px) saturate(150%); -webkit-backdrop-filter: blur(8px) saturate(150%);"
+      [class.animate-backdrop-in]="!isMovClosing()"
+      [class.animate-backdrop-out]="isMovClosing()"
+      (click)="cerrarMovModal()"
+    >
+      <div
+        class="relative w-full max-w-[440px] bg-[var(--c-50)] rounded-[20px] border border-[var(--c-200)] shadow-[0_24px_64px_-12px_rgba(0,0,0,0.22)]"
+        [class.animate-modal-in]="!isMovClosing()"
+        [class.animate-modal-out]="isMovClosing()"
+        (click)="$event.stopPropagation()"
+      >
+
+        <!-- Botón cerrar -->
+        <button
+          type="button"
+          (click)="cerrarMovModal()"
+          aria-label="Cerrar"
+          class="absolute top-5 right-5 flex items-center justify-center size-7 rounded-lg border border-[var(--c-200)] bg-transparent cursor-pointer transition-all duration-200 hover:bg-[var(--c-800)] hover:border-[var(--c-800)] group z-10"
+        >
+          <svg class="size-3 text-[var(--c-500)] group-hover:text-[var(--c-50)] transition-colors" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M6 18 18 6M6 6l12 12" />
+          </svg>
+        </button>
+
+        <div class="p-6 pt-7">
+
+          <!-- Título -->
+          <h2 class="text-[16px] font-light text-[var(--c-800)] tracking-tight mb-5 pr-8">
+            @switch (tipoMov()) {
+              @case ('entrada') { Registrar entrada }
+              @case ('salida')  { Registrar salida  }
+              @case ('ajuste')  { Ajuste de inventario }
+            }
+          </h2>
+
+          <!-- Tipo selector — segmented control -->
+          <div class="grid grid-cols-3 gap-1.5 p-1 bg-[var(--c-100)] rounded-xl border border-[var(--c-200)] mb-5">
+            @for (tipo of ['salida', 'entrada', 'ajuste']; track tipo) {
+              <button
+                type="button"
+                (click)="tipoMov.set($any(tipo))"
+                class="py-2 text-[11px] font-medium rounded-lg transition-all duration-200 active:scale-[0.97]"
+                [class.bg-[var(--c-800)]]="tipoMov() === tipo"
+                [class.text-[var(--c-50)]]="tipoMov() === tipo"
+                [class.shadow-sm]="tipoMov() === tipo"
+                [class.text-[var(--c-600)]]="tipoMov() !== tipo"
+                [class.hover:bg-[var(--c-200)]]="tipoMov() !== tipo"
+              >
+                @switch (tipo) { @case ('entrada') { Entrada } @case ('salida') { Salida } @case ('ajuste') { Ajuste } }
+              </button>
+            }
+          </div>
+
+          <!-- Campos del formulario -->
+          <div class="flex flex-col gap-4">
+
+            <!-- Cantidad — siempre visible -->
+            <div class="stagger-1">
+              <label class="text-[10px] uppercase font-medium text-[var(--c-600)] block tracking-widest ml-1 mb-[6px]">
+                @if (tipoMov() === 'ajuste') { Stock resultante } @else { Cantidad }
+              </label>
+              <input
+                type="number" min="0"
+                [ngModel]="cantidadMov()"
+                (ngModelChange)="cantidadMov.set(+$event)"
+                name="cantidad"
+                class="w-full h-[44px] bg-[var(--c-50)] outline-none border border-[var(--c-200)] hover:border-[var(--c-400)] focus:border-[var(--c-800)] focus:ring-1 focus:ring-[var(--c-800)] transition-all duration-200 rounded-xl px-4 text-[0.875rem] text-[var(--c-800)] placeholder:text-[var(--c-400)]"
+              />
+              <p class="text-[11px] text-[var(--c-500)] mt-1.5 ml-1">
+                Stock actual: <strong class="font-mono text-[var(--c-700)]">{{ ins.stockActual }}</strong>
+                &rarr;
+                <strong class="font-mono" [class.text-emerald-600]="stockResultante() > ins.stockActual" [class.text-red-600]="stockResultante() < ins.stockActual">{{ stockResultante() }}</strong>
+              </p>
+            </div>
+
+            <!-- Campos específicos de SALIDA -->
+            @if (tipoMov() === 'salida') {
+              <div class="flex flex-col gap-4 animate-smooth-enter">
+                <div class="space-y-[6px]">
+                  <label class="text-[10px] uppercase font-medium text-[var(--c-600)] block tracking-widest ml-1">Motivo</label>
+                  <ui-dropdown-select
+                    [options]="motivoSalidaOptions"
+                    [selectedValue]="motivoSalida()"
+                    (valueChanged)="onMotivoSalidaChange($event)"
+                  />
+                </div>
+              </div>
+            }
+
+            <!-- Campos específicos de ENTRADA -->
+            @if (tipoMov() === 'entrada') {
+              <div class="flex flex-col gap-4 animate-smooth-enter">
+                <div class="space-y-[6px]">
+                  <label class="text-[10px] uppercase font-medium text-[var(--c-600)] block tracking-widest ml-1">Motivo</label>
+                  <ui-dropdown-select
+                    [options]="motivoEntradaOptions"
+                    [selectedValue]="motivoEntrada()"
+                    (valueChanged)="onMotivoEntradaChange($event)"
+                  />
+                </div>
+                <div class="grid grid-cols-2 gap-3">
+                  <div class="space-y-[6px]">
+                    <label class="text-[10px] uppercase font-medium text-[var(--c-600)] block tracking-widest ml-1">Lote</label>
+                    <input
+                      type="text"
+                      [ngModel]="loteEntrada()" (ngModelChange)="loteEntrada.set($event)"
+                      name="lote"
+                      placeholder="LOT-2024"
+                      class="w-full h-[44px] bg-[var(--c-50)] outline-none border border-[var(--c-200)] hover:border-[var(--c-400)] focus:border-[var(--c-800)] focus:ring-1 focus:ring-[var(--c-800)] transition-all duration-200 rounded-xl px-4 text-[0.875rem] text-[var(--c-800)] placeholder:text-[var(--c-400)]"
+                    />
+                  </div>
+                  <div>
+                    <app-datepicker
+                      label="Vencimiento"
+                      [selectedDate]="fechaVencLote()"
+                      (dateChange)="fechaVencLote.set($event)"
+                    />
+                  </div>
+                </div>
+              </div>
+            }
+
+            <!-- Notas — siempre visible -->
+            <div class="space-y-[6px] stagger-2">
+              <label class="text-[10px] uppercase font-medium text-[var(--c-600)] block tracking-widest ml-1">
+                Notas <span class="normal-case tracking-normal text-[var(--c-400)]">(opcional)</span>
+              </label>
+              <textarea
+                rows="2"
+                [ngModel]="notasMov()" (ngModelChange)="notasMov.set($event)"
+                name="notas"
+                placeholder="Detalles adicionales..."
+                class="w-full bg-[var(--c-50)] outline-none border border-[var(--c-200)] hover:border-[var(--c-400)] focus:border-[var(--c-800)] focus:ring-1 focus:ring-[var(--c-800)] transition-all duration-200 rounded-xl px-4 py-3 text-[0.875rem] text-[var(--c-800)] placeholder:text-[var(--c-400)] resize-none"
+              ></textarea>
+            </div>
+
+          </div>
+
+          <!-- Footer -->
+          <div class="flex justify-end gap-3 mt-5 pt-4 border-t border-[var(--c-100)]">
+            <button
+              type="button"
+              (click)="cerrarMovModal()"
+              class="px-4 py-2 text-[13px] font-medium text-[var(--c-500)] rounded-full border border-[var(--c-200)] hover:border-[var(--c-800)] hover:text-[var(--c-800)] transition-all"
+            >
+              Cancelar
+            </button>
+            <button
+              type="button"
+              (click)="registrarMovimiento()"
+              [disabled]="savingMov()"
+              class="px-5 py-2 text-[13px] font-medium bg-[var(--c-800)] text-[var(--c-50)] rounded-full hover:bg-[var(--c-700)] transition-colors disabled:opacity-50"
+            >
+              @if (savingMov()) { Guardando... } @else { Confirmar }
+            </button>
+          </div>
+
+        </div>
+      </div>
+    </div>
+  }
+
+  <!-- Confirm desactivar -->
+  @if (showDesactivarConfirm()) {
+    <div
+      class="fixed inset-0 z-50 flex items-center justify-center p-4"
+      style="background-color: rgba(78, 62, 118, 0.05); backdrop-filter: blur(8px) saturate(150%); -webkit-backdrop-filter: blur(8px) saturate(150%);"
+      [class.animate-backdrop-in]="!isDesactivarClosing()"
+      [class.animate-backdrop-out]="isDesactivarClosing()"
+      (click)="cerrarDesactivarModal()"
+    >
+      <div
+        class="relative w-full max-w-sm bg-[var(--c-50)] rounded-[20px] border border-[var(--c-200)] shadow-[0_24px_64px_-12px_rgba(0,0,0,0.22)]"
+        [class.animate-modal-in]="!isDesactivarClosing()"
+        [class.animate-modal-out]="isDesactivarClosing()"
+        (click)="$event.stopPropagation()"
+      >
+        <!-- Botón cerrar -->
+        <button
+          type="button"
+          (click)="cerrarDesactivarModal()"
+          aria-label="Cerrar"
+          class="absolute top-5 right-5 flex items-center justify-center size-7 rounded-lg border border-[var(--c-200)] bg-transparent cursor-pointer transition-all duration-200 hover:bg-[var(--c-800)] hover:border-[var(--c-800)] group z-10"
+        >
+          <svg class="size-3 text-[var(--c-500)] group-hover:text-[var(--c-50)] transition-colors" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M6 18 18 6M6 6l12 12" />
+          </svg>
+        </button>
+
+        <div class="p-6 pt-7">
+          <h2 class="text-[16px] font-light text-[var(--c-800)] tracking-tight mb-2 pr-8">¿Desactivar insumo?</h2>
+          <p class="text-[13px] text-[var(--c-500)] mb-5 leading-relaxed">El insumo dejará de aparecer en la lista. Esta acción es reversible contactando al administrador.</p>
+          <div class="flex justify-end gap-3 pt-4 border-t border-[var(--c-100)]">
+            <button
+              (click)="cerrarDesactivarModal()"
+              class="px-4 py-2 text-[13px] font-medium text-[var(--c-500)] rounded-full border border-[var(--c-200)] hover:border-[var(--c-800)] hover:text-[var(--c-800)] transition-all">
+              Cancelar
+            </button>
+            <button
+              (click)="desactivar()"
+              [disabled]="desactivando()"
+              class="px-5 py-2 text-[13px] font-medium bg-red-600 text-white rounded-full hover:bg-red-700 transition-colors disabled:opacity-50">
+              @if (desactivando()) { Desactivando... } @else { Sí, desactivar }
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  }
+} @else {
+  <div class="flex items-center justify-center h-64">
+    <div class="w-6 h-6 border-2 border-[var(--c-800)] border-t-transparent rounded-full animate-spin"></div>
+  </div>
+}
+
+  </div>
+</div>

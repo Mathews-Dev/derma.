@@ -13,6 +13,9 @@ export type TipoNotificacionAdmin =
   | 'tarea_por_vencer'
   | 'tarea_vencida'
   | 'inventario_bajo'
+  | 'inventario_por_vencer'
+  | 'inventario_vencido'
+  | 'inventario_solicitud_reposicion'
   | 'sistema';
 
 export interface NotificacionAdmin {

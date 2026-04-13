@@ -66,7 +66,7 @@ export class TareaFormModalComponent {
 
   readonly PrioridadTarea = PrioridadTarea;
   readonly categoriaOptions: CategoriaTarea[] = [
-    'limpieza', 'recepcion', 'mantenimiento', 'administrativo', 'clinico', 'inventario', 'otro',
+    'limpieza', 'recepcion', 'mantenimiento', 'administrativo', 'clinico', 'inventario', 'compras', 'otro',
   ];
   readonly categoriaLabels: Record<CategoriaTarea, string> = {
     limpieza:       'Limpieza',
@@ -75,6 +75,7 @@ export class TareaFormModalComponent {
     administrativo: 'Administrativo',
     clinico:        'Clínico',
     inventario:     'Inventario',
+    compras:        'Compras',
     otro:           'Otro',
   };
 

@@ -35,7 +35,6 @@ import {
     DecimalPipe,
     UiPageHeaderComponent,
     UiPaginationComponent,
-    UiBadgeComponent,
     UiLoaderCardComponent,
     UiEmptyStateComponent,
     TooltipComponent,

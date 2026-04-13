@@ -1,0 +1,127 @@
+<article
+  class="bg-[#f8f9fa] border border-[#dee2e6] rounded-[14px] p-5 flex flex-col gap-4 cursor-pointer transition-all duration-200 hover:-translate-y-0.5 hover:border-[#adb5bd] hover:shadow-[0_6px_24px_rgba(10,10,10,0.10)]"
+>
+  <!-- Header -->
+  <div class="flex items-start justify-between gap-2">
+    <div class="flex items-start gap-2.5 min-w-0">
+
+      @if (insumo().fotoUrl) {
+        <img
+          [src]="insumo().fotoUrl"
+          [alt]="insumo().nombre"
+          class="w-[38px] h-[38px] rounded-[9px] object-cover border border-[#dee2e6] flex-shrink-0"
+        />
+      } @else {
+        <div class="w-[38px] h-[38px] rounded-[9px] bg-[#e9ecef] border border-[#dee2e6] flex items-center justify-center flex-shrink-0">
+          <svg class="w-4 h-4 text-[#6c757d]" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M20.25 7.5l-.625 10.632a2.25 2.25 0 01-2.247 2.118H6.622a2.25 2.25 0 01-2.247-2.118L3.75 7.5M3.375 7.5h17.25c.621 0 1.125-.504 1.125-1.125v-1.5c0-.621-.504-1.125-1.125-1.125H3.375c-.621 0-1.125.504-1.125 1.125v1.5c0 .621.504 1.125 1.125 1.125z" />
+          </svg>
+        </div>
+      }
+
+      <div class="min-w-0">
+        <ui-tooltip [text]="insumo().nombre" placement="top">
+          <p class="text-[13px] font-semibold text-[#212529] leading-snug truncate max-w-[128px] cursor-default">{{ insumo().nombre }}</p>
+        </ui-tooltip>
+        <p class="text-[11px] text-[#6c757d] mt-0.5">{{ categoriaLabel() }}</p>
+      </div>
+    </div>
+
+    <!-- Stock badge -->
+    <app-stock-indicator [insumo]="insumo()" />
+  </div>
+
+  <!-- Stock -->
+  <div class="grid grid-cols-3 gap-1">
+
+    <!-- Actual -->
+    <div class="flex flex-col items-center px-1.5 pt-2.5 pb-2 bg-[#212529] border border-[#212529] rounded-[9px]">
+      <span class="text-[20px] font-light text-[#f8f9fa] font-mono leading-none tracking-tight">{{ insumo().stockActual }}</span>
+      <span class="text-[9px] text-[#adb5bd] uppercase tracking-widest mt-1.5">Actual</span>
+    </div>
+
+    <!-- Mínimo -->
+    <div class="flex flex-col items-center px-1.5 pt-2.5 pb-2 bg-[var(--c-100)] border border-[#ced4da] rounded-[9px]">
+      <span class="text-[20px] font-light text-[#343a40] font-mono leading-none tracking-tight">{{ insumo().stockMinimo }}</span>
+      <span class="text-[9px] text-[#495057] uppercase tracking-widest mt-1.5">Mínimo</span>
+    </div>
+
+    <!-- Máximo -->
+    <div class="flex flex-col items-center px-1.5 pt-2.5 pb-2 bg-[var(--c-100)] border border-[#ced4da] rounded-[9px]">
+      <span class="text-[20px] font-light text-[#343a40] font-mono leading-none tracking-tight">{{ insumo().stockMaximo ?? '—' }}</span>
+      <span class="text-[9px] text-[#495057] uppercase tracking-widest mt-1.5">Máximo</span>
+    </div>
+
+  </div>
+
+  <!-- Vencimiento -->
+  @if (vencimientoLabel()) {
+    <div
+      class="flex items-center gap-1.5 text-[11px]"
+      [class.text-red-600]="estaVencido()"
+      [class.text-amber-700]="proximoAVencer() && !estaVencido()"
+      [class.text-[#6c757d]]="!estaVencido() && !proximoAVencer()"
+    >
+      <svg class="w-3.5 h-3.5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 012.25-2.25h13.5A2.25 2.25 0 0121 7.5v11.25m-18 0A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75m-18 0v-7.5A2.25 2.25 0 015.25 9h13.5A2.25 2.25 0 0121 11.25v7.5" />
+      </svg>
+      <span>
+        @if (estaVencido()) { Vencido el } @else { Vence el }
+        {{ vencimientoLabel() }}
+      </span>
+    </div>
+  }
+
+  <!-- Ubicación -->
+  @if (insumo().ubicacion) {
+    <p class="flex items-center gap-1.5 text-[11px] text-[#6c757d] truncate">
+      <svg class="w-3 h-3 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M15 10.5a3 3 0 11-6 0 3 3 0 016 0z" />
+        <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1115 0z" />
+      </svg>
+      {{ insumo().ubicacion }}
+    </p>
+  }
+
+  <!-- Divider -->
+  <div class="h-px bg-[#e9ecef]"></div>
+
+  <!-- Actions -->
+  <div class="flex items-center gap-1">
+
+    
+     <a [routerLink]="['/admin/insumos', insumo().id, 'solicitar']"
+      class="flex-1 text-center text-[11px] font-medium text-[#495057] py-1.5 rounded-lg hover:bg-[#e9ecef] hover:text-[#212529] transition-colors duration-150"
+    >
+      Solicitar
+    </a>
+
+    <span class="w-px h-3.5 bg-[#dee2e6] mx-0.5"></span>
+
+    <ui-tooltip text="Ver detalle" placement="top">
+      <a
+        [routerLink]="['/admin/insumos', insumo().id]"
+        class="flex items-center justify-center w-[30px] h-[30px] rounded-lg text-[#6c757d] border border-transparent hover:text-[#212529] hover:bg-[#e9ecef] hover:border-[#dee2e6] transition-all duration-150 group/btn"
+      >
+        <svg class="w-3.5 h-3.5 group-hover/btn:scale-110 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M2.036 12.322a1.012 1.012 0 010-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.964-7.178z" />
+          <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+        </svg>
+      </a>
+    </ui-tooltip>
+
+@if (canEdit()) {
+  <ui-tooltip text="Editar insumo" placement="top">
+    <a
+      [routerLink]="['/admin/insumos', insumo().id, 'editar']"
+      class="flex items-center justify-center w-[30px] h-[30px] rounded-lg text-[#6c757d] border border-transparent hover:text-[#212529] hover:bg-[#e9ecef] hover:border-[#dee2e6] transition-all duration-150 group/btn"
+    >
+      <svg class="w-3.5 h-3.5 group-hover/btn:scale-110 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+        <path stroke-linecap="round" stroke-linejoin="round" d="m16.862 4.487 1.687-1.688a1.875 1.875 0 112.652 2.652L10.582 16.07a4.5 4.5 0 01-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 011.13-1.897l8.932-8.931zm0 0L19.5 7.125" />
+      </svg>
+    </a>
+  </ui-tooltip>
+}
+
+  </div>
+</article>
