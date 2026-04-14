@@ -4,6 +4,7 @@ import { AuthService } from '@derma/firebase';
 import { LayoutStateService } from '../../core/services/layout-state.service';
 import { AdminHeaderComponent } from './header/admin-header.component';
 import { AdminSidebarComponent } from './sidebar/admin-sidebar.component';
+import { LoadingService } from '@derma/ui';
 
 @Component({
   selector: 'derm-private-layout',
@@ -16,6 +17,7 @@ import { AdminSidebarComponent } from './sidebar/admin-sidebar.component';
 export class PrivateLayoutComponent {
   private readonly authService = inject(AuthService);
   private readonly layoutState = inject(LayoutStateService);
+  private readonly loadingService = inject(LoadingService);
 
   readonly user = computed(() => this.authService.currentUser());
   readonly sidebarOpen = signal(false);
@@ -34,6 +36,6 @@ export class PrivateLayoutComponent {
   }
 
   async logout(): Promise<void> {
-    await this.authService.logOut();
+    await this.loadingService.showWhile(this.authService.logOut());
   }
 }
