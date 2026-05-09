@@ -20,7 +20,6 @@ app.use((err: any, req: express.Request, res: express.Response, next: express.Ne
   res.status(500).json({ success: false, error: 'Error interno del servidor' });
 });
 
-// Solo levanta el servidor si se ejecuta directamente (desarrollo local)
 if (process.env.NODE_ENV !== 'production') {
   const host = process.env.HOST ?? 'localhost';
   const port = process.env.PORT ? Number(process.env.PORT) : 3000;
@@ -29,5 +28,4 @@ if (process.env.NODE_ENV !== 'production') {
   });
 }
 
-// Exporta la app para Vercel (serverless)
 export default app;
