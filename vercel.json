@@ -1,13 +1,10 @@
 {
   "version": 2,
-  "buildCommand": "npx nx run mercadopago:build:production",
-  "outputDirectory": "dist/backend/mercadopago",
-  "builds": [
-    {
-      "src": "dist/backend/mercadopago/main.js",
-      "use": "@vercel/node"
+  "functions": {
+    "dist/backend/mercadopago/main.js": {
+      "runtime": "@vercel/node@5.x"
     }
-  ],
+  },
   "routes": [
     {
       "src": "/api/payment(.*)",
