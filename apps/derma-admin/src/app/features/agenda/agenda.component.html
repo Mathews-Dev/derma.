@@ -1,5 +1,94 @@
-<section class="space-y-3">
-  <p class="text-[0.75rem] uppercase tracking-[0.18em] text-[var(--c-400)]">Agenda</p>
-  <h1 class="text-3xl font-semibold text-[var(--c-800)]">Agenda médica</h1>
-  <p class="text-[var(--c-600)] max-w-3xl">Calendario y turnos del staff médico y recepción. Próximo paso: vistas por día/semana y gestión en tiempo real.</p>
+<section class="mb-4 animate-smooth-enter">
+  <ui-page-header
+    title="Agenda"
+    description="Gestioná los turnos, horarios y ocupación de los profesionales."
+  >
+    <div actions class="flex items-center gap-2">
+      <ui-button
+        label="Nuevo Turno"
+        size="h-[40px]"
+        (click)="onNewTurn()"
+        buttonClass="shadow-sm">
+      </ui-button>
+    </div>
+  </ui-page-header>
 </section>
+
+<div class="scheduler-layout relative bg-[var(--c-50)] rounded-xl border border-[var(--c-200)] overflow-hidden animate-smooth-enter stagger-1"
+     [class.sidebar-collapsed]="sidebarCollapsed()"
+     [class.right-panel-collapsed]="rightPanelCollapsed()">
+
+  <!-- Sidebar Toggle -->
+  <button class="panel-toggle toggle-sidebar"
+          (click)="toggleSidebar()"
+          [title]="sidebarCollapsed() ? 'Mostrar lateral' : 'Contraer lateral'">
+    <i [class]="sidebarCollapsed() ? 'chevron-right' : 'chevron-left'"></i>
+  </button>
+
+  <ui-agenda-sidebar
+    class="agenda-sidebar-comp"
+    [profesionales]="profesionalesSidebar() ?? []"
+    (dateSelect)="onDateSelect($event)"
+    (filterChange)="onFilterChange($event)"
+    (searchChange)="onSearchChange($event)"
+    (newTurn)="onNewTurn()">
+  </ui-agenda-sidebar>
+
+  <ui-calendar-grid
+    [selectedDate]="selectedDate()"
+    [viewMode]="viewMode()"
+    [turns]="filteredTurns()"
+    (selectedDateChange)="selectedDate.set($event)"
+    (viewModeChange)="onViewChange($event)"
+    (turnoClick)="onTurnoClick($event)"
+    (turnoMoved)="onTurnoMoved($event)">
+  </ui-calendar-grid>
+
+  <ui-agenda-list
+    class="agenda-list-comp"
+    [turns]="dayTurns()"
+    (turnoClick)="onTurnoClick($event)"
+    (quickAction)="onQuickAction($event)">
+  </ui-agenda-list>
+
+  <!-- Right Panel Toggle -->
+  <button class="panel-toggle toggle-right-panel"
+          (click)="toggleRightPanel()"
+          [title]="rightPanelCollapsed() ? 'Mostrar resumen' : 'Contraer resumen'">
+    <i [class]="rightPanelCollapsed() ? 'chevron-left' : 'chevron-right'"></i>
+  </button>
+</div>
+
+<!-- ── Modales ── -->
+
+@if (modalDetalle() && turnoSeleccionado()) {
+  <derm-turno-detalle-modal
+    [turno]="turnoSeleccionado()!"
+    (accion)="onDetalleAccion($event)"
+    (close)="onDetalleClose()">
+  </derm-turno-detalle-modal>
+}
+
+@if (modalCancelar() && turnoSeleccionado()) {
+  <derm-turno-cancelar-modal
+    [turno]="turnoSeleccionado()!"
+    (confirm)="onCancelarConfirm($event)"
+    (close)="onCancelarClose()">
+  </derm-turno-cancelar-modal>
+}
+
+@if (modalReprogramar() && turnoSeleccionado()) {
+  <derm-turno-reprogramar-modal
+    [turno]="turnoSeleccionado()!"
+    (confirm)="onReprogramarConfirm($event)"
+    (close)="onReprogramarClose()">
+  </derm-turno-reprogramar-modal>
+}
+
+@if (modalPago() && turnoSeleccionado()) {
+  <derm-turno-pago-modal
+    [turno]="turnoSeleccionado()!"
+    (confirm)="onPagoConfirm($event)"
+    (close)="onPagoClose()">
+  </derm-turno-pago-modal>
+}

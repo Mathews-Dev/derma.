@@ -1,0 +1,133 @@
+<div class="main-cal">
+  <!-- Header -->
+  <div class="cal-header">
+    <div class="date-nav">
+      <button type="button" (click)="prevDay()">
+        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg>
+      </button>
+      <div class="date-display">
+        @if (isDayView()) {
+          {{ dateLabel(selectedDate()) }}<span class="dd-sub">{{ dateSub(selectedDate()) }}</span>
+        } @else {
+          <span [innerHTML]="weekLabel()"></span>
+        }
+      </div>
+      <button type="button" (click)="nextDay()">
+        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg>
+      </button>
+      <button type="button" class="btn-today" (click)="goToday()">Hoy</button>
+    </div>
+    <div class="view-toggle">
+      <button type="button" class="view-btn" [class.active]="isDayView()" (click)="setView('day')">
+        <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="7" height="7" x="3" y="3" rx="1"/><rect width="7" height="7" x="14" y="3" rx="1"/><rect width="7" height="7" x="14" y="14" rx="1"/><rect width="7" height="7" x="3" y="14" rx="1"/></svg>
+        Día
+      </button>
+      <button type="button" class="view-btn" [class.active]="!isDayView()" (click)="setView('week')">
+        <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 2v4"/><path d="M16 2v4"/><rect width="18" height="18" x="3" y="4" rx="2"/><path d="M3 10h18"/></svg>
+        Semana
+      </button>
+    </div>
+  </div>
+
+  <!-- Grid Container -->
+  <div class="cal-container" #calContainer>
+    <div class="cal-grid-wrap" [style.height.px]="TOTAL_HOURS * HOUR_H" [style.padding-top.px]="!isDayView() ? 28 : 0">
+      <!-- Time Gutter -->
+      <div class="time-gutter">
+        @for (label of hourLabels(); track $index) {
+        <div class="time-label">{{ label }}</div>
+        }
+      </div>
+
+      <!-- Grid Area -->
+      <div class="grid-area" #gridArea
+           (dragover)="onDragOver($event)"
+           (dragleave)="onDragLeave($event)"
+           (drop)="onDrop($event)">
+        <!-- Hour Lines -->
+        @for (line of hourLines(); track $index) {
+        <div class="hour-line" [class.half]="line.half" [style.top.px]="line.top"></div>
+        }
+
+        <!-- Now Line -->
+        @if (nowTop()) {
+        <div class="now-line" [style.top.px]="nowTop()"></div>
+        }
+
+        <!-- Day View -->
+        @if (isDayView()) {
+        @for (item of dayLayout(); track item.turno.id; let i = $index) {
+          <div class="turn-block"
+               [style.top.px]="timeToY(item.turno.startTime)"
+               [style.height.px]="Math.max(getDur(item.turno.startTime, item.turno.endTime) * PX_PER_MIN, 28)"
+               [style.left.%]="(item.col / item.totalCols) * 100"
+               [style.width.%]="(1 / item.totalCols) * 100"
+               [style.border-left-color]="getStatusColor(item.turno.status)"
+               [style.animation-delay]="i * 30 + 'ms'"
+               draggable="true"
+               (dragstart)="onDragStart($event, item.turno)"
+               (dragend)="onDragEnd()"
+               (click)="turnoClick.emit(item.turno.id)"
+               (mouseenter)="onBlockMouseEnter($event, item.turno)"
+               (mousemove)="onBlockMouseMove($event)"
+               (mouseleave)="onBlockMouseLeave()">
+            <div class="tb-time">{{ item.turno.startTime }} – {{ item.turno.endTime }}</div>
+            <div class="tb-patient">{{ item.turno.patient }}</div>
+            @if (getDur(item.turno.startTime, item.turno.endTime) * PX_PER_MIN > 40) {
+              <div class="tb-doctor" [style.color]="getStatusColor(item.turno.status)">{{ item.turno.doctor }}</div>
+            }
+            @if (getDur(item.turno.startTime, item.turno.endTime) * PX_PER_MIN > 58) {
+              <div class="tb-type">{{ item.turno.type }}</div>
+            }
+          </div>
+        }
+        }
+
+        <!-- Week View -->
+        @if (!isDayView()) {
+        @for (date of weekDates(); let i = $index; track date) {
+          <div class="week-col" [style.left.%]="(i / 7) * 100" [style.width.%]="100 / 7">
+            <div class="week-col-hdr" [class.wk-today]="isToday(date)">{{ dateShort(date) }}</div>
+          </div>
+        }
+        @for (date of weekDates(); let i = $index; track date) {
+          @for (item of weekLayout().get(fmtDate(date)) || []; track item.turno.id; let j = $index) {
+            <div class="turn-block"
+                 [style.top.px]="timeToY(item.turno.startTime)"
+                 [style.height.px]="Math.max(getDur(item.turno.startTime, item.turno.endTime) * PX_PER_MIN, 24)"
+                 [style.left.%]="(i / 7) * 100 + (item.col / item.totalCols) * (100 / 7)"
+                 [style.width.%]="(1 / item.totalCols) * (100 / 7)"
+                 [style.border-left-color]="getStatusColor(item.turno.status)"
+                 [style.animation-delay]="j * 30 + 'ms'"
+                 draggable="true"
+                 (dragstart)="onDragStart($event, item.turno)"
+                 (dragend)="onDragEnd()"
+                 (click)="turnoClick.emit(item.turno.id)"
+                 (mouseenter)="onBlockMouseEnter($event, item.turno)"
+                 (mousemove)="onBlockMouseMove($event)"
+                 (mouseleave)="onBlockMouseLeave()">
+              <div class="tb-time">{{ item.turno.startTime }} {{ item.turno.patient.split(' ')[0] }}</div>
+              @if (getDur(item.turno.startTime, item.turno.endTime) * PX_PER_MIN > 32) {
+                <div class="tb-doctor" [style.color]="getStatusColor(item.turno.status)">{{ item.turno.doctor }}</div>
+              }
+            </div>
+          }
+        }
+        }
+
+        <!-- Drop Indicator -->
+        <div class="drop-indicator" #dropIndicator></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Tooltip -->
+  @if (tooltipVisible() && tooltipData()) {
+  <div class="tooltip" id="cal-tooltip"
+       [style.left.px]="tooltipX()" [style.top.px]="tooltipY()">
+    <div class="tt-patient">{{ tooltipData()!.patient }}</div>
+    <div class="tt-line">{{ tooltipData()!.time }} · <span>{{ tooltipData()!.doctor }}</span></div>
+    <div class="tt-line">{{ tooltipData()!.type }} · <span>{{ tooltipData()!.status }}</span></div>
+  </div>
+  }
+</div>

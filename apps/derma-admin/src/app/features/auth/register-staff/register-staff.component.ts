@@ -1,10 +1,11 @@
 import { CommonModule } from '@angular/common';
-import { ChangeDetectionStrategy, Component, inject, OnInit, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, effect, inject, OnInit, signal } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators, FormControl } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import { InvitacionService, AuthService } from '@derma/firebase';
 import { SolicitudInvitacion } from '@derma/models';
-import { UiInputComponent, UiButtonComponent, SelectOption, UiDropdownSelectComponent } from '@derma/ui';
+import { UiInputComponent, UiButtonComponent, SelectOption, UiDropdownSelectComponent, LoadingService } from '@derma/ui';
+import { ExpiredInvitationModalComponent } from './ui/expired-invitation-modal/expired-invitation-modal.component';
 
 interface Country {
   code: string;
@@ -17,7 +18,7 @@ interface Country {
   selector: 'derm-register-staff',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [CommonModule, ReactiveFormsModule, UiInputComponent, UiButtonComponent, UiDropdownSelectComponent],
+  imports: [CommonModule, ReactiveFormsModule, UiInputComponent, UiButtonComponent, UiDropdownSelectComponent, ExpiredInvitationModalComponent],
   templateUrl: './register-staff.component.html',
   styleUrls: ['./register-staff.component.css']
 })
@@ -27,12 +28,15 @@ export class RegisterStaffComponent implements OnInit {
   private invitacionService = inject(InvitacionService);
   private authService = inject(AuthService);
   private fb = inject(FormBuilder);
+  private loadingService = inject(LoadingService);
 
   codigo = '';
   invitacion = signal<SolicitudInvitacion | null>(null);
   error = signal<string>('');
-  isLoading = signal(true);
   isSubmitting = signal(false);
+  isExpired = signal(false);
+  readyToShow = signal(false);
+  private hasStartedValidation = false;
 
   formulario = this.fb.nonNullable.group({
     nombre: ['', Validators.required],
@@ -63,27 +67,40 @@ export class RegisterStaffComponent implements OnInit {
   }
 
   async validarInvitacionDelLink() {
-    this.isLoading.set(true);
+    if (this.hasStartedValidation) return;
+    this.hasStartedValidation = true;
 
-    try {
-      this.codigo = this.route.snapshot.params['codigo'];
+    const validationPromise = (async () => {
+      try {
+        this.codigo = this.route.snapshot.params['codigo'];
+        if (!this.codigo) {
+          this.router.navigate(['/auth/login']);
+          return;
+        }
 
-      if (!this.codigo) {
-        this.router.navigate(['/auth/login']);
-        return;
+        const invitacion = await this.invitacionService.validarInvitacion(this.codigo);
+        this.invitacion.set(invitacion);
+
+      } catch (error: unknown) {
+        const msg = this.getErrorMessage(error, 'Error validando la invitacion');
+        
+        if (msg === 'El código de invitación ha expirado') {
+          this.isExpired.set(true);
+        } else {
+          this.router.navigate(['/auth/login']);
+          return;
+        }
+      } finally {
+        this.readyToShow.set(true);
+        await new Promise(resolve => setTimeout(resolve, 300));
       }
+    })();
 
-      const invitacion = await this.invitacionService.validarInvitacion(this.codigo);
-      this.invitacion.set(invitacion);
+    await this.loadingService.showWhile(validationPromise);
+  }
 
-    } catch (error: unknown) {
-      this.error.set(this.getErrorMessage(error, 'Error validando la invitacion'));
-    } finally {
-      this.isLoading.set(false);
-      if (!this.invitacion() && !this.error()) {
-        this.router.navigate(['/auth/login']);
-      }
-    }
+  goToLogin() {
+    this.router.navigate(['/auth/login']);
   }
 
   onCountryChange(option: SelectOption) {
@@ -99,10 +116,7 @@ export class RegisterStaffComponent implements OnInit {
       return;
     }
 
-    this.isSubmitting.set(true);
-    this.error.set('');
-
-    try {
+    const registrationPromise = async () => {
       const invitacion = this.invitacion();
 
       if (!invitacion) {
@@ -120,8 +134,6 @@ export class RegisterStaffComponent implements OnInit {
         telefonoFormatted = `${country.dialCode}${telefono}`;
       }
 
-      // El registro lo debe manejar el authService, ajustando rol
-      // Aqui asumimos que AuthService#register soporta pasar toda la info.
       const usuarioObj = await this.authService.register({
         email,
         password,
@@ -139,8 +151,14 @@ export class RegisterStaffComponent implements OnInit {
         );
       }
 
-      this.router.navigate(['/']);
+      await this.router.navigate(['/']);
+    };
 
+    this.isSubmitting.set(true);
+    this.error.set('');
+
+    try {
+      await this.loadingService.showWhile(registrationPromise());
     } catch (error: unknown) {
       this.error.set(this.getErrorMessage(error, 'Error al registrar'));
     } finally {

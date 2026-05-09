@@ -60,3 +60,6 @@ apps/*/src/environments/environment.ts
 plan-sistemaNotificaciones.prompt.md
 
 txt.txt
+
+# Variables de entorno
+.env

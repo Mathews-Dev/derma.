@@ -1,0 +1,117 @@
+<div class="mini-cal-container p-4 bg-[var(--c-50)] border-b border-[var(--c-200)]">
+
+  <!-- ── MAYORISTA: Header (Mes de Año) ── -->
+  <div class="flex items-center justify-between mb-4">
+    <button type="button" (click)="view() === 'days' ? prevMonth() : view() === 'months' ? previousYear() : previousRange()"
+      class="p-1 hover:bg-[var(--c-100)] rounded-[4px] transition-colors">
+      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-4 h-4 text-[var(--c-500)]">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 19.5L8.25 12l7.5-7.5" />
+      </svg>
+    </button>
+    
+    <div class="flex items-center gap-1 text-[0.825rem] font-bold text-[var(--c-800)]">
+      @if (view() === 'days') {
+        <div class="flex items-center">
+            <button type="button" (click)="openMonthPicker()" class="hover:bg-[var(--c-100)] px-1 py-0.5 rounded transition-colors text-capitalize">
+                {{ currentMonthLabel() }}
+            </button>
+            <span class="mx-0.5 text-[var(--c-800)] font-bold">de</span>
+            <button type="button" (click)="openYearPicker()" class="hover:bg-[var(--c-100)] px-1 py-0.5 rounded transition-colors">
+                {{ currentYearLabel() }}
+            </button>
+        </div>
+      } @else if (view() === 'months') {
+        <button type="button" (click)="openYearPicker()" class="hover:bg-[var(--c-100)] px-2 py-0.5 rounded transition-colors">
+          {{ currentYear() }}
+        </button>
+      } @else {
+        <span class="px-2 py-0.5">{{ yearRange()[0] }} – {{ yearRange()[11] }}</span>
+      }
+    </div>
+
+    <button type="button" (click)="view() === 'days' ? nextMonth() : view() === 'months' ? nextYear() : nextRange()"
+      class="p-1 hover:bg-[var(--c-100)] rounded-[4px] transition-colors">
+      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-4 h-4 text-[var(--c-500)]">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M8.25 4.5L15.75 12l-7.5 7.5" />
+      </svg>
+    </button>
+  </div>
+
+  <!-- ── VISTA: DÍAS ── -->
+  @if (view() === 'days') {
+    <div class="grid grid-cols-7 gap-1 mb-2">
+      @for (day of ['Lu', 'Ma', 'Mi', 'Ju', 'Vi', 'Sa', 'Do']; track day) {
+        <div class="flex items-center justify-center text-[10px] font-bold text-[var(--c-400)] uppercase tracking-tighter">
+          {{ day }}
+        </div>
+      }
+    </div>
+
+    <div class="grid grid-cols-7 gap-1">
+      @for (cell of calendarDays(); track cell.id) {
+        <button 
+          type="button"
+          (click)="selectDate(cell)"
+          class="w-8 h-8 flex flex-col items-center justify-center rounded-lg text-[11px] relative"
+          [class.font-bold]="cell.isSelected"
+          [class.bg-[var(--c-800)]]="cell.isSelected && cell.isCurrentMonth"
+          [class.text-[var(--c-50)]]="cell.isSelected && cell.isCurrentMonth"
+          [class.text-[var(--c-800)]]="!cell.isSelected && cell.isCurrentMonth"
+          [class.text-[var(--c-300)]]="!cell.isCurrentMonth"
+          [class.opacity-40]="!cell.isCurrentMonth"
+          [class.hover:bg-[var(--c-100)]]="cell.isCurrentMonth && !cell.isSelected"
+          [class.ring-1]="cell.isToday && !cell.isSelected && cell.isCurrentMonth"
+          [class.ring-[var(--c-800)]]="cell.isToday && !cell.isSelected && cell.isCurrentMonth"
+        >
+          {{ cell.dayNumber }}
+          @if (cell.hasTurns) {
+            <span class="absolute bottom-1 w-1 h-1 rounded-full" 
+                  [class.bg-[var(--c-50)]]="cell.isSelected"
+                  [class.bg-[var(--c-400)]]="!cell.isSelected"></span>
+          }
+        </button>
+      }
+    </div>
+  }
+
+  <!-- ── VISTA: MESES ── -->
+  @if (view() === 'months') {
+    <div class="grid grid-cols-3 gap-2">
+      @for (month of monthsNames; track $index) {
+        <button
+          type="button"
+          (click)="setMonth($index)"
+          class="py-2.5 text-[0.8rem] rounded-lg transition-all"
+          [class.bg-[var(--c-800)]]="$index === currentMonth()"
+          [class.text-[var(--c-50)]]="$index === currentMonth()"
+          [class.font-bold]="$index === currentMonth()"
+          [class.text-[var(--c-700)]]="$index !== currentMonth()"
+          [class.hover:bg-[var(--c-100)]]="$index !== currentMonth()"
+        >
+          {{ month.slice(0, 3) }}
+        </button>
+      }
+    </div>
+  }
+
+  <!-- ── VISTA: AÑOS ── -->
+  @if (view() === 'years') {
+    <div class="grid grid-cols-3 gap-2">
+      @for (year of yearRange(); track year) {
+        <button
+          type="button"
+          (click)="setYear(year)"
+          class="py-2.5 text-[0.8rem] rounded-lg transition-all"
+          [class.bg-[var(--c-800)]]="year === currentYear()"
+          [class.text-[var(--c-50)]]="year === currentYear()"
+          [class.font-bold]="year === currentYear()"
+          [class.text-[var(--c-700)]]="year !== currentYear()"
+          [class.hover:bg-[var(--c-100)]]="year !== currentYear()"
+        >
+          {{ year }}
+        </button>
+      }
+    </div>
+  }
+
+</div>

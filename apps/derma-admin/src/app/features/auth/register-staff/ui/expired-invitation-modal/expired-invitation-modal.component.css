@@ -1,0 +1,83 @@
+.modal-backdrop {
+  background-color: rgba(248, 249, 250, 0.4);
+  backdrop-filter: blur(12px) grayscale(40%);
+  -webkit-backdrop-filter: blur(12px) grayscale(40%);
+}
+
+.clip-half {
+  clip-path: polygon(0 0, 100% 0, 100% 50%, 0 50%);
+}
+
+/* Animations */
+@keyframes backdropIn {
+  from { opacity: 0; backdrop-filter: blur(0px); }
+  to { opacity: 1; backdrop-filter: blur(12px) grayscale(40%); }
+}
+
+@keyframes modalReveal {
+  from {
+    opacity: 0;
+    transform: scale(0.96) translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+@keyframes lineExpand {
+  from { transform: scaleX(0); }
+  to { transform: scaleX(1); }
+}
+
+@keyframes staggerReveal {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes staggerItem {
+  from {
+    opacity: 0;
+    transform: translateY(30px) rotate(-15deg);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) rotate(0);
+  }
+}
+
+.animate-backdrop-in {
+  animation: backdropIn 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.animate-modal-reveal {
+  opacity: 0;
+  animation: modalReveal 1s cubic-bezier(0.16, 1, 0.3, 1) 0.1s forwards;
+}
+
+.animate-line-expand {
+  transform: scaleX(0);
+  animation: lineExpand 1.2s cubic-bezier(0.16, 1, 0.3, 1) 0.5s forwards;
+}
+
+.stagger-reveal {
+  opacity: 0;
+  display: block;
+  animation: staggerReveal 0.9s cubic-bezier(0.19, 1, 0.22, 1) forwards;
+}
+
+.stagger-item {
+  opacity: 0;
+  animation: staggerItem 1s cubic-bezier(0.19, 1, 0.22, 1) forwards;
+}
+
+.delay-1 { animation-delay: 0.3s; }
+.delay-2 { animation-delay: 0.4s; }
+.delay-3 { animation-delay: 0.5s; }
+.delay-4 { animation-delay: 0.6s; }

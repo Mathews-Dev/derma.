@@ -1,0 +1,94 @@
+<section class="mb-4 animate-smooth-enter">
+  <ui-page-header
+    title="Agenda de Recepción"
+    description="Gestioná los turnos diarios, médicos y disponibilidad."
+  ></ui-page-header>
+</section>
+
+<div class="agenda-layout bg-[var(--c-50)] rounded-xl border border-[var(--c-200)] overflow-hidden animate-smooth-enter stagger-1">
+  <!-- Sidebar -->
+  <aside class="sidebar">
+    <div class="sidebar-header">
+      <div class="flex flex-col gap-0.5">
+        <span class="text-[11px] font-bold uppercase tracking-wider text-[var(--c-400)]">Navegación</span>
+        <h2 class="text-[15px] font-bold text-[var(--c-800)]">Calendario</h2>
+      </div>
+    </div>
+
+    <!-- Mini Calendar -->
+    <ui-mini-calendar 
+        [selectedDate]="selectedDate()"
+        [datesWithTurns]="mockDatesWithTurns()"
+        (onDateSelect)="onDateSelected($event)">
+    </ui-mini-calendar>
+
+    <!-- Filters -->
+    <div class="sidebar-section">
+      <span class="filter-label">Médicos</span>
+      <select class="filter-select">
+        <option>Todos los médicos</option>
+        <option>Dra. López</option>
+        <option>Dr. Martínez</option>
+      </select>
+    </div>
+
+    <div class="sidebar-section">
+        <span class="filter-label">Estado</span>
+        <select class="filter-select">
+          <option>Todos los estados</option>
+          <option>Pendiente</option>
+          <option>Confirmado</option>
+          <option>Atendido</option>
+        </select>
+      </div>
+
+    <!-- Search -->
+    <div class="search-container">
+      <input type="text" class="search-input" placeholder="Buscar paciente...">
+      <i class="search absolute left-7 top-1/2 -translate-y-1/2 text-[var(--c-400)] scale-90"></i>
+    </div>
+
+    <button class="btn-new-appointment">
+        <i class="plus-circle text-sm"></i>
+        Nuevo Turno
+    </button>
+  </aside>
+
+  <!-- Main Calendar -->
+  <main class="calendar-main">
+    <ui-calendar-grid 
+        [viewMode]="viewMode()"
+        [selectedDate]="selectedDate()"
+        [turns]="[]"
+        (selectedDateChange)="onDateSelected($event)"
+        (viewModeChange)="onViewChanged($event)">
+        
+        <!-- Content turnos dynamically rendered here in the future -->
+    </ui-calendar-grid>
+  </main>
+
+  <!-- Right Panel -->
+  <aside class="right-panel">
+    <div class="rp-header">
+      <span class="rp-title">Resumen Diario <span class="rp-count">8 turnos</span></span>
+    </div>
+
+    <div class="stats-bar">
+      <span class="stat-chip bg-[var(--st-pend-bg)] text-[var(--st-pend)]">
+        <span class="stat-dot bg-[var(--st-pend)]"></span> 3 Pendientes
+      </span>
+      <span class="stat-chip bg-[var(--st-conf-bg)] text-[var(--st-conf)]">
+        <span class="stat-dot bg-[var(--st-conf)]"></span> 5 Confirmados
+      </span>
+    </div>
+
+    <div class="agenda-list">
+      <!-- Agenda Card Placeholders -->
+      <div class="p-8 text-center text-[var(--c-400)] flex flex-col items-center gap-2">
+          <i class="calendar-off text-3xl opacity-20"></i>
+          <p class="text-xs">Agenda del {{ selectedDate() | date:'shortDate':'':'es-AR' }}</p>
+          <p class="text-[10px] opacity-60">Selecciona un turno para ver detalles</p>
+      </div>
+    </div>
+  </aside>
+</div>

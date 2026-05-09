@@ -1,0 +1,22 @@
+<div class="turn-block anim-in"
+     [class.dragging]="isDragging()"
+     [style.top.px]="top()"
+     [style.height.px]="height()"
+     [style.left]="left()"
+     [style.width]="width()"
+     [style.--st-color]="statusColor()">
+
+  <div class="tb-time">{{ turno().horaInicio }} – {{ turno().horaFin }}</div>
+
+  <div class="tb-patient" [title]="turno().pacienteNombre">
+    {{ turno().pacienteNombre }}
+  </div>
+
+  @if (displayDoctor()) {
+    <div class="tb-doctor">{{ turno().profesionalNombre }}</div>
+  }
+
+  @if (displayType()) {
+    <div class="tb-type">{{ turno().tipo }}</div>
+  }
+</div>

@@ -1,0 +1,10 @@
+/* Styles simplified to use Tailwind utility classes as in datepicker.component.css */
+
+.text-capitalize {
+    text-transform: capitalize;
+}
+
+:host {
+    display: block;
+    width: 100%;
+}

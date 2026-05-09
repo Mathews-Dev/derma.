@@ -22,7 +22,7 @@ export const appRoutes: Route[] = [
       {
         path: 'agenda',
         canActivate: [roleGuard([RolUsuario.ADMIN, RolUsuario.DERMATOLOGO, RolUsuario.RECEPCIONISTA])],
-        loadComponent: () => import('./features/agenda/agenda.component').then(m => m.AgendaComponent)
+        loadChildren: () => import('./features/agenda/agenda.routes').then(m => m.agendaRoutes)
       },
       {
         path: 'pacientes',

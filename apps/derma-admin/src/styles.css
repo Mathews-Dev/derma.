@@ -1,5 +1,6 @@
 @import '../../../libs/ui/src/styles/fonts.css';
 @import '../../../libs/ui/src/styles/animations.css';
+@import '@angular/cdk/overlay-prebuilt.css';
 @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600&display=swap');
 
 @tailwind base;
@@ -43,6 +44,18 @@
   --c-600: #495057;  /* texto cuerpo / iconos */
   --c-700: #343a40;  /* texto énfasis */
   --c-800: #212529;  /* texto principal / botón primario bg */
+
+  /* Status — desaturados para respetar la paleta B&W */
+  --st-pend: #9e8530;
+  --st-pend-bg: rgba(158, 133, 48, 0.06);
+  --st-conf: #3d7a54;
+  --st-conf-bg: rgba(61, 122, 84, 0.06);
+  --st-paid: #3b6e90;
+  --st-paid-bg: rgba(59, 110, 144, 0.06);
+  --st-canc: #8c4444;
+  --st-canc-bg: rgba(140, 68, 68, 0.06);
+  --st-aten: #605090;
+  --st-aten-bg: rgba(96, 80, 144, 0.06);
 
   --font-body: 'Space Grotesk', system-ui, sans-serif;
 }
