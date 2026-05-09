@@ -2,7 +2,10 @@
   "name": "@derma/source",
   "version": "0.0.0",
   "license": "MIT",
-  "scripts": {},
+  "scripts": {
+    "build:mercadopago": "nx build backend-mercadopago --prod",
+    "build:whatsapp": "nx build backend-whatsapp --prod"
+  },
   "private": true,
   "devDependencies": {
     "@angular-devkit/core": "~20.3.0",
