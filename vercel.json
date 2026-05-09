@@ -1,9 +1,15 @@
 {
   "version": 2,
-  "rewrites": [
+  "buildCommand": "npx nx run mercadopago:build:production",
+  "functions": {
+    "dist/backend/mercadopago/main.js": {
+      "runtime": "@vercel/node"
+    }
+  },
+  "routes": [
     {
-      "source": "/(.*)",
-      "destination": "/dist/backend/mercadopago/main.js"
+      "src": "/(.*)",
+      "dest": "dist/backend/mercadopago/main.js"
     }
   ]
 }
