@@ -65,7 +65,7 @@ export class DatepickerComponent implements OnDestroy {
     const date = this.currentDate();
     const months = ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio',
                     'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'];
-    return `${months[date.getMonth()]} ${date.getFullYear()}`;
+    return `${months[date.getMonth()]} de ${date.getFullYear()}`;
   });
 
   protected readonly calendarDays = computed(() => {

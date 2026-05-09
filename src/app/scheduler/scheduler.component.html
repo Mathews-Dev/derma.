@@ -1,0 +1,22 @@
+<div class="scheduler-layout">
+  <app-sidebar
+    (dateSelect)="onDateSelect($event)"
+    (filterChange)="onFilterChange($event)"
+    (searchChange)="onSearchChange($event)"
+    (newTurn)="onNewTurn()"
+  ></app-sidebar>
+  <app-calendar-grid
+    [selectedDate]="selectedDate()"
+    [viewMode]="viewMode()"
+    [turns]="filteredTurns"
+    (selectedDateChange)="selectedDate.set($event)"
+    (viewModeChange)="onViewChange($event)"
+    (turnoClick)="onTurnoClick($event)"
+    (turnoMoved)="onTurnoMoved($event)"
+  ></app-calendar-grid>
+  <app-agenda-list
+    [turns]="dayTurns"
+    (turnoClick)="onTurnoClick($event)"
+    (quickAction)="onQuickAction($event)"
+  ></app-agenda-list>
+</div>

@@ -1,0 +1,60 @@
+<aside class="right-panel">
+  <div class="rp-header">
+    <span class="rp-title">Agenda<span class="rp-count">{{ turns().length }} turno{{ turns().length !== 1 ? 's' : '' }}</span></span>
+  </div>
+  
+  <div class="stats-bar">
+    @for (stat of statusStats; track stat[0]) {
+      @if (stat[1] > 0) {
+        <span class="stat-chip" [style.background]="getStatus(stat[0])?.bg" [style.color]="getStatus(stat[0])?.color">
+          <span class="stat-dot" [style.background]="getStatus(stat[0])?.color"></span>
+          {{ stat[1] }} {{ getStatus(stat[0])?.label }}
+        </span>
+      }
+    }
+  </div>
+
+  <div class="agenda-list">
+    @if (turns().length === 0) {
+      <div class="empty-state">
+        <svg xmlns="http://www.w3.org/2000/svg" width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 0 1 2.25-2.25h13.5A2.25 2.25 0 0 1 21 7.5v11.25m-18 0A2.25 2.25 0 0 0 5.25 21h13.5A2.25 2.25 0 0 0 21 18.75m-18 0v-7.5A2.25 2.25 0 0 1 5.25 9h13.5A2.25 2.25 0 0 1 21 11.25v7.5"/><line x1="4.5" x2="19.5" y1="9" y2="9"/></svg>
+        <p>Sin turnos para este día</p>
+      </div>
+    } @else {
+      @for (turn of turns(); track turn.id; let i = $index) {
+        <div class="agenda-card" 
+             [class.cancelled]="turn.status === 'cancelado'"
+             [style.border-left-color]="getStatusColor(turn.status)"
+             [style.animation-delay]="i * 30 + 'ms'"
+             (click)="onCardClick(turn.id)">
+          <div class="ac-time">{{ turn.startTime }}</div>
+          <div class="ac-body">
+            <div class="ac-patient">{{ turn.patient }}</div>
+            <div class="ac-detail">{{ turn.doctor }} · {{ turn.type }}</div>
+            <div class="ac-badges">
+              <span class="ac-badge" [style.background]="getStatusBg(turn.status)" [style.color]="getStatusColor(turn.status)">
+                {{ getStatusLabel(turn.status) }}
+              </span>
+              <span class="ac-badge" 
+                    [style.background]="turn.payStatus === 'pagado' ? 'var(--st-conf-bg)' : 'var(--st-pend-bg)'"
+                    [style.color]="turn.payStatus === 'pagado' ? 'var(--st-conf)' : 'var(--st-pend)'">
+                {{ turn.payStatus === 'pagado' ? 'Pagado' : 'Pendiente' }} {{ fmtCurrency(turn.payAmount) }}
+              </span>
+            </div>
+          </div>
+          <div class="ac-actions">
+            <button class="ac-act-btn" title="Confirmar" (click)="onQuickAction($event, turn.id, 'confirmado')">
+              <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>
+            </button>
+            <button class="ac-act-btn" title="Pagado" (click)="onQuickAction($event, turn.id, 'pagado')">
+              <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="20" height="14" x="2" y="5" rx="2"/><line x1="2" x2="22" y1="10" y2="10"/></svg>
+            </button>
+            <button class="ac-act-btn" title="Atendido" (click)="onQuickAction($event, turn.id, 'atendido')">
+              <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"/></svg>
+            </button>
+          </div>
+        </div>
+      }
+    }
+  </div>
+</aside>

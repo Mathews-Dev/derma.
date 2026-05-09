@@ -34,6 +34,10 @@ import { ChangeDetectionStrategy, Component, input } from '@angular/core';
           {{ description() }}
         </p>
       </div>
+
+      <div class="flex items-center gap-2 pt-1">
+        <ng-content select="[actions]"></ng-content>
+      </div>
     </div>
   `,
 })

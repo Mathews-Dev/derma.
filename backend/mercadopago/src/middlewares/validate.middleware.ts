@@ -1,0 +1,21 @@
+import { Request, Response, NextFunction } from 'express';
+
+export function validatePaymentBody(req: Request, res: Response, next: NextFunction): any {
+  const { turnoId, precio, email, nombre } = req.body;
+  const errors: string[] = [];
+
+  if (!turnoId || typeof turnoId !== 'string')
+    errors.push('turnoId requerido');
+  if (!precio || isNaN(parseFloat(precio)) || parseFloat(precio) <= 0)
+    errors.push('precio debe ser un número mayor a 0');
+  if (!email || !email.includes('@'))
+    errors.push('email inválido');
+  if (!nombre || typeof nombre !== 'string' || nombre.trim().length < 2)
+    errors.push('nombre requerido');
+
+  if (errors.length > 0) {
+    return res.status(400).json({ success: false, errors });
+  }
+
+  next();
+}

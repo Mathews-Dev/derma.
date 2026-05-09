@@ -1,0 +1,97 @@
+.scheduler-layout {
+  display: grid;
+  grid-template-columns: 272px 1fr 350px;
+  width: 100%;
+  min-height: 700px;
+  height: calc(100vh - 160px);
+  overflow: hidden;
+  background-color: var(--c-50);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Collapsed States */
+.scheduler-layout.sidebar-collapsed {
+  grid-template-columns: 0px 1fr 350px;
+}
+
+.scheduler-layout.right-panel-collapsed {
+  grid-template-columns: 272px 1fr 0px;
+}
+
+.scheduler-layout.sidebar-collapsed.right-panel-collapsed {
+  grid-template-columns: 0px 1fr 0px;
+}
+
+ui-agenda-sidebar,
+ui-calendar-grid,
+ui-agenda-list {
+  display: block;
+  height: 100%;
+  min-width: 0;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Component specific handling during collapse */
+.agenda-sidebar-comp,
+.agenda-list-comp {
+  overflow: hidden;
+}
+
+/* DESPUÉS */
+.sidebar-collapsed .agenda-sidebar-comp {
+  opacity: 0;
+  pointer-events: none;
+}
+
+.right-panel-collapsed .agenda-list-comp {
+  opacity: 0;
+  pointer-events: none;
+}
+/* Panel Toggles */
+.panel-toggle {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 30;
+  width: 14px;
+  height: 60px;
+  background: var(--c-50);
+  color: var(--c-400);
+  border: 1px solid var(--c-200);
+  border-radius: 4px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+  font-size: 10px;
+}
+
+.panel-toggle:hover {
+  background: var(--c-800);
+  color: var(--c-50);
+  height: 80px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.toggle-sidebar {
+  left: 265px; /* Mitad sobre el borde */
+}
+
+.sidebar-collapsed .toggle-sidebar {
+  left: -2px;
+}
+
+.toggle-right-panel {
+  right: 343px; /* Mitad sobre el borde */
+}
+
+.right-panel-collapsed .toggle-right-panel {
+  right: -2px;
+}
+
+.panel-toggle i {
+  line-height: 0;
+  display: block;
+}

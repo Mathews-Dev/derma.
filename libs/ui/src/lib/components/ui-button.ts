@@ -9,19 +9,29 @@ import { CommonModule } from '@angular/common';
     <button 
       [type]="type()" 
       [disabled]="disabled() || isLoading()"
-      [ngClass]="[size() || 'py-3.5', buttonClass() || 'w-full sm:w-auto']"
-      class="group relative inline-flex items-center justify-center min-w-[160px] px-8 rounded bg-[var(--c-800)] text-[var(--c-50)] overflow-hidden transition-all duration-300 hover:-translate-y-1 hover:shadow-[4px_4px_0px_var(--c-300)] disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:translate-y-0 disabled:hover:shadow-none active:translate-y-0 active:shadow-none">
+      [ngClass]="[size() || 'h-[44px]', buttonClass() || 'px-6']"
+      class="group relative inline-flex items-center justify-center rounded-lg bg-[var(--c-800)] text-[var(--c-50)] overflow-hidden transition-all duration-300 hover:-translate-y-0.5 hover:shadow-lg disabled:opacity-50 disabled:cursor-not-allowed active:translate-y-0 active:shadow-sm border border-[var(--c-800)]">
 
-      <div class="relative z-10 flex items-center justify-center gap-2">
-        <span class="tracking-[0.15em] text-[0.7rem] font-semibold uppercase">
+      <div class="relative z-10 flex items-center justify-center gap-2 px-2">
+        @if (isLoading()) {
+          <svg class="animate-spin h-4 w-4 text-current" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+          </svg>
+        }
+        <span class="tracking-widest text-[0.7rem] font-bold uppercase whitespace-nowrap">
           {{ label() }}
         </span>
       </div>
+      
+      <!-- Efecto de brillo sutil en hover -->
+      <div class="absolute inset-0 bg-white/5 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none"></div>
     </button>
   `,
   styles: `
     :host {
-      display: block;
+      display: inline-block;
+      vertical-align: middle;
     }
 
     @keyframes buttonPress {
@@ -43,7 +53,7 @@ import { CommonModule } from '@angular/common';
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class UiButtonComponent {
-  label = input<string>('');
+  label = input.required<string>();
   type = input<string>('button');
   disabled = input<boolean>(false);
   isLoading = input<boolean>(false);

@@ -116,6 +116,7 @@ export class UiDropdownSelectComponent implements OnDestroy {
   private closeDropdown() {
     if (this.overlayRef) {
       this.overlayRef.detach();
+      this.overlayRef.dispose();
       this.overlayRef = null;
     }
     this.isOpen.set(false);
