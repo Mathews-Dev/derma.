@@ -1,22 +1,9 @@
 {
   "version": 2,
-  "functions": {
-    "dist/backend/mercadopago/main.js": {
-      "runtime": "@vercel/node@5.x"
-    }
-  },
-  "routes": [
+  "rewrites": [
     {
-      "src": "/api/payment(.*)",
-      "dest": "dist/backend/mercadopago/main.js"
-    },
-    {
-      "src": "/api/webhook(.*)",
-      "dest": "dist/backend/mercadopago/main.js"
-    },
-    {
-      "src": "/(.*)",
-      "dest": "dist/backend/mercadopago/main.js"
+      "source": "/(.*)",
+      "destination": "/dist/backend/mercadopago/main.js"
     }
   ]
 }
