@@ -1,10 +1,10 @@
 import { Preference } from 'mercadopago';
-import { mpClient } from '../config/mercadopago';
+import { getMpClient } from '../config/mercadopago';
 import { generateQRBase64 } from '../utils/qr.utils';
 import { sanitizeUrl, isPublicHttpUrl } from '../utils/url.utils';
 
 export async function createPaymentPreference(params: { turnoId: string, precio: number, email: string, nombre: string }) {
-  const preference = new Preference(mpClient);
+  const preference = new Preference(getMpClient());
 
   const frontendBaseUrl = sanitizeUrl(process.env.FRONTEND_URL) || 'http://localhost:4200';
   const backendBaseUrl = sanitizeUrl(process.env.BACKEND_URL || process.env.ngrok_url || '');

@@ -123,8 +123,8 @@ export class TurnosService {
 
   // ─── CRUD ─────────────────────────────────────────────────────────────────
 
-  /** Crea un nuevo turno y retorna su ID. */
-  async create(data: Omit<Turno, 'id'>): Promise<string> {
+  /** Crea un nuevo turno y retorna su ID (`fechaCreacion` lo setea el servidor). */
+  async create(data: Omit<Turno, 'id' | 'fechaCreacion'>): Promise<string> {
     const col = collection(this.firestore, TurnosService.COL);
     const ref = await addDoc(col, {
       ...data,

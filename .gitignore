@@ -53,6 +53,9 @@ Thumbs.db
 AGENTS.md
 derma-antiguo/
 prompt-plan-migracion.md
+.agents/
+.claude/
+skills-lock.json
 
 apps/*/src/environments/environment.development.ts
 apps/*/src/environments/environment.ts

@@ -8,11 +8,15 @@
   "targets": {
     "build": {
       "executor": "@angular/build:application",
-      "outputs": ["{options.outputPath}"],
+      "outputs": [
+        "{options.outputPath}"
+      ],
       "options": {
         "outputPath": "dist/apps/derma-admin",
         "browser": "apps/derma-admin/src/main.ts",
-        "polyfills": ["zone.js"],
+        "polyfills": [
+          "zone.js"
+        ],
         "tsConfig": "apps/derma-admin/tsconfig.app.json",
         "assets": [
           {
@@ -25,7 +29,9 @@
             "output": "/assets"
           }
         ],
-        "styles": ["apps/derma-admin/src/styles.css"]
+        "styles": [
+          "apps/derma-admin/src/styles.css"
+        ]
       },
       "configurations": {
         "production": {
@@ -54,6 +60,10 @@
     "serve": {
       "continuous": true,
       "executor": "@angular/build:dev-server",
+      "options": {
+        "host": "0.0.0.0",
+        "allowedHosts": true
+      },
       "configurations": {
         "production": {
           "buildTarget": "derma-admin:build:production"

@@ -14,7 +14,7 @@
         "outputPath": "dist/backend/whatsapp",
         "format": ["cjs"],
         "bundle": false,
-        "main": "backend/whatsapp/src/main.ts",
+        "main": "backend/whatsapp/src/firebase/index.ts",
         "tsConfig": "backend/whatsapp/tsconfig.app.json",
         "assets": ["backend/whatsapp/src/assets"],
         "generatePackageJson": true,
@@ -26,57 +26,23 @@
         }
       },
       "configurations": {
-        "development": {},
+        "development": {
+          "main": "backend/whatsapp/src/main.ts",
+          "esbuildOptions": {
+            "sourcemap": true,
+            "outExtension": {
+              ".js": ".js"
+            }
+          }
+        },
         "production": {
+          "main": "backend/whatsapp/src/firebase/index.ts",
           "esbuildOptions": {
             "sourcemap": false,
             "outExtension": {
               ".js": ".js"
             }
           }
-        }
-      }
-    },
-    "prune-lockfile": {
-      "dependsOn": ["build"],
-      "cache": true,
-      "executor": "@nx/js:prune-lockfile",
-      "outputs": [
-        "{workspaceRoot}/dist/backend/whatsapp/package.json",
-        "{workspaceRoot}/dist/backend/whatsapp/package-lock.json"
-      ],
-      "options": {
-        "buildTarget": "build"
-      }
-    },
-    "copy-workspace-modules": {
-      "dependsOn": ["build"],
-      "cache": true,
-      "outputs": ["{workspaceRoot}/dist/backend/whatsapp/workspace_modules"],
-      "executor": "@nx/js:copy-workspace-modules",
-      "options": {
-        "buildTarget": "build"
-      }
-    },
-    "prune": {
-      "dependsOn": ["prune-lockfile", "copy-workspace-modules"],
-      "executor": "nx:noop"
-    },
-    "serve": {
-      "continuous": true,
-      "executor": "@nx/js:node",
-      "defaultConfiguration": "development",
-      "dependsOn": ["build"],
-      "options": {
-        "buildTarget": "whatsapp:build",
-        "runBuildTargetDependencies": false
-      },
-      "configurations": {
-        "development": {
-          "buildTarget": "whatsapp:build:development"
-        },
-        "production": {
-          "buildTarget": "whatsapp:build:production"
         }
       }
     }

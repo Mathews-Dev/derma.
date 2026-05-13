@@ -1,0 +1,86 @@
+<div class="modal-backdrop" (click)="$event.target === $event.currentTarget && close.emit()">
+  <div class="modal-box animate-scale-in">
+    <div class="modal-header">
+      <span class="modal-icon modal-icon--primary">
+        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M8 2v4"/><path d="M16 2v4"/><rect width="18" height="18" x="3" y="4" rx="2"/><path d="M3 10h18"/></svg>
+      </span>
+      <div>
+        <h2 class="modal-title">Nuevo turno</h2>
+        <p class="modal-subtitle">{{ fmtFecha(fechaSeleccionada()) }}</p>
+      </div>
+      <button type="button" class="modal-close" (click)="close.emit()" aria-label="Cerrar">
+        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
+      </button>
+    </div>
+
+    <div class="modal-body">
+      @if (pacienteSeleccionado()) {
+        <div class="mp-notice">
+          <span><strong>Paciente seleccionado:</strong> {{ pacienteSeleccionado()!.nombre }} {{ pacienteSeleccionado()!.apellido }} · DNI: {{ pacienteSeleccionado()!.dni ?? '—' }}</span>
+          <button type="button" class="btn btn--ghost" (click)="limpiarSeleccionPaciente()">Cambiar</button>
+        </div>
+      } @else {
+        <label class="field-label">Buscar paciente por DNI</label>
+        <div class="time-row">
+          <input type="text" class="field-input" placeholder="DNI" [ngModel]="dniLookup()" (ngModelChange)="dniLookup.set($event)" />
+          <button type="button" class="btn btn--primary" [disabled]="buscando()" (click)="buscarPacientePorDni()">Buscar</button>
+        </div>
+
+        <label class="field-label">Buscar paciente por teléfono</label>
+        <div class="time-row">
+          <input type="text" class="field-input" placeholder="Teléfono" [ngModel]="telefonoLookup()" (ngModelChange)="telefonoLookup.set($event)" />
+          <button type="button" class="btn btn--primary" [disabled]="buscando()" (click)="buscarPacientePorTelefono()">Buscar</button>
+        </div>
+
+        @if (busquedaError()) {
+          <div class="mp-err-banner">{{ busquedaError() }}</div>
+        }
+
+        <div class="mp-notice">
+          <span>Si no existe, completá los datos básicos y se creará un paciente sin email.</span>
+        </div>
+      }
+
+      <label class="field-label">Profesional</label>
+      <select class="field-input"
+              [ngModel]="profesionalId()"
+              (ngModelChange)="profesionalId.set($event)">
+        <option value="">Seleccionar…</option>
+        @for (p of profesionales(); track p.uid) {
+          <option [value]="p.uid">{{ p.nombre }} {{ p.apellido }}</option>
+        }
+      </select>
+
+      <label class="field-label">Hora de inicio</label>
+      <input type="time" class="field-input" [ngModel]="horaInicio()" (ngModelChange)="horaInicio.set($event)" />
+      @if (hintFranjasDia(); as hint) {
+        <p class="field-hint disp-hint">Horario de atención ese día: {{ hint }} · Duración del turno: {{ duracionSel() }} min</p>
+      } @else if (profesionalId()) {
+        <p class="field-hint disp-hint disp-hint--soft">Sin franjas cargadas para ese día en el perfil del profesional; no se valida contra agenda.</p>
+      }
+      @if (errorDisponibilidad()) {
+        <div class="mp-err-banner">{{ errorDisponibilidad() }}</div>
+      }
+
+      <label class="field-label">Paciente — nombre</label>
+      <input type="text" class="field-input" placeholder="Nombre" [ngModel]="nombre()" (ngModelChange)="nombre.set($event)" />
+
+      <label class="field-label">Paciente — apellido</label>
+      <input type="text" class="field-input" placeholder="Apellido" [ngModel]="apellido()" (ngModelChange)="apellido.set($event)" />
+
+      <label class="field-label">Teléfono</label>
+      <input type="text" class="field-input" [ngModel]="telefono()" (ngModelChange)="telefono.set($event)" />
+
+      <label class="field-label">DNI (opcional)</label>
+      <input type="text" class="field-input" [ngModel]="dni()" (ngModelChange)="dni.set($event)" />
+
+      <label class="field-label">Monto ($)</label>
+      <input type="number" class="field-input" min="0" step="100" [ngModel]="monto()" (ngModelChange)="monto.set(+$event)" />
+    </div>
+
+    <div class="modal-footer">
+      <button type="button" class="btn btn--ghost" (click)="close.emit()">Cancelar</button>
+      <button type="button" class="btn btn--primary" [disabled]="!puedeConfirmar()" (click)="onConfirm()">Crear turno</button>
+    </div>
+  </div>
+</div>

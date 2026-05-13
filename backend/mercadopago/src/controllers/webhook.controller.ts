@@ -1,6 +1,6 @@
 import { Request, Response } from 'express';
 import { Payment } from 'mercadopago';
-import { mpClient } from '../config/mercadopago';
+import { getMpClient } from '../config/mercadopago';
 import { isPaymentProcessed, markPaymentAsProcessed } from '../services/idempotency.service';
 import { markTurnoAsPaid } from '../services/turno.service';
 
@@ -17,7 +17,7 @@ export async function handleWebhook(req: Request, res: Response): Promise<any> {
       if (alreadyProcessed) {
         console.log(`[Webhook] Pago ${paymentId} ya procesado. Ignorando.`);
       } else {
-        const paymentApi = new Payment(mpClient);
+        const paymentApi = new Payment(getMpClient());
         const paymentData = await paymentApi.get({ id: paymentId as string });
 
         console.log(`[Webhook] Estado del pago ${paymentId}: ${paymentData.status}`);

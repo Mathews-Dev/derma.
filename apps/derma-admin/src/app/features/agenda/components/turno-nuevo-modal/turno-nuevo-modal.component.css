@@ -1,0 +1,37 @@
+@import '../turno-pago-modal/turno-pago-modal.component.css';
+
+.modal-body {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  max-height: min(70vh, 520px);
+  overflow-y: auto;
+}
+
+.field-label {
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--c-500, #6b7280);
+  margin-bottom: 4px;
+}
+
+.field-input {
+  width: 100%;
+  padding: 10px 12px;
+  border: 1px solid var(--c-200, #e5e7eb);
+  border-radius: 8px;
+  font-size: 13px;
+  background: var(--c-0, #fff);
+  color: var(--c-900, #111);
+}
+
+.disp-hint {
+  margin: -4px 0 2px;
+  line-height: 1.4;
+}
+
+.disp-hint--soft {
+  color: var(--c-500, #6b7280);
+}

@@ -232,3 +232,108 @@
   border-color: rgba(140,68,68,0.25);
 }
 .btn--danger:hover:not(:disabled) { background: rgba(140,68,68,0.12); }
+
+.mp-creating {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px;
+  font-size: 13px;
+  color: var(--c-700, #374151);
+}
+
+.mp-spinner {
+  width: 22px;
+  height: 22px;
+  border: 2px solid var(--c-200, #e5e7eb);
+  border-top-color: var(--c-800, #1f2937);
+  border-radius: 50%;
+  animation: mp-spin 0.7s linear infinite;
+}
+
+@keyframes mp-spin {
+  to { transform: rotate(360deg); }
+}
+
+.mp-err-banner {
+  padding: 10px 12px;
+  border-radius: 7px;
+  background: rgba(140, 68, 68, 0.08);
+  border: 1px solid rgba(140, 68, 68, 0.25);
+  color: #8c4444;
+  font-size: 12px;
+  line-height: 1.45;
+}
+
+.mp-checkout {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  padding-top: 4px;
+}
+
+.mp-checkout-title {
+  margin: 0;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--c-800, #1f2937);
+}
+
+.mp-qr {
+  border-radius: 8px;
+  border: 1px solid var(--c-200, #e5e7eb);
+}
+
+.mp-link {
+  font-size: 13px;
+  font-weight: 600;
+  color: #009ee3;
+  text-decoration: underline;
+}
+
+.mp-ref {
+  margin: 0;
+  font-size: 10px;
+  color: var(--c-400, #9ca3af);
+  word-break: break-all;
+  text-align: center;
+}
+
+/* ─── WhatsApp (confirmación con paciente) ───────────────────────────────── */
+.wa-card {
+  padding: 12px;
+  border-radius: 8px;
+  border: 1px solid rgba(37, 99, 235, 0.18);
+  background: rgba(37, 99, 235, 0.04);
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.wa-main-toggle {
+  font-weight: 600;
+  color: var(--c-800, #1f2937);
+}
+
+.wa-sub-toggle {
+  margin-top: 2px;
+}
+
+.wa-script-hint {
+  margin: 0;
+  font-size: 11.5px;
+  line-height: 1.5;
+  color: var(--c-600, #4b5563);
+}
+
+.wa-hint-warn {
+  margin: -4px 0 0;
+  color: #9a6b2e;
+}
+
+.wa-err-inline {
+  margin: 0;
+  font-size: 11.5px;
+  color: #8c4444;
+}

@@ -14,7 +14,7 @@
         "outputPath": "dist/backend/mercadopago",
         "format": ["cjs"],
         "bundle": false,
-        "main": "backend/mercadopago/src/main.ts",
+        "main": "backend/mercadopago/src/firebase/index.ts",
         "tsConfig": "backend/mercadopago/tsconfig.app.json",
         "assets": ["backend/mercadopago/src/assets"],
         "generatePackageJson": true,
@@ -26,8 +26,17 @@
         }
       },
       "configurations": {
-        "development": {},
+        "development": {
+          "main": "backend/mercadopago/src/main.ts",
+          "esbuildOptions": {
+            "sourcemap": true,
+            "outExtension": {
+              ".js": ".js"
+            }
+          }
+        },
         "production": {
+          "main": "backend/mercadopago/src/firebase/index.ts",
           "esbuildOptions": {
             "sourcemap": false,
             "outExtension": {

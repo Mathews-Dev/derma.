@@ -5,6 +5,21 @@ import { NotificacionesStateService } from './core/services/notificaciones-state
 
 export const appRoutes: Route[] = [
   {
+    path: 'success',
+    loadComponent: () =>
+      import('./features/pagos/pages/mp-return/mp-return.component').then(m => m.MpReturnPageComponent),
+  },
+  {
+    path: 'failure',
+    loadComponent: () =>
+      import('./features/pagos/pages/mp-return/mp-return.component').then(m => m.MpReturnPageComponent),
+  },
+  {
+    path: 'pending',
+    loadComponent: () =>
+      import('./features/pagos/pages/mp-return/mp-return.component').then(m => m.MpReturnPageComponent),
+  },
+  {
     path: 'auth',
     loadChildren: () => import('./features/auth/auth.routes').then(m => m.authRoutes),
     canActivate: [noAuthGuard]

@@ -17,6 +17,7 @@
     "paths": {
       "@derma/firebase": ["libs/firebase/src/index.ts"],
       "@derma/guards": ["libs/shared/guards/src/index.ts"],
+      "@derma/mercadopago": ["libs/shared/mercadopago/src/index.ts"],
       "@derma/models": ["libs/shared/models/src/index.ts"],
       "@derma/ui": ["libs/ui/src/index.ts"],
       "@derma/validators": ["libs/shared/validators/src/index.ts"]
