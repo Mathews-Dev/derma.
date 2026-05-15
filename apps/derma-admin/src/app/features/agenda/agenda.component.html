@@ -88,7 +88,19 @@
 @if (modalPago() && turnoSeleccionado()) {
   <derm-turno-pago-modal
     [turno]="turnoSeleccionado()!"
+    [mpPhase]="pagoMpPhase()"
+    [mpCheckout]="pagoMpCheckout()"
+    [mpError]="pagoMpError()"
     (confirm)="onPagoConfirm($event)"
     (close)="onPagoClose()">
   </derm-turno-pago-modal>
+}
+
+@if (modalNuevo()) {
+  <derm-turno-nuevo-modal
+    [profesionales]="profesionales() ?? []"
+    [fechaSeleccionada]="selectedDate()"
+    (confirm)="onNuevoConfirm($event)"
+    (close)="onNuevoClose()">
+  </derm-turno-nuevo-modal>
 }

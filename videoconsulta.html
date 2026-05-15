@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Detalle Videoconsulta - Derma Admin</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Space Grotesk', 'system-ui', 'sans-serif'],
+                    },
+                }
+            }
+        }
+    </script>
+</head>
+<body class="bg-gray-100 font-sans antialiased text-gray-900 flex justify-end min-h-screen">
+
+    <!-- Componente: Drawer Detalle de Videoconsulta -->
+    <aside class="w-full max-w-md bg-gray-50 border-l border-gray-200 shadow-2xl flex flex-col h-screen rounded-l-2xl overflow-hidden">
+        
+        <!-- Header -->
+        <div class="flex items-center justify-between p-6 pb-4 border-b border-gray-100 bg-white">
+            <div class="flex items-center gap-3">
+                <button class="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-gray-100 text-gray-400 hover:text-gray-600 transition-colors">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M6 18 18 6M6 6l12 12" />
+                    </svg>
+                </button>
+                <h2 class="text-lg font-semibold text-gray-900">Detalle de Videoconsulta</h2>
+            </div>
+            <div class="flex items-center gap-3">
+                <span class="text-xs text-gray-400 font-mono">#VC-4521</span>
+                <span class="text-xs font-medium px-2.5 py-1 rounded-lg bg-emerald-50 text-emerald-700 whitespace-nowrap">Confirmado</span>
+            </div>
+        </div>
+
+        <!-- Body (Scrollable) -->
+        <div class="flex-1 overflow-y-auto p-6 space-y-4">
+            
+            <!-- Bloques Info Paciente / Profesional -->
+            <div class="grid grid-cols-2 gap-4">
+                <div class="bg-white border border-gray-200 rounded-xl p-4">
+                    <span class="text-xs font-medium text-gray-500 uppercase tracking-wider">Paciente</span>
+                    <p class="text-sm font-semibold text-gray-900 mt-1">María González</p>
+                    <p class="text-xs text-gray-500 mt-0.5">DNI: 32.456.789</p>
+                </div>
+                <div class="bg-white border border-gray-200 rounded-xl p-4">
+                    <span class="text-xs font-medium text-gray-500 uppercase tracking-wider">Profesional</span>
+                    <p class="text-sm font-semibold text-gray-900 mt-1">Dra. Lucía Pérez</p>
+                    <p class="text-xs text-gray-500 mt-0.5">MN: 85421</p>
+                </div>
+            </div>
+
+            <!-- Bloque Reunión Meet (Destacado) -->
+            <div class="bg-white border border-gray-300 rounded-xl p-4">
+                <span class="text-xs font-medium text-gray-500 uppercase tracking-wider">Enlace de reunión</span>
+                <div class="mt-2 bg-gray-50 border border-gray-100 rounded-lg p-3 group">
+                    <p class="text-sm text-gray-700 break-all select-all">https://meet.google.com/abc-defg-hij</p>
+                </div>
+                <div class="flex gap-2 mt-3">
+                    <button class="flex-1 bg-gray-900 hover:bg-gray-800 text-white text-sm font-medium px-4 py-2.5 rounded-xl transition-colors flex items-center justify-center gap-2">
+                        Abrir en navegador 
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-4 h-4">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M13.5 6H5.25A2.25 2.25 0 0 0 3 8.25v10.5A2.25 2.25 0 0 0 5.25 21h10.5A2.25 2.25 0 0 0 18 18.75V10.5m-10.5 6L21 3m0 0h-5.25M21 3v5.25" />
+                        </svg>
+                    </button>
+                    <button class="border border-gray-200 text-gray-700 text-sm font-medium px-4 py-2.5 rounded-xl hover:bg-gray-50 transition-colors flex items-center justify-center gap-2">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-4 h-4">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 17.25v3.375c0 .621-.504 1.125-1.125 1.125h-9.75a1.125 1.125 0 0 1-1.125-1.125V7.875c0-.621.504-1.125 1.125-1.125H6.75a9.06 9.06 0 0 1 1.5.124m7.5 10.376h3.375c.621 0 1.125-.504 1.125-1.125V11.25c0-4.46-3.243-8.161-7.5-8.876a9.06 9.06 0 0 0-1.5-.124H9.375c-.621 0-1.125.504-1.125 1.125v3.5m7.5 10.375H9.375a1.125 1.125 0 0 1-1.125-1.125v-9.25m12 6.625v-1.875a3.375 3.375 0 0 0-3.375-3.375h-1.5a1.125 1.125 0 0 1-1.125-1.125v-1.5a3.375 3.375 0 0 0-3.375-3.375H9.75" />
+                        </svg>
+                        Copiar
+                    </button>
+                </div>
+                <p class="text-xs text-gray-400 italic mt-3">Por privacidad, no compartas este enlace fuera del paciente y el profesional.</p>
+            </div>
+
+            <!-- Estado Recordatorio -->
+            <div class="flex items-center gap-2">
+                <span class="text-xs font-medium px-2.5 py-1 rounded-lg bg-emerald-50 text-emerald-700">Recordatorio enviado a las 15:00</span>
+            </div>
+
+            <!-- Timeline Notificaciones -->
+            <div class="bg-white border border-gray-200 rounded-xl p-4">
+                <span class="text-xs font-medium text-gray-500 uppercase tracking-wider block mb-4">Historial de notificaciones</span>
+                <div class="relative pl-6 border-l-2 border-gray-200 space-y-4">
+                    
+                    <!-- Éxito -->
+                    <div class="relative">
+                        <div class="absolute -left-[25px] top-1.5 w-2 h-2 rounded-full bg-emerald-400 ring-4 ring-white"></div>
+                        <p class="text-sm text-gray-700">Aviso de turno enviado al paciente</p>
+                        <p class="text-xs text-gray-400 mt-0.5">14/05/2024 09:00</p>
+                    </div>
+
+                    <!-- Éxito -->
+                    <div class="relative">
+                        <div class="absolute -left-[25px] top-1.5 w-2 h-2 rounded-full bg-emerald-400 ring-4 ring-white"></div>
+                        <p class="text-sm text-gray-700">Recordatorio 1h antes enviado</p>
+                        <p class="text-xs text-gray-400 mt-0.5">14/05/2024 15:00</p>
+                    </div>
+
+                    <!-- Error -->
+                    <div class="relative">
+                        <div class="absolute -left-[25px] top-1.5 w-2 h-2 rounded-full bg-red-400 ring-4 ring-white"></div>
+                        <div class="flex items-center gap-2">
+                            <p class="text-sm text-gray-700">Aviso enviado al profesional</p>
+                            <span class="text-xs text-red-600 font-medium cursor-pointer hover:underline">Falló</span>
+                        </div>
+                        <p class="text-xs text-gray-400 mt-0.5">14/05/2024 09:01</p>
+                    </div>
+
+                </div>
+            </div>
+
+            <!-- Sección Teléfonos -->
+            <div class="bg-white border border-gray-200 rounded-xl p-4">
+                <span class="text-xs font-medium text-gray-500 uppercase tracking-wider block mb-4">Confirmar teléfono para avisos</span>
+                <div class="grid grid-cols-2 gap-4">
+                    <!-- Paciente -->
+                    <div>
+                        <label class="text-xs text-gray-500 mb-1 block">Paciente</label>
+                        <input type="text" disabled value="+54 9 11 4567-8901" class="w-full bg-gray-50 border border-gray-200 rounded-xl px-3 py-2 text-sm text-gray-500 cursor-not-allowed outline-none">
+                        <label class="flex items-center gap-2 mt-2 cursor-pointer group">
+                            <input type="checkbox" class="w-4 h-4 rounded border-gray-300 text-gray-900 focus:ring-gray-900 accent-gray-900">
+                            <span class="text-xs text-gray-600 group-hover:text-gray-900 transition-colors">Usar otro número</span>
+                        </label>
+                    </div>
+                    <!-- Profesional -->
+                    <div>
+                        <label class="text-xs text-gray-500 mb-1 block">Profesional</label>
+                        <input type="text" disabled value="+54 9 11 1234-5678" class="w-full bg-gray-50 border border-gray-200 rounded-xl px-3 py-2 text-sm text-gray-500 cursor-not-allowed outline-none">
+                        <label class="flex items-center gap-2 mt-2 cursor-pointer group">
+                            <input type="checkbox" class="w-4 h-4 rounded border-gray-300 text-gray-900 focus:ring-gray-900 accent-gray-900">
+                            <span class="text-xs text-gray-600 group-hover:text-gray-900 transition-colors">Usar otro número</span>
+                        </label>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Datos de tiempo (Pre-Finalización) -->
+            <div class="bg-gray-50 border border-gray-200 rounded-xl p-4">
+                <div class="grid grid-cols-3 gap-4 text-center">
+                    <div>
+                        <span class="text-xs font-medium text-gray-500 uppercase tracking-wider block">Fecha</span>
+                        <span class="text-sm font-semibold text-gray-900 mt-1 block">14/05/24</span>
+                    </div>
+                    <div>
+                        <span class="text-xs font-medium text-gray-500 uppercase tracking-wider block">Hora</span>
+                        <span class="text-sm font-semibold text-gray-900 mt-1 block">16:00</span>
+                    </div>
+                    <div>
+                        <span class="text-xs font-medium text-gray-500 uppercase tracking-wider block">Duración</span>
+                        <span class="text-sm font-semibold text-gray-900 mt-1 block">30 min</span>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- Footer -->
+        <div class="border-t border-gray-200 bg-white p-4 flex justify-end gap-3">
+            <button class="border border-gray-200 text-gray-700 text-sm font-medium px-4 py-2.5 rounded-xl hover:bg-gray-50 transition-colors">
+                Cancelar turno
+            </button>
+            <button class="bg-gray-900 hover:bg-gray-800 text-white text-sm font-medium px-5 py-2.5 rounded-xl transition-colors">
+                Finalizar videoconsulta
+            </button>
+        </div>
+
+    </aside>
+
+</body>
+</html>

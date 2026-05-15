@@ -1,0 +1,147 @@
+@if (item(); as vc) {
+  <aside class="vc-drawer">
+    <div class="vc-drawer-header">
+      <div class="vc-drawer-header-left">
+        <button type="button" class="vc-icon-btn" (click)="volver()" aria-label="Cerrar">
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M6 18 18 6M6 6l12 12" />
+          </svg>
+        </button>
+        <h2 class="vc-title">Detalle de Videoconsulta</h2>
+      </div>
+      <div class="vc-drawer-header-right">
+        <span class="vc-mono-id">{{ vc.codigo }}</span>
+        @switch (vc.estadoBadge) {
+          @case ('success') {
+            <ui-badge status="success">{{ vc.estadoEtiqueta }}</ui-badge>
+          }
+          @case ('warning') {
+            <ui-badge status="warning">{{ vc.estadoEtiqueta }}</ui-badge>
+          }
+          @default {
+            <ui-badge status="neutral">{{ vc.estadoEtiqueta }}</ui-badge>
+          }
+        }
+      </div>
+    </div>
+
+    <div class="vc-drawer-body">
+      <div class="vc-grid-2">
+        <div class="vc-card-block">
+          <span class="vc-label-upper">Paciente</span>
+          <p class="vc-strong">{{ vc.pacienteNombre }}</p>
+          <p class="vc-muted">DNI: {{ vc.pacienteDni }}</p>
+        </div>
+        <div class="vc-card-block">
+          <span class="vc-label-upper">Profesional</span>
+          <p class="vc-strong">{{ vc.profesionalNombre }}</p>
+          <p class="vc-muted">{{ vc.profesionalMatricula }}</p>
+        </div>
+      </div>
+
+      <div class="vc-meet-block">
+        <span class="vc-label-upper">Enlace de reunión</span>
+        <div class="vc-url-box">
+          @if (vc.linkMeet) {
+            <p class="vc-url-text">{{ vc.linkMeet }}</p>
+          } @else {
+            <p class="vc-muted">El enlace se generará al confirmar la videoconsulta.</p>
+          }
+        </div>
+        <div class="vc-meet-actions">
+          <button type="button" class="vc-btn-primary" [disabled]="!vc.linkMeet" (click)="abrirMeet()">
+            Abrir en navegador
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-4 h-4">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M13.5 6H5.25A2.25 2.25 0 0 0 3 8.25v10.5A2.25 2.25 0 0 0 5.25 21h10.5A2.25 2.25 0 0 0 18 18.75V10.5m-10.5 6L21 3m0 0h-5.25M21 3v5.25" />
+            </svg>
+          </button>
+          <button type="button" class="vc-btn-ghost" (click)="copiarLink()">
+            Copiar
+          </button>
+        </div>
+        <p class="vc-privacy-note">Por privacidad, no compartas este enlace fuera del paciente y el profesional.</p>
+      </div>
+
+      @if (vc.recordatorioEtiqueta) {
+        <div class="vc-reminder-row">
+          <ui-badge status="success">{{ vc.recordatorioEtiqueta }}</ui-badge>
+        </div>
+      }
+
+      <div class="vc-card-block">
+        <span class="vc-label-upper block mb-4">Historial de notificaciones</span>
+        <div class="vc-timeline">
+          @for (n of vc.notificaciones; track $index) {
+            <div class="vc-tl-item">
+              <div
+                class="vc-tl-dot"
+                [class.vc-tl-dot--ok]="n.tipo === 'ok'"
+                [class.vc-tl-dot--err]="n.tipo === 'error'"
+              ></div>
+              <div>
+                <div class="flex flex-wrap items-center gap-2">
+                  <p class="vc-tl-text">{{ n.texto }}</p>
+                  @if (n.detalleFallo) {
+                    <span class="vc-fail-hint">{{ n.detalleFallo }}</span>
+                  }
+                </div>
+                <p class="vc-tl-date">{{ n.fecha }}</p>
+              </div>
+            </div>
+          }
+        </div>
+      </div>
+
+      <div class="vc-card-block">
+        <span class="vc-label-upper block mb-4">Confirmar teléfono para avisos</span>
+        <div class="vc-grid-2 vc-grid-phones">
+          <div>
+            <label class="vc-field-label">Paciente</label>
+            <input type="text" class="vc-input-disabled" [value]="vc.telefonoPaciente" readonly />
+            <app-checkbox
+              class="mt-2 block"
+              [checked]="otroNumPaciente()"
+              (checkedChange)="otroNumPaciente.set($event)"
+              label="Usar otro número"
+            />
+          </div>
+          <div>
+            <label class="vc-field-label">Profesional</label>
+            <input type="text" class="vc-input-disabled" [value]="vc.telefonoProfesional" readonly />
+            <app-checkbox
+              class="mt-2 block"
+              [checked]="otroNumProfesional()"
+              (checkedChange)="otroNumProfesional.set($event)"
+              label="Usar otro número"
+            />
+          </div>
+        </div>
+      </div>
+
+      <div class="vc-time-summary">
+        <div class="vc-time-cell">
+          <span class="vc-label-upper">Fecha</span>
+          <span class="vc-strong block mt-1">{{ vc.fechaCorta }}</span>
+        </div>
+        <div class="vc-time-cell">
+          <span class="vc-label-upper">Hora</span>
+          <span class="vc-strong block mt-1">{{ vc.hora }}</span>
+        </div>
+        <div class="vc-time-cell">
+          <span class="vc-label-upper">Duración</span>
+          <span class="vc-strong block mt-1">{{ vc.duracionMin }} min</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="vc-drawer-footer">
+      <button type="button" class="vc-btn-ghost">Cancelar turno</button>
+      <button type="button" class="vc-btn-primary px-5">Finalizar videoconsulta</button>
+    </div>
+  </aside>
+} @else {
+  <div class="vc-not-found">
+    <p class="text-[var(--c-600)] mb-4">No se encontró esta videoconsulta.</p>
+    <a routerLink="/admin/videoconsultas" class="vc-back-link">Volver al listado</a>
+  </div>
+}

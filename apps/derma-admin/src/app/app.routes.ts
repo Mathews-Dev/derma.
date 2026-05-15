@@ -5,6 +5,21 @@ import { NotificacionesStateService } from './core/services/notificaciones-state
 
 export const appRoutes: Route[] = [
   {
+    path: 'success',
+    loadComponent: () =>
+      import('./features/pagos/pages/mp-return/mp-return.component').then(m => m.MpReturnPageComponent),
+  },
+  {
+    path: 'failure',
+    loadComponent: () =>
+      import('./features/pagos/pages/mp-return/mp-return.component').then(m => m.MpReturnPageComponent),
+  },
+  {
+    path: 'pending',
+    loadComponent: () =>
+      import('./features/pagos/pages/mp-return/mp-return.component').then(m => m.MpReturnPageComponent),
+  },
+  {
     path: 'auth',
     loadChildren: () => import('./features/auth/auth.routes').then(m => m.authRoutes),
     canActivate: [noAuthGuard]
@@ -23,6 +38,12 @@ export const appRoutes: Route[] = [
         path: 'agenda',
         canActivate: [roleGuard([RolUsuario.ADMIN, RolUsuario.DERMATOLOGO, RolUsuario.RECEPCIONISTA])],
         loadChildren: () => import('./features/agenda/agenda.routes').then(m => m.agendaRoutes)
+      },
+      {
+        path: 'videoconsultas',
+        canActivate: [roleGuard([RolUsuario.ADMIN, RolUsuario.DERMATOLOGO, RolUsuario.RECEPCIONISTA])],
+        loadChildren: () =>
+          import('./features/videoconsulta/videoconsulta.routes').then(m => m.videoconsultaRoutes),
       },
       {
         path: 'pacientes',

@@ -101,6 +101,12 @@ export interface Turno {
     mpStatus?: string | null;           // 'approved' | 'pending' | 'rejected' | 'in_process'
     mpMerchantOrderId?: string | null;  // ID de orden de MP (para conciliación)
     mpQrData?: string | null;           // Datos del QR generado (pago presencial)
+    /** Referencia externa MP (`turno_<id>_<timestamp>`), la escribe el backend al crear la preferencia */
+    mpExternalReference?: string | null;
+    /** URL de checkout devuelta por MP; útil para link “Abrir en Mercado Pago” */
+    mpInitPoint?: string | null;
+    /** Idempotency-Key usado al crear la preferencia (backend Node) */
+    mpIdempotencyKey?: string | null;
     fechaPago?: Timestamp | null;       // Timestamp de cuando se confirmó el pago
 
     // Número correlativo del turno en el día (1, 2, 3…) — útil para recepción

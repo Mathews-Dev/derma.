@@ -1,0 +1,36 @@
+{
+  "functions": [
+    {
+      "source": "dist/backend/whatsapp",
+      "codebase": "whatsapp",
+      "runtime": "nodejs22",
+      "disallowLegacyRuntimeConfig": true,
+      "ignore": [
+        "node_modules",
+        ".git",
+        "firebase-debug.log",
+        "firebase-debug.*.log",
+        "*.local"
+      ],
+      "predeploy": [
+        "nx build whatsapp --prod"
+      ]
+    },
+    {
+      "source": "dist/backend/mercadopago",
+      "codebase": "mercadopago",
+      "runtime": "nodejs22",
+      "disallowLegacyRuntimeConfig": true,
+      "ignore": [
+        "node_modules",
+        ".git",
+        "firebase-debug.log",
+        "firebase-debug.*.log",
+        "*.local"
+      ],
+      "predeploy": [
+        "nx build mercadopago --prod"
+      ]
+    }
+  ]
+}

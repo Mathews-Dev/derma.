@@ -49,7 +49,7 @@
         <a
           [routerLink]="item.path"
           routerLinkActive="!bg-[var(--c-800)] !text-[var(--c-50)] shadow-md shadow-[var(--c-200)] pointer-events-none"
-          [routerLinkActiveOptions]="{ exact: true }"
+          [routerLinkActiveOptions]="{ exact: item.linkActiveExact !== false }"
           class="relative flex items-center py-2.5 rounded-[12px] text-[var(--c-500)] hover:text-[var(--c-800)] hover:bg-[var(--c-100)] active:scale-[0.98] transition-all duration-500 group cursor-pointer pr-3 pl-[14px]"
           (click)="onNavigate()"
           [title]="isCollapsed() ? item.label : ''"

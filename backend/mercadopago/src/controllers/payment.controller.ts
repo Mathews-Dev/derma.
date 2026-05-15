@@ -3,7 +3,7 @@ import { createPaymentPreference } from '../services/payment.service';
 import { updateTurnoWithPreference } from '../services/turno.service';
 import { markAsCompleted, deleteKey } from '../services/idempotency.service';
 import { Payment } from 'mercadopago';
-import { mpClient } from '../config/mercadopago';
+import { getMpClient } from '../config/mercadopago';
 
 export async function createPayment(req: Request, res: Response): Promise<any> {
   const { turnoId, precio, email, nombre } = req.body;
@@ -42,7 +42,7 @@ export async function getPaymentStatus(req: Request, res: Response): Promise<any
   const { external_reference } = req.params;
 
   try {
-    const payment = new Payment(mpClient);
+    const payment = new Payment(getMpClient());
 
     const searchResult = await payment.search({
       options: {
