@@ -40,6 +40,12 @@ export const appRoutes: Route[] = [
         loadChildren: () => import('./features/agenda/agenda.routes').then(m => m.agendaRoutes)
       },
       {
+        path: 'videoconsultas',
+        canActivate: [roleGuard([RolUsuario.ADMIN, RolUsuario.DERMATOLOGO, RolUsuario.RECEPCIONISTA])],
+        loadChildren: () =>
+          import('./features/videoconsulta/videoconsulta.routes').then(m => m.videoconsultaRoutes),
+      },
+      {
         path: 'pacientes',
         canActivate: [roleGuard([RolUsuario.ADMIN, RolUsuario.DERMATOLOGO, RolUsuario.RECEPCIONISTA])],
         loadComponent: () => import('./features/pacientes/pacientes.component').then(m => m.PacientesComponent)

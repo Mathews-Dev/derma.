@@ -1,0 +1,65 @@
+.vc-input {
+  width: 100%;
+  padding: 0.625rem 1rem 0.625rem 2.5rem;
+  background: var(--c-50);
+  border: 1px solid var(--c-200);
+  border-radius: 9999px;
+  font-size: 13px;
+  color: var(--c-800);
+  outline: none;
+  transition: border-color 0.15s, box-shadow 0.15s;
+}
+.vc-input::placeholder {
+  color: var(--c-400);
+}
+.vc-input:focus {
+  border-color: var(--c-800);
+  box-shadow: 0 0 0 1px var(--c-800);
+}
+
+.vc-card {
+  background: var(--c-50);
+  border: 1px solid var(--c-200);
+  border-radius: 16px;
+}
+
+.vc-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+.vc-table th {
+  text-align: left;
+  padding: 12px 16px;
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--c-500);
+  background: var(--c-100);
+  border-bottom: 1px solid var(--c-200);
+}
+.vc-table td {
+  padding: 14px 16px;
+  border-bottom: 1px solid var(--c-200);
+  color: var(--c-600);
+  vertical-align: middle;
+}
+.vc-table tbody tr:hover {
+  background: var(--c-100);
+}
+.vc-mono {
+  font-family: var(--font-mono, ui-monospace, monospace);
+  font-size: 12px;
+  color: var(--c-500);
+}
+.vc-link {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--c-800);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+.vc-link:hover {
+  color: var(--c-600);
+}
