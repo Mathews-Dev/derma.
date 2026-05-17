@@ -2,7 +2,10 @@ import { Request, Response, NextFunction } from 'express';
 import { sendTemplate } from '../services/whatsapp.service';
 import { templates }    from '../templates';
 import { formatPhoneAR } from '../utils/phone.utils';
-import { formatFecha }   from '../utils/date.utils';
+import {
+  coerceFechaWhatsAppBody,
+  coerceHoraWhatsAppBody,
+} from '../utils/date.utils';
 
 // Helper para no repetir try/catch en cada acción
 function asyncHandler(
@@ -20,8 +23,8 @@ export const messageController = {
       formatPhoneAR(telefono),
       templates.turnoConfirmado(
         pacienteNombre,
-        fecha ?? formatFecha(new Date()),
-        horaInicio,
+        coerceFechaWhatsAppBody(fecha, new Date()),
+        coerceHoraWhatsAppBody(horaInicio),
         profesionalNombre,
       ),
     );
@@ -34,8 +37,8 @@ export const messageController = {
       formatPhoneAR(telefono),
       templates.turnoCancelado(
         pacienteNombre,
-        fecha,
-        horaInicio,
+        coerceFechaWhatsAppBody(fecha, new Date()),
+        coerceHoraWhatsAppBody(horaInicio),
         motivo ?? 'Sin especificar',
       ),
     );
@@ -48,8 +51,8 @@ export const messageController = {
       formatPhoneAR(telefono),
       templates.turnoReprogramado(
         pacienteNombre,
-        fechaNueva,
-        horaNueva,
+        coerceFechaWhatsAppBody(fechaNueva, new Date()),
+        coerceHoraWhatsAppBody(horaNueva),
         profesionalNombre,
       ),
     );
@@ -60,9 +63,36 @@ export const messageController = {
     const { telefono, pacienteNombre, fecha, horaInicio } = req.body;
     await sendTemplate(
       formatPhoneAR(telefono),
-      templates.turnoNoAsistio(pacienteNombre, fecha, horaInicio),
+      templates.turnoNoAsistio(
+        pacienteNombre,
+        coerceFechaWhatsAppBody(fecha, new Date()),
+        coerceHoraWhatsAppBody(horaInicio),
+      ),
     );
     res.json({ ok: true, mensaje: 'Notificación de ausencia enviada' });
+  }),
+
+  videoconsultaConfirmada: asyncHandler(async (req, res) => {
+    const { telefono, pacienteNombre, profesionalNombre, fechaHora, meetCode } = req.body;
+
+    if (!telefono || !pacienteNombre || !profesionalNombre || !fechaHora || !meetCode) {
+      res.status(400).json({
+        error:
+          'Faltan campos: telefono, pacienteNombre, profesionalNombre, fechaHora, meetCode',
+      });
+      return;
+    }
+
+    await sendTemplate(
+      formatPhoneAR(telefono),
+      templates.videoconsultaConfirmada(
+        pacienteNombre,
+        profesionalNombre,
+        fechaHora,
+        meetCode,
+      ),
+    );
+    res.json({ ok: true, mensaje: 'Videoconsulta confirmada (envío simulado o real)' });
   }),
 
 };

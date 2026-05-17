@@ -115,6 +115,20 @@ export interface Turno {
     // Color del profesional en la agenda (estilo Google Calendar)
     // Se asigna al crear el turno basado en el profesional
     colorProfesional?: string | null;
+
+    /** Meet, evento de Google Calendar y asistencia (un solo objeto en Firestore). */
+    videoconsulta?: VideoconsultaTurno | null;
+}
+
+/** Datos de videoconsulta vinculados al turno. */
+export interface VideoconsultaTurno {
+    linkMeet: string | null;
+    googleEventId: string | null;
+    linkEvento?: string | null;
+    asistenciaLink: {
+        profesionalEntro: Timestamp | null;
+        pacienteEntro: Timestamp | null;
+    };
 }
 
 // ─── Tipos Auxiliares ────────────────────────────────────────────────────────

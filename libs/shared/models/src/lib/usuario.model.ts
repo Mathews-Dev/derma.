@@ -28,6 +28,7 @@ export interface Usuario {
 export interface FranjaHoraria {
     horaInicio: string;
     horaFin: string;
+    modalidad?: 'presencial' | 'videoconsulta' | 'ambas';
 }
 
 export interface HorariosLaborales {

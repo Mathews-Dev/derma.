@@ -2,7 +2,10 @@ import { getTurnosManana } from './turno.service';
 import { sendTemplate }    from './whatsapp.service';
 import { templates }       from '../templates';
 import { formatPhoneAR }   from '../utils/phone.utils';
-import { formatFecha }     from '../utils/date.utils';
+import {
+  formatSoloFechaHumanaWhatsApp,
+  formatSoloHoraDesdeString,
+} from '../utils/date.utils';
 
 export async function enviarRecordatorios(): Promise<void> {
   const turnos = await getTurnosManana();
@@ -20,14 +23,15 @@ export async function enviarRecordatorios(): Promise<void> {
       }
 
       const telefono = formatPhoneAR(rawPhone);
-      const fecha    = formatFecha(turno.fecha.toDate());
+      const fecha = formatSoloFechaHumanaWhatsApp(turno.fecha.toDate());
+      const hora  = formatSoloHoraDesdeString(turno.horaInicio);
 
       await sendTemplate(
         telefono,
         templates.turnoRecordatorio(
           turno.pacienteNombre,
           fecha,
-          turno.horaInicio,
+          hora,
           turno.profesionalNombre,
         ),
       );

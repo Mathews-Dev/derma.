@@ -1,4 +1,28 @@
 {
+  "hosting": [
+    {
+      "site": "dermaclinic",
+      "public": "dist/apps/derma-admin/browser",
+      "ignore": ["firebase.json", "**/.*", "**/node_modules/**"],
+      "rewrites": [
+        {
+          "source": "**",
+          "destination": "/index.html"
+        }
+      ]
+    },
+    {
+      "site": "dermapacientes",
+      "public": "dist/apps/derma-pacientes/browser",
+      "ignore": ["firebase.json", "**/.*", "**/node_modules/**"],
+      "rewrites": [
+        {
+          "source": "**",
+          "destination": "/index.html"
+        }
+      ]
+    }
+  ],
   "functions": [
     {
       "source": "dist/backend/whatsapp",
@@ -30,6 +54,22 @@
       ],
       "predeploy": [
         "nx build mercadopago --prod"
+      ]
+    },
+    {
+      "source": "dist/backend/google-calendar",
+      "codebase": "google-calendar",
+      "runtime": "nodejs22",
+      "disallowLegacyRuntimeConfig": true,
+      "ignore": [
+        "node_modules",
+        ".git",
+        "firebase-debug.log",
+        "firebase-debug.*.log",
+        "*.local"
+      ],
+      "predeploy": [
+        "nx build google-calendar --prod"
       ]
     }
   ]

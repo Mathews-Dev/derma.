@@ -16,6 +16,11 @@ function getConfig() {
 }
 
 export async function sendTemplate(to: string, template: TemplateMessage): Promise<void> {
+  if (env.WHATSAPP_SIMULATION) {
+    console.log('[SIMULACION WhatsApp] sendTemplate', JSON.stringify({ to, template }, null, 2));
+    return;
+  }
+
   const { url, headers } = getConfig();
   try {
     await axios.post(url, {
@@ -32,6 +37,11 @@ export async function sendTemplate(to: string, template: TemplateMessage): Promi
 }
 
 export async function sendText(to: string, body: string): Promise<void> {
+  if (env.WHATSAPP_SIMULATION) {
+    console.log('[SIMULACION WhatsApp] sendText', JSON.stringify({ to, body }, null, 2));
+    return;
+  }
+
   const { url, headers } = getConfig();
   try {
     await axios.post(url, {
