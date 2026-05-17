@@ -1,0 +1,50 @@
+{
+  "name": "google-calendar",
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "backend/google-calendar/src",
+  "projectType": "application",
+  "tags": [],
+  "targets": {
+    "build": {
+      "executor": "@nx/esbuild:esbuild",
+      "outputs": ["{options.outputPath}"],
+      "defaultConfiguration": "production",
+      "options": {
+        "platform": "node",
+        "outputPath": "dist/backend/google-calendar",
+        "format": ["cjs"],
+        "bundle": false,
+        "main": "backend/google-calendar/src/firebase/index.ts",
+        "tsConfig": "backend/google-calendar/tsconfig.app.json",
+        "assets": ["backend/google-calendar/src/assets"],
+        "generatePackageJson": true,
+        "esbuildOptions": {
+          "sourcemap": true,
+          "outExtension": {
+            ".js": ".js"
+          }
+        }
+      },
+      "configurations": {
+        "development": {
+          "main": "backend/google-calendar/src/main.ts",
+          "esbuildOptions": {
+            "sourcemap": true,
+            "outExtension": {
+              ".js": ".js"
+            }
+          }
+        },
+        "production": {
+          "main": "backend/google-calendar/src/firebase/index.ts",
+          "esbuildOptions": {
+            "sourcemap": false,
+            "outExtension": {
+              ".js": ".js"
+            }
+          }
+        }
+      }
+    }
+  }
+}

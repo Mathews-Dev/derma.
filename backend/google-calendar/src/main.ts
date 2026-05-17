@@ -5,19 +5,18 @@ import { initFirebaseAdmin } from './config/firebase-admin';
 import { app } from './app';
 import { env } from './config/env';
 
-// Cargar .env de la raíz del monorepo primero; luego overrides locales si existen.
 for (const p of [
   resolve(process.cwd(), '.env'),
-  resolve(process.cwd(), 'backend/whatsapp/.env'),
+  resolve(process.cwd(), 'backend/google-calendar/.env'),
 ]) {
   if (existsSync(p)) {
     loadEnv({ path: p });
+    break;
   }
 }
 
 initFirebaseAdmin();
 
-app.listen(env.PORT, () => {
-  console.log(`[Derma WhatsApp] corriendo en http://localhost:${env.PORT}`);
-  console.log(`[Derma WhatsApp] simulación: ${env.WHATSAPP_SIMULATION ? 'ON (no llama a Meta)' : 'OFF'}`);
+app.listen(env.port, () => {
+  console.log(`[Derma Google Calendar] corriendo en http://localhost:${env.port}`);
 });
