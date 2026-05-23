@@ -183,6 +183,17 @@
   border-color: var(--c-300);
 }
 
+.ac-act-warning:hover {
+  color: var(--st-canc);
+  border-color: rgba(140, 68, 68, 0.35);
+}
+
+.ac-act-cancel:hover {
+  color: var(--st-canc);
+  border-color: rgba(140, 68, 68, 0.45);
+  background: var(--st-canc-bg);
+}
+
 .empty-state {
   display: flex;
   flex-direction: column;

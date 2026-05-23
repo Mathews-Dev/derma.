@@ -59,17 +59,24 @@
 @if (modalCancelar() && turnoSeleccionado()) {
   <derm-turno-cancelar-modal
     [turno]="turnoSeleccionado()!"
+    [guardando]="cancelando()"
     (confirm)="onCancelarConfirm($event)"
     (close)="onCancelarClose()">
   </derm-turno-cancelar-modal>
 }
 
-@if (modalReprogramar() && turnoSeleccionado()) {
-  <derm-turno-reprogramar-modal
-    [turno]="turnoSeleccionado()!"
-    (confirm)="onReprogramarConfirm($event)"
-    (close)="onReprogramarClose()">
-  </derm-turno-reprogramar-modal>
+@if (modalReprogramar() && turnoSeleccionado(); as turnoRep) {
+  @if (profesionalDelTurno(turnoRep); as profRep) {
+    <derm-turno-reprogramar-modal
+      [turno]="turnoRep"
+      [profesional]="profRep"
+      [turnosOcupados]="allTurns() ?? []"
+      [fechaSeleccionada]="selectedDate()"
+      [guardando]="reprogramando()"
+      (confirm)="onReprogramarConfirm($event)"
+      (close)="onReprogramarClose()">
+    </derm-turno-reprogramar-modal>
+  }
 }
 
 @if (modalPago() && turnoSeleccionado()) {

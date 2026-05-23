@@ -403,6 +403,7 @@ export class TurnoNuevoModalComponent implements OnDestroy {
       telefonoNotificaciones: telefonoNotif?.trim() ?? null,
       tipo:                  'consulta',
       modalidadConsulta:     this.modalidadConsulta(),
+      origenCreacion:       'recepcion',
       colorProfesional:      '#4a6fa5',
     };
 

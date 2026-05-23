@@ -1,7 +1,23 @@
-import { ChangeDetectionStrategy, Component, HostListener, input, output, signal } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  HostListener,
+  computed,
+  input,
+  output,
+  signal,
+} from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { Turno } from '@derma/models';
+import { EstadoPago, Turno } from '@derma/models';
+import { PAGO_STATUS } from '@derma/ui';
+
+export interface TurnoCancelarConfirmPayload {
+  motivo: string;
+}
+
+const DS_FULL = ['domingo', 'lunes', 'martes', 'miércoles', 'jueves', 'viernes', 'sábado'];
+const MS_SHORT = ['ene', 'feb', 'mar', 'abr', 'may', 'jun', 'jul', 'ago', 'sep', 'oct', 'nov', 'dic'];
 
 @Component({
   selector: 'derm-turno-cancelar-modal',
@@ -11,22 +27,42 @@ import { Turno } from '@derma/models';
   styleUrl: './turno-cancelar-modal.component.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-// Force IDE cache refresh
 export class TurnoCancelarModalComponent {
   turno = input.required<Turno>();
-  confirm = output<{ motivo: string; conReembolso: boolean }>();
-  close   = output<void>();
+  guardando = input(false);
 
-  motivo        = signal('');
-  conReembolso  = signal(false);
-  loading       = signal(false);
+  confirm = output<TurnoCancelarConfirmPayload>();
+  close = output<void>();
 
-  @HostListener('document:keydown.escape') onEsc() { this.close.emit(); }
+  motivo = signal('');
 
-  get canConfirm() { return this.motivo().trim().length >= 5; }
+  turnoResumen = computed(() => {
+    const t = this.turno();
+    const d = t.fecha.toDate();
+    return `${DS_FULL[d.getDay()]} ${d.getDate()} ${MS_SHORT[d.getMonth()]} · ${t.horaInicio}–${t.horaFin}`;
+  });
 
-  onConfirm() {
-    if (!this.canConfirm) return;
-    this.confirm.emit({ motivo: this.motivo(), conReembolso: this.conReembolso() });
+  pagoLabel = computed(() => {
+    const ep = this.turno().estadoPago;
+    return PAGO_STATUS[ep]?.label ?? ep;
+  });
+
+  pagoYaRealizado = computed(() => {
+    const ep = this.turno().estadoPago;
+    return ep === EstadoPago.PAGADO || ep === EstadoPago.PARCIAL;
+  });
+
+  puedeConfirmar = computed(
+    () => this.motivo().trim().length >= 5 && !this.guardando(),
+  );
+
+  @HostListener('document:keydown.escape')
+  onEsc(): void {
+    if (!this.guardando()) this.close.emit();
+  }
+
+  onConfirm(): void {
+    if (!this.puedeConfirmar()) return;
+    this.confirm.emit({ motivo: this.motivo().trim() });
   }
 }

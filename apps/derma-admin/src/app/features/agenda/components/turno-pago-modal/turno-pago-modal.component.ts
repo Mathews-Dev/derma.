@@ -28,10 +28,6 @@ import { Turno } from '@derma/models';
 
 import {
 
-  AccordionComponent,
-
-  UiAccordionItemComponent,
-
   UiPhoneInputComponent,
 
   formatPhoneNumberByIso,
@@ -104,10 +100,6 @@ export interface TurnoPagoConfirmPayload {
 
     UiPhoneInputComponent,
 
-    AccordionComponent,
-
-    UiAccordionItemComponent,
-
     PagoExitoPigComponent,
 
   ],
@@ -154,15 +146,13 @@ export class TurnoPagoModalComponent {
 
   notificarPorWhatsapp = signal(false);
 
+  /** true = “Otro número”; false = ficha del turno */
+
+  personalizarTelNotifs = signal(false);
+
   waCountryIso = signal('AR');
 
   waLocal = signal('');
-
-  waAltAbierto = signal(false);
-
-  waCountryIsoAlt = signal('AR');
-
-  waLocalAlt = signal('');
 
   waError = signal(false);
 
@@ -196,23 +186,87 @@ export class TurnoPagoModalComponent {
 
 
 
+  telefonoPacienteTurnoRaw = computed(
+
+    () =>
+
+      this.turno().telefonoNotificaciones?.trim() ||
+
+      this.turno().pacienteTelefono?.trim() ||
+
+      '',
+
+  );
+
+
+
+  telefonoWhatsappPacienteValido = computed(() => {
+
+    const raw = this.telefonoPacienteTurnoRaw();
+
+    if (!raw.trim()) return false;
+
+    return isValidLocalPhone(parsePhoneNumber(raw).local);
+
+  });
+
+
+
+  telefonoNotificacionesEfectivoDisplay = computed(() => {
+
+    const raw = this.telefonoPacienteTurnoRaw();
+
+    if (!raw.trim()) return '';
+
+    const { country, local } = parsePhoneNumber(raw);
+
+    return formatPhoneNumberByIso(country.isoCode, local);
+
+  });
+
+
+
+  waNotifPlaceholderTurno = computed(() => {
+
+    const raw = this.telefonoPacienteTurnoRaw();
+
+    if (!raw.trim()) return '9 11 2345 6789';
+
+    const { local } = parsePhoneNumber(raw);
+
+    return local.replace(/\D/g, '').length >= 6 ? local : '9 11 2345 6789';
+
+  });
+
+
+
   telefonoResueltoParaEnvio = computed(() => {
 
     if (!this.notificarPorWhatsapp()) return '';
 
-    if (this.waAltAbierto() && isValidLocalPhone(this.waLocalAlt())) {
 
-      return formatPhoneNumberByIso(this.waCountryIsoAlt(), this.waLocalAlt());
+
+    if (!this.personalizarTelNotifs()) {
+
+      const raw = this.telefonoPacienteTurnoRaw();
+
+      if (!raw.trim()) return '';
+
+      const { country, local } = parsePhoneNumber(raw);
+
+      if (!isValidLocalPhone(local)) return '';
+
+      return formatPhoneNumberByIso(country.isoCode, local);
 
     }
 
-    if (isValidLocalPhone(this.waLocal())) {
 
-      return formatPhoneNumberByIso(this.waCountryIso(), this.waLocal());
 
-    }
+    return isValidLocalPhone(this.waLocal())
 
-    return '';
+      ? formatPhoneNumberByIso(this.waCountryIso(), this.waLocal())
+
+      : '';
 
   });
 
@@ -304,25 +358,23 @@ export class TurnoPagoModalComponent {
 
     effect(() => {
 
-      const t = this.turno();
+      void this.turno();
 
-      const tel = t.telefonoNotificaciones?.trim() || t.pacienteTelefono?.trim() || '';
+      const tel = this.telefonoPacienteTurnoRaw();
 
       const { country, local } = parsePhoneNumber(tel);
 
+
+
       this.waCountryIso.set(country.isoCode);
 
-      this.waCountryIsoAlt.set(country.isoCode);
-
       this.waLocal.set(local);
-
-      this.waLocalAlt.set('');
-
-      this.waAltAbierto.set(false);
 
       this.waError.set(false);
 
       this.notificarPorWhatsapp.set(!!tel.trim());
+
+      this.personalizarTelNotifs.set(!(!!tel.trim() && isValidLocalPhone(local)));
 
     });
 
@@ -360,10 +412,6 @@ export class TurnoPagoModalComponent {
 
     if (!value) {
 
-      this.waAltAbierto.set(false);
-
-      this.waLocalAlt.set('');
-
       this.waError.set(false);
 
     }
@@ -384,15 +432,31 @@ export class TurnoPagoModalComponent {
 
 
 
-  onWaAltAccordionOpened(open: boolean): void {
+  onPersonalizarTelPago(custom: boolean): void {
 
-    if (!open) {
 
-      this.waLocalAlt.set('');
 
-      this.waError.set(false);
+    if (!custom) {
+
+      const raw = this.telefonoPacienteTurnoRaw();
+
+      const { country, local } = parsePhoneNumber(raw);
+
+      if (!raw.trim() || !isValidLocalPhone(local)) {
+
+        return;
+
+      }
+
+      this.waCountryIso.set(country.isoCode);
+
+      this.waLocal.set(local);
 
     }
+
+    this.personalizarTelNotifs.set(custom);
+
+    this.onWaInputChange();
 
   }
 

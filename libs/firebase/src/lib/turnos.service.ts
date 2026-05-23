@@ -28,7 +28,20 @@ import { generateTurnoAccessToken } from './turno-access-token';
 
 /** Se lanza cuando el slot ya fue reservado por otro proceso. */
 export class SlotOcupadoError extends Error {
-  constructor() { super('SLOT_OCUPADO'); }
+  constructor() {
+    super('SLOT_OCUPADO');
+    this.name = 'SlotOcupadoError';
+  }
+}
+
+export function isSlotOcupadoError(err: unknown): boolean {
+  return err instanceof SlotOcupadoError
+    || (err instanceof Error && err.message === 'SLOT_OCUPADO');
+}
+
+/** Firestore rechaza valores `undefined` en writes. */
+function stripUndefined<T extends Record<string, unknown>>(obj: T): T {
+  return Object.fromEntries(Object.entries(obj).filter(([, v]) => v !== undefined)) as T;
 }
 
 @Injectable({ providedIn: 'root' })
@@ -235,9 +248,9 @@ export class TurnosService {
 
   /**
    * Cancela un turno. Requiere motivo.
-   * Si había un pago aprobado, deja `estadoPago` como REEMBOLSADO para que
-   * el operario gestione la devolución manualmente o via backend MP.
-   * También libera la reserva del slot para que pueda volver a tomarse.
+   * El estado de pago no se modifica (no hay reembolsos automáticos en el sistema).
+   * `conReembolso` solo marca REEMBOLSADO si en el futuro se usa integración manual.
+   * Libera la reserva del slot para que pueda volver a tomarse.
    */
   async cancelar(id: string, motivo: string, conReembolso = false): Promise<void> {
     const data: Partial<Turno> = { estado: EstadoTurno.CANCELADO, motivo };
@@ -269,8 +282,9 @@ export class TurnosService {
   }
 
   /**
-   * Reprograma un turno: crea uno nuevo (PENDIENTE) y marca el original como
-   * REPROGRAMADO, enlazándolos via `turnoOriginalId`.
+   * Reprograma un turno: marca el original como REPROGRAMADO (historial, no ocupa slot)
+   * y crea el turno activo en la nueva fecha/hora.
+   * Si el original ya estaba pagado, el nuevo hereda el pago y queda confirmado.
    * Retorna el ID del nuevo turno creado.
    */
   async reprogramar(
@@ -280,30 +294,99 @@ export class TurnosService {
     nuevaHoraFin: string,
     motivo: string,
   ): Promise<string> {
-    // Marcar el original como reprogramado
-    await this.update(turnoOriginal.id, {
-      estado: EstadoTurno.REPROGRAMADO,
-      motivoReprogramacion: motivo,
-    });
+    const nuevoTurno = this.buildPayloadReprogramacion(
+      turnoOriginal,
+      nuevaFecha,
+      nuevaHoraInicio,
+      nuevaHoraFin,
+      motivo,
+    );
 
-    // Crear el nuevo turno vinculado al original
-    const { id: _id, ...rest } = turnoOriginal;
-    const nuevoTurno: Omit<Turno, 'id'> = {
-      ...rest,
+    let nuevoId: string;
+    try {
+      nuevoId = await this.createWithSlotLock(nuevoTurno);
+    } catch (err) {
+      console.error('[TurnosService.reprogramar] No se pudo crear el turno nuevo', err);
+      throw err;
+    }
+
+    try {
+      await this.update(turnoOriginal.id, {
+        estado: EstadoTurno.REPROGRAMADO,
+        motivoReprogramacion: motivo,
+      });
+      await this.liberarSlotTurno(turnoOriginal);
+    } catch (err) {
+      console.error(
+        '[TurnosService.reprogramar] Turno nuevo creado pero falló cerrar el original',
+        { nuevoId, turnoOriginalId: turnoOriginal.id, err },
+      );
+      throw err;
+    }
+
+    return nuevoId;
+  }
+
+  /** Payload explícito para Firestore (evita `undefined`, videoconsulta y MP del turno viejo). */
+  private buildPayloadReprogramacion(
+    original: Turno,
+    nuevaFecha: Timestamp,
+    nuevaHoraInicio: string,
+    nuevaHoraFin: string,
+    motivo: string,
+  ): Omit<Turno, 'id' | 'fechaCreacion'> {
+    const pagoYaRealizado =
+      original.estadoPago === EstadoPago.PAGADO ||
+      original.estadoPago === EstadoPago.PARCIAL;
+
+    return stripUndefined({
+      clinicaId: original.clinicaId,
+      pacienteId: original.pacienteId,
+      profesionalId: original.profesionalId,
+      pacienteNombre: original.pacienteNombre,
+      profesionalNombre: original.profesionalNombre,
+      tratamientoNombre: original.tratamientoNombre ?? null,
+      tipo: original.tipo ?? 'consulta',
+      tratamientoId: original.tratamientoId ?? null,
+      modalidadConsulta: original.modalidadConsulta ?? 'presencial',
+      origenCreacion: original.origenCreacion ?? 'recepcion',
       fecha: nuevaFecha,
       horaInicio: nuevaHoraInicio,
       horaFin: nuevaHoraFin,
-      estado: EstadoTurno.PENDIENTE,
-      turnoOriginalId: turnoOriginal.id,
+      duracion: original.duracion,
+      estado: pagoYaRealizado ? EstadoTurno.CONFIRMADO : EstadoTurno.PENDIENTE,
+      motivo: original.motivo ?? null,
+      notasPaciente: original.notasPaciente ?? null,
+      notasProfesional: original.notasProfesional ?? null,
+      pacienteDNI: original.pacienteDNI ?? null,
+      pacienteEmail: original.pacienteEmail ?? null,
+      pacienteTelefono: original.pacienteTelefono ?? null,
+      notificacionesWhatsApp: original.notificacionesWhatsApp,
+      telefonoNotificaciones: original.telefonoNotificaciones ?? null,
+      turnoOriginalId: original.id,
       motivoReprogramacion: motivo,
-      estadoPago: EstadoPago.PENDIENTE, // El pago se gestiona en el nuevo turno
-      mpPaymentId: null,
-      mpPreferenceId: null,
-      mpStatus: null,
-      fechaPago: null,
       accessToken: generateTurnoAccessToken(),
-    };
-    return this.create(nuevoTurno);
+      estadoPago: pagoYaRealizado ? original.estadoPago : EstadoPago.PENDIENTE,
+      monto: original.monto ?? 0,
+      metodoPago: pagoYaRealizado ? (original.metodoPago ?? null) : null,
+      fechaPago: pagoYaRealizado ? (original.fechaPago ?? null) : null,
+      mpPaymentId: pagoYaRealizado ? (original.mpPaymentId ?? null) : null,
+      mpPreferenceId: pagoYaRealizado ? (original.mpPreferenceId ?? null) : null,
+      mpStatus: pagoYaRealizado ? (original.mpStatus ?? null) : null,
+      mpMerchantOrderId: pagoYaRealizado ? (original.mpMerchantOrderId ?? null) : null,
+      numeroTurno: original.numeroTurno ?? null,
+      colorProfesional: original.colorProfesional ?? null,
+    }) as Omit<Turno, 'id' | 'fechaCreacion'>;
+  }
+
+  private async liberarSlotTurno(turno: Turno): Promise<void> {
+    try {
+      const slotId = buildSlotId(turno);
+      const slotRef = doc(this.firestore, TurnosService.SLOTS_COL, slotId);
+      await updateDoc(slotRef, { estado: 'cancelado' });
+    } catch (err) {
+      console.warn('[TurnosService] No se pudo liberar slot del turno', turno.id, err);
+    }
   }
 
   /**
@@ -333,14 +416,23 @@ export class TurnosService {
 
   /**
    * Registra un pago en efectivo realizado en el consultorio.
+   * Si el turno es de recepción (origen omitido/recepcion) y aún está pendiente, lo confirma.
    */
   async registrarPagoEfectivo(id: string, monto: number): Promise<void> {
-    return this.update(id, {
+    const turno = await this.getById(id);
+    const data: Partial<Turno> = {
       estadoPago: EstadoPago.PAGADO,
       metodoPago: MetodoPago.EFECTIVO,
       monto,
       fechaPago: Timestamp.now(),
-    });
+    };
+
+    const origenPortal = turno?.origenCreacion === 'portal';
+    if (!origenPortal && turno?.estado === EstadoTurno.PENDIENTE) {
+      data.estado = EstadoTurno.CONFIRMADO;
+    }
+
+    return this.update(id, data);
   }
 
   /**
@@ -366,16 +458,25 @@ export class TurnosService {
   /**
    * Confirma el pago de MP cuando el webhook del backend Node.js notifica
    * que el pago fue aprobado. Actualiza el estado de pago y los datos de MP.
+   * Igual que efectivo: turnos desde portal siguen pendientes hasta confirmación en clínica.
    */
   async confirmarPagoMP(id: string, mpData: MpPagoData): Promise<void> {
-    return this.update(id, {
+    const turno = await this.getById(id);
+    const data: Partial<Turno> = {
       estadoPago: EstadoPago.PAGADO,
       metodoPago: MetodoPago.MERCADO_PAGO,
       mpPaymentId: mpData.mpPaymentId ?? null,
       mpStatus: mpData.mpStatus ?? 'approved',
       mpMerchantOrderId: mpData.mpMerchantOrderId ?? null,
       fechaPago: Timestamp.now(),
-    });
+    };
+
+    const origenPortal = turno?.origenCreacion === 'portal';
+    if (!origenPortal && turno?.estado === EstadoTurno.PENDIENTE) {
+      data.estado = EstadoTurno.CONFIRMADO;
+    }
+
+    return this.update(id, data);
   }
 
   /**

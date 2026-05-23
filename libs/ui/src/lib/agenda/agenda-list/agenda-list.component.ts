@@ -1,6 +1,6 @@
 import { Component, input, output } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { Turno, STATUS, PAGO_STATUS, AccionTurno } from '../types';
+import { Turno, STATUS, PAGO_STATUS, AccionTurno, EstadoTurno, EstadoPago } from '../types';
 import { TooltipComponent } from '../../tooltip/tooltip.component';
 
 @Component({
@@ -90,6 +90,56 @@ export class AgendaListComponent {
   fmtCurrency(n: number): string {
     return '$\u00a0' + n.toLocaleString('es-AR');
   }
+
+  puedeQuickConfirmar(t: Turno): boolean {
+
+    return t.estado === EstadoTurno.PENDIENTE;
+
+  }
+
+
+
+  puedeQuickRegistrarPago(t: Turno): boolean {
+    if (t.estadoPago === EstadoPago.PAGADO) return false;
+    return (
+      t.estado === EstadoTurno.PENDIENTE ||
+      t.estado === EstadoTurno.CONFIRMADO
+    );
+  }
+
+
+
+  puedeQuickAtender(t: Turno): boolean {
+
+    return t.estado === EstadoTurno.CONFIRMADO;
+
+  }
+
+
+
+  puedeQuickNoAsistio(t: Turno): boolean {
+
+    return t.estado === EstadoTurno.CONFIRMADO;
+
+  }
+
+
+
+  puedeQuickCancelar(t: Turno): boolean {
+
+    return (
+
+      t.estado !== EstadoTurno.CANCELADO &&
+
+      t.estado !== EstadoTurno.ATENDIDO &&
+
+      t.estado !== EstadoTurno.NO_ASISTIO
+
+    );
+
+  }
+
+
 
   onCardClick(id: string) {
     this.turnoClick.emit(id);

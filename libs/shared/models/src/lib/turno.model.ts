@@ -40,6 +40,13 @@ export enum AccionTurno {
 /** Modalidad de la consulta al cargar el turno. */
 export type ModalidadConsulta = 'presencial' | 'videoconsulta';
 
+/**
+ * Quién creó el alta del turno.
+ * - recepción: al cobrar (`efectivo` / webhook MP), el estado pasa a confirmado si aún aplicaba.
+ * - portal: el paciente reserva online — queda pendiente hasta que recepción lo confirma; cobrar no confirma.
+ */
+export type OrigenCreacionTurno = 'recepcion' | 'portal';
+
 // ─── Interfaz Principal ──────────────────────────────────────────────────────
 
 export interface Turno {
@@ -62,6 +69,12 @@ export interface Turno {
     tratamientoId?: string | null;
     /** Consultorio vs. videoconsulta (Meet / Calendar). */
     modalidadConsulta?: ModalidadConsulta | null;
+
+    /**
+     * Origen del alta del turno. Omiso o recepción: cobro confirma.
+     * `portal`: debe confirmarlo recepción aunque el pago ya esté acreditado.
+     */
+    origenCreacion?: OrigenCreacionTurno | null;
 
     // Horario
     fecha: Timestamp;           // Fecha del turno (sin hora)
