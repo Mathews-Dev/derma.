@@ -1,0 +1,24 @@
+/* Thin scrollbar — same styling as select-with-search / dropdown-select.
+   Utility class so CDK overlays (detached DOM) pick it up. */
+
+.ui-thin-scrollbar {
+  scrollbar-width: thin;
+  scrollbar-color: var(--c-300) transparent;
+}
+
+.ui-thin-scrollbar::-webkit-scrollbar {
+  width: 6px;
+}
+
+.ui-thin-scrollbar::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.ui-thin-scrollbar::-webkit-scrollbar-thumb {
+  background: var(--c-300);
+  border-radius: 3px;
+}
+
+.ui-thin-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: var(--c-400);
+}

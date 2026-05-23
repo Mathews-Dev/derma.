@@ -11,6 +11,9 @@
       </div>
       <div class="vc-drawer-header-right">
         <span class="vc-mono-id">{{ vc.codigo }}</span>
+        <ui-badge [status]="vc.modalidadConsulta === 'videoconsulta' ? 'success' : 'neutral'">
+          {{ vc.modalidadConsulta === 'videoconsulta' ? 'Videoconsulta' : 'Presencial' }}
+        </ui-badge>
         @switch (vc.estadoBadge) {
           @case ('success') {
             <ui-badge status="success">{{ vc.estadoEtiqueta }}</ui-badge>
@@ -39,28 +42,24 @@
         </div>
       </div>
 
-      <div class="vc-meet-block">
-        <span class="vc-label-upper">Enlace de reunión</span>
-        <div class="vc-url-box">
-          @if (vc.linkMeet) {
-            <p class="vc-url-text">{{ vc.linkMeet }}</p>
-          } @else {
-            <p class="vc-muted">El enlace se generará al confirmar la videoconsulta.</p>
-          }
+      @if (vc.modalidadConsulta === 'videoconsulta') {
+        <derm-videoconsulta-meet-panel
+          [linkMeet]="vc.linkMeet"
+          [linkEstado]="vc.linkEstado"
+          [generating]="generandoMeet()"
+          [calendarBaseOk]="calendarBaseOk()"
+          (copiar)="copiarLink()"
+          (abrirMeet)="abrirMeet()"
+          (generarMeet)="generarMeet()"
+          (conectarGoogle)="conectarGoogleProfesional()"
+        />
+      } @else {
+        <div class="vc-card-block">
+          <span class="vc-label-upper">Modalidad</span>
+          <p class="vc-strong mt-1">Consulta presencial</p>
+          <p class="vc-muted">Este turno no usa enlace de Meet. Si debía ser videoconsulta, creá el turno de nuevo eligiendo esa modalidad en la agenda.</p>
         </div>
-        <div class="vc-meet-actions">
-          <button type="button" class="vc-btn-primary" [disabled]="!vc.linkMeet" (click)="abrirMeet()">
-            Abrir en navegador
-            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-4 h-4">
-              <path stroke-linecap="round" stroke-linejoin="round" d="M13.5 6H5.25A2.25 2.25 0 0 0 3 8.25v10.5A2.25 2.25 0 0 0 5.25 21h10.5A2.25 2.25 0 0 0 18 18.75V10.5m-10.5 6L21 3m0 0h-5.25M21 3v5.25" />
-            </svg>
-          </button>
-          <button type="button" class="vc-btn-ghost" (click)="copiarLink()">
-            Copiar
-          </button>
-        </div>
-        <p class="vc-privacy-note">Por privacidad, no compartas este enlace fuera del paciente y el profesional.</p>
-      </div>
+      }
 
       @if (vc.recordatorioEtiqueta) {
         <div class="vc-reminder-row">
@@ -68,29 +67,7 @@
         </div>
       }
 
-      <div class="vc-card-block">
-        <span class="vc-label-upper block mb-4">Historial de notificaciones</span>
-        <div class="vc-timeline">
-          @for (n of vc.notificaciones; track $index) {
-            <div class="vc-tl-item">
-              <div
-                class="vc-tl-dot"
-                [class.vc-tl-dot--ok]="n.tipo === 'ok'"
-                [class.vc-tl-dot--err]="n.tipo === 'error'"
-              ></div>
-              <div>
-                <div class="flex flex-wrap items-center gap-2">
-                  <p class="vc-tl-text">{{ n.texto }}</p>
-                  @if (n.detalleFallo) {
-                    <span class="vc-fail-hint">{{ n.detalleFallo }}</span>
-                  }
-                </div>
-                <p class="vc-tl-date">{{ n.fecha }}</p>
-              </div>
-            </div>
-          }
-        </div>
-      </div>
+      <derm-videoconsulta-timeline [items]="vc.notificaciones" />
 
       <div class="vc-card-block">
         <span class="vc-label-upper block mb-4">Confirmar teléfono para avisos</span>
@@ -135,10 +112,15 @@
     </div>
 
     <div class="vc-drawer-footer">
-      <button type="button" class="vc-btn-ghost">Cancelar turno</button>
-      <button type="button" class="vc-btn-primary px-5">Finalizar videoconsulta</button>
+      <button type="button" class="vc-btn-ghost" disabled title="Próximamente">Cancelar turno</button>
+      <button type="button" class="vc-btn-primary px-5" disabled title="Próximamente">Finalizar videoconsulta</button>
     </div>
   </aside>
+} @else if (turnoRouteId()) {
+  <div class="vc-not-found">
+    <p class="text-[var(--c-600)] mb-4">No se encontró el turno o todavía se está cargando.</p>
+    <a routerLink="/admin/videoconsultas" class="vc-back-link">Volver al listado</a>
+  </div>
 } @else {
   <div class="vc-not-found">
     <p class="text-[var(--c-600)] mb-4">No se encontró esta videoconsulta.</p>

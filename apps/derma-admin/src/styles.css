@@ -1,5 +1,6 @@
 @import '../../../libs/ui/src/styles/fonts.css';
 @import '../../../libs/ui/src/styles/animations.css';
+@import '../../../libs/ui/src/styles/thin-scrollbar.css';
 @import '@angular/cdk/overlay-prebuilt.css';
 @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600&display=swap');
 

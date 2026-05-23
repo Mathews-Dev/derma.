@@ -33,9 +33,9 @@ import { CommonModule } from '@angular/common';
       </button>
 
       <div
-        class="accordion-panel grid transition-[grid-template-rows] duration-300 ease-out"
-        [style.grid-template-rows]="isOpen() ? '1fr' : '0fr'">
-        <div class="overflow-hidden">
+        class="accordion-panel grid min-h-0 transition-[grid-template-rows] duration-300 ease-out"
+        [style.grid-template-rows]="isOpen() ? 'minmax(0, 1fr)' : '0fr'">
+        <div class="min-h-0 overflow-hidden min-w-0">
           <div class="accordion-content">
             <ng-content></ng-content>
           </div>

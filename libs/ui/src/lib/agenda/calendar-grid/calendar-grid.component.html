@@ -41,16 +41,27 @@
 
   <!-- Grid Container -->
   <div class="cal-container" #calContainer>
-    <div class="cal-grid-wrap" [style.height.px]="TOTAL_HOURS * HOUR_H" [style.padding-top.px]="!isDayView() ? 28 : 0">
+    <div
+      class="cal-grid-wrap"
+      [style.height.px]="
+        TOTAL_HOURS * HOUR_H +
+        (!isDayView() ? WEEK_GRID_TOP_PAD_PX : 0) +
+        GRID_WRAP_BORDER_Y_PX
+      "
+      [style.padding-top.px]="!isDayView() ? WEEK_GRID_TOP_PAD_PX : 0"
+    >
       <!-- Time Gutter -->
-      <div class="time-gutter">
+      <div class="time-gutter" [style.min-height.px]="TOTAL_HOURS * HOUR_H">
         @for (label of hourLabels(); track $index) {
-          <div class="time-label">{{ label }}</div>
+          <div class="time-label" [style.height.px]="HALF_SLOT_PX">{{ label }}</div>
         }
       </div>
 
       <!-- Grid Area -->
-      <div class="grid-area" #gridArea
+      <div
+           class="grid-area"
+           [style.min-height.px]="TOTAL_HOURS * HOUR_H"
+           #gridArea
            (dragover)="onDragOver($event)"
            (dragleave)="onDragLeave($event)"
            (drop)="onDrop($event)">

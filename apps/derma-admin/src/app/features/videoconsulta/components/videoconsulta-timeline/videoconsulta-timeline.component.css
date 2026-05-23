@@ -1,0 +1,73 @@
+.vc-card-block {
+  background: var(--c-0, #fff);
+  border: 1px solid var(--c-200);
+  border-radius: 12px;
+  padding: 1rem;
+}
+
+.vc-label-upper {
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--c-500);
+}
+
+.vc-muted {
+  margin: 0.125rem 0 0;
+  font-size: 12px;
+  color: var(--c-500);
+}
+
+.vc-timeline {
+  position: relative;
+  padding-left: 1.25rem;
+  border-left: 2px solid var(--c-200);
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.vc-tl-item {
+  position: relative;
+}
+
+.vc-tl-dot {
+  position: absolute;
+  left: -1.35rem;
+  top: 0.35rem;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  box-shadow: 0 0 0 4px var(--c-0, #fff);
+}
+
+.vc-tl-dot--ok {
+  background: var(--st-conf);
+}
+
+.vc-tl-dot--err {
+  background: var(--st-canc);
+}
+
+.vc-tl-text {
+  margin: 0;
+  font-size: 13px;
+  color: var(--c-700);
+}
+
+.vc-tl-date {
+  margin: 0.125rem 0 0;
+  font-size: 11px;
+  color: var(--c-400);
+}
+
+.vc-fail-hint {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--st-canc);
+}
+
+:host {
+  display: block;
+}

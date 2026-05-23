@@ -1,0 +1,15 @@
+:host {
+  display: block;
+}
+
+.pago-exito__lottie {
+  width: 10rem;
+  height: 10rem;
+  line-height: 0;
+}
+
+/* SVG Lottie: sin caja blanca; el trazo ya viene en negro del JSON */
+.pago-exito__lottie svg {
+  overflow: visible;
+  background: transparent !important;
+}

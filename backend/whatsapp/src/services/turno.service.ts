@@ -7,6 +7,7 @@ export interface TurnoParaNotificar {
   profesionalNombre:     string;
   horaInicio:            string;
   fecha:                 Timestamp;
+  accessToken?:          string | null;
   telefonoNotificaciones?: string | null;
   pacienteTelefono?:     string | null;
   notificacionesWhatsApp: boolean;

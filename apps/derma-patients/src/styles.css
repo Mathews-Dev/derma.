@@ -1,4 +1,5 @@
 @import '../../../libs/ui/src/styles/fonts.css';
+@import '../../../libs/ui/src/styles/thin-scrollbar.css';
 @import '@angular/cdk/overlay-prebuilt.css';
 @tailwind base;
 @tailwind components;

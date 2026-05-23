@@ -1,86 +1,907 @@
-<div class="modal-backdrop" (click)="$event.target === $event.currentTarget && close.emit()">
-  <div class="modal-box animate-scale-in">
-    <div class="modal-header">
-      <span class="modal-icon modal-icon--primary">
-        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M8 2v4"/><path d="M16 2v4"/><rect width="18" height="18" x="3" y="4" rx="2"/><path d="M3 10h18"/></svg>
-      </span>
-      <div>
-        <h2 class="modal-title">Nuevo turno</h2>
-        <p class="modal-subtitle">{{ fmtFecha(fechaSeleccionada()) }}</p>
+﻿<!-- Backdrop -->
+<div
+  class="fixed inset-0 z-[300] flex items-end sm:items-center justify-center sm:p-4 animate-backdrop-in tn-backdrop"
+  (click)="$event.target === $event.currentTarget && close.emit()">
+
+  <!-- Modal shell -->
+  <div
+    class="relative w-full bg-[var(--c-50)] border border-[var(--c-200)] rounded-t-[22px] sm:rounded-[22px] flex flex-col overflow-hidden animate-modal-in"
+    [style.max-width]="step() === 2 ? 'min(820px, 96vw)' : '640px'"
+    style="max-height: 92vh; box-shadow: var(--shadow-lg);"
+    (click)="$event.stopPropagation()">
+
+    <!-- Decorative circles (palette-only colors) -->
+    <div class="absolute inset-0 pointer-events-none overflow-hidden z-0" aria-hidden="true">
+      <div class="absolute w-[280px] h-[280px] rounded-full border border-[var(--c-200)] opacity-40 -top-[120px] -right-[80px]"></div>
+      <div class="absolute w-[160px] h-[160px] rounded-full border border-[var(--c-100)] -top-[40px] right-[10px]"></div>
+    </div>
+
+    <!-- ── Header ────────────────────────────────────── -->
+    <div class="relative z-10 px-6 pt-5 pb-0 shrink-0">
+
+      <div class="flex items-start justify-between mb-4">
+        <div class="flex flex-col gap-1.5">
+          <h2 class="m-0 text-[0.95rem] font-semibold text-[var(--c-800)] tracking-tight leading-none">
+            Nuevo turno
+          </h2>
+          <span class="inline-flex items-center gap-1.5 px-2.5 py-[3px] bg-[var(--c-100)] border border-[var(--c-200)] rounded-full text-[0.62rem] font-medium text-[var(--c-500)] tracking-wide w-fit">
+            <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+              <rect x="3" y="4" width="18" height="18" rx="2"/><path d="M8 2v4M16 2v4M3 10h18"/>
+            </svg>
+            {{ fmtFechaBadge(fechaTurno()) }}
+          </span>
+        </div>
+        <button
+          type="button"
+          class="w-8 h-8 shrink-0 rounded-full border border-[var(--c-200)] bg-[var(--c-50)] text-[var(--c-400)] flex items-center justify-center cursor-pointer transition-all duration-200 hover:border-[var(--c-700)] hover:text-[var(--c-700)] hover:bg-[var(--c-100)]"
+          (click)="close.emit()" aria-label="Cerrar">
+          <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true">
+            <path d="M18 6 6 18M6 6l12 12"/>
+          </svg>
+        </button>
       </div>
-      <button type="button" class="modal-close" (click)="close.emit()" aria-label="Cerrar">
-        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
-      </button>
+
+      <!-- Stepper — 4 pasos -->
+      <div class="relative pb-5">
+        <div class="absolute top-[14px] left-[14px] right-[14px] h-[3px] bg-[var(--c-200)] rounded-full overflow-hidden">
+          <div
+            class="h-full bg-[var(--c-800)] rounded-full transition-[width] duration-500 ease-in-out"
+            [style.width]="step() === 1 ? '0%' : step() === 2 ? '33%' : step() === 3 ? '66%' : '100%'">
+          </div>
+        </div>
+        <div class="flex justify-between relative">
+          @for (s of [{n:1, lbl:'Paciente'}, {n:2, lbl:'Turno'}, {n:3, lbl:'Confirmar'}, {n:4, lbl:'Pago'}]; track s.n) {
+            <div class="flex flex-col items-center gap-[7px] z-10">
+              <div
+                class="step-dot w-7 h-7 rounded-full flex items-center justify-center text-[0.65rem] font-bold border-2 transition-all duration-300"
+                [class.active]="step() === s.n"
+                [class.done]="step() > s.n"
+                [class.idle]="step() < s.n">
+                @if (step() > s.n) {
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="m5 13 4 4L19 7"/>
+                  </svg>
+                } @else { {{ s.n }} }
+              </div>
+              <span
+                class="text-[0.62rem] font-semibold whitespace-nowrap transition-colors duration-300"
+                [class.text-[var(--c-800)]]="step() === s.n"
+                [class.text-[var(--c-600)]]="step() > s.n"
+                [class.text-[var(--c-400)]]="step() < s.n">
+                {{ s.lbl }}
+              </span>
+            </div>
+          }
+        </div>
+      </div>
     </div>
 
-    <div class="modal-body">
-      @if (pacienteSeleccionado()) {
-        <div class="mp-notice">
-          <span><strong>Paciente seleccionado:</strong> {{ pacienteSeleccionado()!.nombre }} {{ pacienteSeleccionado()!.apellido }} · DNI: {{ pacienteSeleccionado()!.dni ?? '—' }}</span>
-          <button type="button" class="btn btn--ghost" (click)="limpiarSeleccionPaciente()">Cambiar</button>
-        </div>
-      } @else {
-        <label class="field-label">Buscar paciente por DNI</label>
-        <div class="time-row">
-          <input type="text" class="field-input" placeholder="DNI" [ngModel]="dniLookup()" (ngModelChange)="dniLookup.set($event)" />
-          <button type="button" class="btn btn--primary" [disabled]="buscando()" (click)="buscarPacientePorDni()">Buscar</button>
-        </div>
+    <!-- Divider -->
+    <div class="relative z-10 h-px bg-[var(--c-200)] shrink-0"></div>
 
-        <label class="field-label">Buscar paciente por teléfono</label>
-        <div class="time-row">
-          <input type="text" class="field-input" placeholder="Teléfono" [ngModel]="telefonoLookup()" (ngModelChange)="telefonoLookup.set($event)" />
-          <button type="button" class="btn btn--primary" [disabled]="buscando()" (click)="buscarPacientePorTelefono()">Buscar</button>
-        </div>
+    <!-- ── Body ─────────────────────────────────────── -->
+    <div class="relative z-10 flex-1 overflow-y-auto overflow-x-hidden px-6 py-5 modal-scroll">
 
-        @if (busquedaError()) {
-          <div class="mp-err-banner">{{ busquedaError() }}</div>
+      <!-- ══ STEP 1: Paciente ══════════════════════════ -->
+      <div class="step" [class.vis]="step() === 1" [class.rev]="stepAnimRev() && step() === 1">
+
+        @if (!pacienteSeleccionado()) {
+
+          @if (!formularioNuevo()) {
+
+            <!-- Search -->
+            <p class="section-label">Buscar paciente</p>
+
+            <div class="flex gap-2 items-stretch">
+              <div class="flex-1 flex items-center gap-2 px-3 h-11 bg-[var(--c-50)] border-[1.5px] border-[var(--c-300)] rounded-xl transition-all duration-200 min-w-0 search-box">
+                <svg class="shrink-0 text-[var(--c-400)] search-icon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                  <circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/>
+                </svg>
+                <input
+                  type="text"
+                  class="flex-1 border-none outline-none bg-transparent text-[0.87rem] text-[var(--c-800)] placeholder:text-[var(--c-400)] min-w-0"
+                  placeholder="Nombre o apellido…"
+                  [ngModel]="nomLookup()"
+                  (ngModelChange)="nomLookup.set($event)"
+                  (keydown.enter)="buscarPaciente()" />
+              </div>
+              <div class="flex items-center gap-2 px-3 h-11 w-[128px] bg-[var(--c-50)] border-[1.5px] border-[var(--c-300)] rounded-xl transition-all duration-200 shrink-0 search-box">
+                <svg class="shrink-0 text-[var(--c-400)] search-icon" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                  <rect x="5" y="2" width="14" height="20" rx="2"/><path d="M9 7h6M9 11h6M9 15h4"/>
+                </svg>
+                <input
+                  type="text"
+                  class="flex-1 border-none outline-none bg-transparent text-[0.82rem] text-[var(--c-700)] placeholder:text-[var(--c-400)] min-w-0"
+                  placeholder="DNI…"
+                  [ngModel]="dniLookup()"
+                  (ngModelChange)="dniLookup.set($event)"
+                  (keydown.enter)="buscarPaciente()" />
+              </div>
+              <button
+                type="button"
+                class="h-11 px-4 rounded-xl bg-[var(--c-800)] text-[var(--c-50)] text-[0.75rem] font-semibold tracking-wide inline-flex items-center gap-2 cursor-pointer transition-all duration-200 border-none shrink-0 hover:bg-[var(--c-700)] hover:-translate-y-px hover:shadow-md disabled:opacity-50 disabled:cursor-not-allowed disabled:translate-y-0 disabled:shadow-none"
+                [disabled]="buscando()"
+                (click)="buscarPaciente()">
+                Buscar
+                <span class="spinner" [class.show]="buscando()"></span>
+              </button>
+            </div>
+
+            @if (busquedaError()) {
+              <div class="mt-2.5 text-[0.72rem] text-[var(--st-canc)] bg-[var(--st-canc-bg)] border border-[rgba(140,68,68,0.15)] rounded-lg px-3 py-2.5 animate-smooth-enter">
+                {{ busquedaError() }}
+              </div>
+            }
+
+            <!-- Results carousel (horizontal scroll, no buttons) -->
+            @if (resultadosBusqueda().length > 0) {
+              <div class="mt-4 animate-smooth-enter">
+                <p class="section-label">Resultados ({{ resultadosBusqueda().length }})</p>
+                <div class="paciente-resultados-carousel flex gap-2 overflow-x-auto snap-carousel" style="scroll-snap-type: x mandatory;">
+                  @for (p of resultadosBusqueda(); track p.uid) {
+                    <button
+                      type="button"
+                      class="group min-w-[210px] max-w-[210px] shrink-0 flex items-center gap-3 p-3 bg-[var(--c-50)] border-[1.5px] border-[var(--c-200)] rounded-xl text-left cursor-pointer transition-all duration-200 font-[inherit] hover:border-[var(--c-600)] hover:bg-[var(--c-100)] hover:-translate-y-0.5 hover:shadow-md"
+                      style="scroll-snap-align: start;"
+                      (click)="seleccionarPacienteDesdeLista(p)">
+                      <div class="w-9 h-9 rounded-full bg-[var(--c-800)] text-[var(--c-50)] flex items-center justify-center text-[0.7rem] font-bold shrink-0">
+                        {{ iniciales(p) }}
+                      </div>
+                      <div class="flex-1 min-w-0">
+                        <div class="text-[0.82rem] font-semibold text-[var(--c-800)] truncate">{{ p.nombre }} {{ p.apellido }}</div>
+                        <div class="text-[0.64rem] text-[var(--c-400)] mt-0.5">DNI: {{ p.dni ?? '—' }}</div>
+                      </div>
+                      <svg class="shrink-0 text-[var(--c-300)] opacity-0 group-hover:opacity-100 -translate-x-1 group-hover:translate-x-0 transition-all duration-200" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                        <path d="m9 18 6-6-6-6"/>
+                      </svg>
+                    </button>
+                  }
+                </div>
+              </div>
+            }
+
+            <!-- Create new patient -->
+            <button
+              type="button"
+              class="group mt-3 w-full flex items-center gap-3 p-3.5 border-[1.5px] border-dashed border-[var(--c-300)] rounded-xl bg-[var(--c-50)] cursor-pointer text-left font-[inherit] transition-all duration-200 hover:border-[var(--c-500)] hover:border-solid hover:bg-[var(--c-100)] hover:-translate-y-px hover:shadow-sm"
+              (click)="formularioNuevo.set(true)">
+              <div class="w-9 h-9 rounded-full bg-[var(--c-100)] flex items-center justify-center shrink-0 text-[var(--c-500)] transition-all duration-200 group-hover:bg-[var(--c-800)] group-hover:text-[var(--c-50)]">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                  <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/>
+                  <circle cx="9" cy="7" r="4"/>
+                  <path d="M22 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/>
+                </svg>
+              </div>
+              <div class="flex-1 min-w-0">
+                <div class="text-[0.82rem] font-semibold text-[var(--c-700)]">¿No encontrás al paciente?</div>
+                <div class="text-[0.68rem] text-[var(--c-400)] mt-0.5">Creá uno nuevo completando sus datos</div>
+              </div>
+              <svg class="shrink-0 text-[var(--c-300)] transition-all duration-200 group-hover:text-[var(--c-700)] group-hover:translate-x-0.5" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                <path d="m9 18 6-6-6-6"/>
+              </svg>
+            </button>
+
+          }
+
+          @if (formularioNuevo()) {
+            <div class="border border-[var(--c-200)] rounded-[18px] p-4 bg-[var(--c-50)] shadow-sm mt-1 animate-smooth-enter">
+              <div class="flex items-center justify-between mb-4">
+                <span class="inline-flex items-center text-[0.58rem] font-bold uppercase tracking-[0.1em] text-[var(--c-600)] bg-[var(--c-100)] border border-[var(--c-200)] px-2.5 py-1 rounded-full">
+                  Nuevo paciente
+                </span>
+                <button
+                  type="button"
+                  class="inline-flex items-center gap-1.5 text-[0.72rem] font-medium text-[var(--c-500)] cursor-pointer transition-colors duration-200 hover:text-[var(--c-800)] bg-transparent border-none py-1"
+                  (click)="formularioNuevo.set(false)">
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true">
+                    <path d="m15 18-6-6 6-6"/>
+                  </svg>
+                  Volver a búsqueda
+                </button>
+              </div>
+
+              @if (busquedaError()) {
+                <div class="mb-3 text-[0.72rem] text-[var(--st-canc)] bg-[var(--st-canc-bg)] border border-[rgba(140,68,68,0.15)] rounded-lg px-3 py-2.5">
+                  {{ busquedaError() }}
+                </div>
+              }
+
+              <div class="grid grid-cols-2 gap-2.5 mb-2.5">
+                <div>
+                  <label class="block text-[0.65rem] font-semibold text-[var(--c-600)] mb-1.5" for="tn-nombre">Nombre</label>
+                  <input id="tn-nombre" type="text"
+                    class="field-input"
+                    placeholder="Nombre"
+                    [ngModel]="nombre()" (ngModelChange)="nombre.set($event)" />
+                </div>
+                <div>
+                  <label class="block text-[0.65rem] font-semibold text-[var(--c-600)] mb-1.5" for="tn-apellido">Apellido</label>
+                  <input id="tn-apellido" type="text"
+                    class="field-input"
+                    placeholder="Apellido"
+                    [ngModel]="apellido()" (ngModelChange)="apellido.set($event)" />
+                </div>
+              </div>
+              <div class="grid grid-cols-2 gap-2.5">
+                <div>
+                  <label class="block text-[0.65rem] font-semibold text-[var(--c-600)] mb-1.5" for="tn-dni">DNI (opcional)</label>
+                  <input id="tn-dni" type="text"
+                    class="field-input"
+                    placeholder="DNI"
+                    [ngModel]="dni()" (ngModelChange)="dni.set($event)" />
+                </div>
+                <ui-phone-input
+                  label="Teléfono"
+                  [(countryIso)]="nuevoCountryIso"
+                  [(localNumber)]="nuevoLocal"
+                  countryWidthClass="w-[42%] min-w-[110px] shrink-0" />
+              </div>
+            </div>
+          }
+
+        } @else {
+
+          <!-- Patient selected -->
+          <div class="flex items-center justify-between gap-3 p-4 bg-[var(--c-50)] border-[1.5px] border-[var(--c-200)] rounded-[18px] shadow-sm animate-smooth-enter">
+            <div class="flex items-center gap-3 min-w-0">
+              <div class="w-11 h-11 rounded-full bg-[var(--c-800)] text-[var(--c-50)] flex items-center justify-center text-[0.82rem] font-bold shrink-0">
+                {{ iniciales(pacienteSeleccionado()!) }}
+              </div>
+              <div class="min-w-0">
+                <div class="text-[0.9rem] font-semibold text-[var(--c-800)] leading-tight truncate">
+                  {{ pacienteSeleccionado()!.nombre }} {{ pacienteSeleccionado()!.apellido }}
+                </div>
+                <div class="text-[0.68rem] text-[var(--c-400)] mt-0.5">
+                  DNI: {{ pacienteSeleccionado()!.dni ?? '—' }}
+                </div>
+              </div>
+            </div>
+            <button
+              type="button"
+              class="px-3 py-1.5 text-[0.72rem] font-semibold text-[var(--c-600)] bg-[var(--c-100)] border border-[var(--c-200)] rounded-lg cursor-pointer transition-all duration-200 hover:bg-[var(--c-200)] hover:text-[var(--c-800)] shrink-0"
+              (click)="limpiarSeleccionPaciente()">
+              Cambiar
+            </button>
+          </div>
+
+          <!-- WhatsApp -->
+          <div class="wa-card animate-smooth-enter stagger-1">
+            <div class="wa-card__inner">
+              <div class="wa-card__head">
+                <div class="wa-card__icon" aria-hidden="true">
+                  <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.65" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.8 19.8 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3-10.87A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.12 1 .35 2 .7 3a2 2 0 0 1-.47 2.07L9 10.91a16 16 0 0 0 7 7l1.91-1.36a2 2 0 0 1 2.06-.51c1 .37 2 .61 3 .71a2 2 0 0 1 1.72 2.07Z"/>
+                  </svg>
+                </div>
+                <div class="wa-card__head-copy">
+                  <p class="wa-card__title">Notificaciones por WhatsApp</p>
+                  <p class="wa-card__subtitle">Al crear el turno y al registrar el cobro.</p>
+                </div>
+              </div>
+
+              <div class="wa-seg" role="group" aria-label="¿A qué número enviamos?">
+                <button
+                  type="button"
+                  class="wa-seg__btn"
+                  [class.wa-seg__btn--on]="!personalizarTelNotifs()"
+                  [attr.aria-pressed]="!personalizarTelNotifs() ? 'true' : 'false'"
+                  (click)="onPersonalizarNotificacionesTel(false)">
+                  <span class="wa-seg__ico" aria-hidden="true">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                  </span>
+                  <span class="wa-seg__txt">
+                    <span class="wa-seg__label">Ficha</span>
+                    <span class="wa-seg__hint">Contacto guardado del paciente</span>
+                  </span>
+                  @if (!personalizarTelNotifs()) {
+                    <span class="wa-seg__check" aria-hidden="true">
+                      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.75"><path stroke-linecap="round" stroke-linejoin="round" d="m5 13 4 4L19 7"/></svg>
+                    </span>
+                  }
+                </button>
+                <button
+                  type="button"
+                  class="wa-seg__btn"
+                  [class.wa-seg__btn--on]="personalizarTelNotifs()"
+                  [attr.aria-pressed]="personalizarTelNotifs() ? 'true' : 'false'"
+                  (click)="onPersonalizarNotificacionesTel(true)">
+                  <span class="wa-seg__ico" aria-hidden="true">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect width="14" height="20" x="5" y="2" rx="2" ry="2"/><path d="M12 18h.01"/></svg>
+                  </span>
+                  <span class="wa-seg__txt">
+                    <span class="wa-seg__label">Otro número</span>
+                    <span class="wa-seg__hint">Otro celular o WhatsApp</span>
+                  </span>
+                  @if (personalizarTelNotifs()) {
+                    <span class="wa-seg__check" aria-hidden="true">
+                      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.75"><path stroke-linecap="round" stroke-linejoin="round" d="m5 13 4 4L19 7"/></svg>
+                    </span>
+                  }
+                </button>
+              </div>
+
+              <p class="wa-footnote">Sin celular válido en ficha: usá <strong>Otro número</strong>.</p>
+
+              @if (!personalizarTelNotifs() && telefonoWhatsappValido()) {
+                <div class="wa-display" role="status">
+                  <span class="wa-display__row">
+                    <span class="wa-display__muted">Destino</span>
+                    <span class="wa-display__num">{{ telefonoNotificacionesEfectivo() }}</span>
+                  </span>
+                  <span class="wa-display__pill">Ficha</span>
+                </div>
+              } @else {
+                <div class="wa-field">
+                  <span class="wa-field__lbl">Número</span>
+                  <ui-phone-input
+                    [showLabel]="false"
+                    [placeholder]="waNotifPlaceholderPaciente()"
+                    [disabled]="!personalizarTelNotifs() && telefonoWhatsappValido()"
+                    [(countryIso)]="waCountryIso"
+                    [(localNumber)]="waLocal"
+                    countryWidthClass="w-[42%] min-w-[110px] shrink-0"
+                    (valueChange)="onWaInputChange()" />
+                </div>
+              }
+
+              @if (waError()) {
+                <p class="wa-err-msg">
+                  Necesitamos al menos 6 dígitos de un número móvil para WhatsApp.
+                </p>
+              }
+            </div>
+          </div>
+
         }
 
-        <div class="mp-notice">
-          <span>Si no existe, completá los datos básicos y se creará un paciente sin email.</span>
+      </div><!-- /step 1 -->
+
+      <!-- ══ STEP 2: Turno ════════════════════════════════
+           2-column layout — left: Modalidad + Profesionales
+                             right: Fecha carousel + Slots (scroll interno)
+           El modal se expande a 820px para aprovechar el ancho.
+      ════════════════════════════════════════════════════ -->
+      <div class="step s2" [class.vis]="step() === 2" [class.rev]="stepAnimRev() && step() === 2">
+        <div class="s2-grid">
+
+          <!-- ─── Columna izquierda: Modalidad + Profesional ─── -->
+          <div class="s2-left">
+
+            <!-- Modalidad -->
+            <div class="mb-4">
+              <p class="section-label">Modalidad</p>
+              <div class="inline-flex gap-0 bg-[var(--c-100)] rounded-full p-[3px]">
+                <button
+                  type="button"
+                  class="mod-pill font-[inherit]"
+                  [class.active]="modalidadConsulta() === 'presencial'"
+                  (click)="modalidadConsulta.set('presencial')">
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                    <path d="M20 7H4a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2z"/>
+                    <path d="M9 21h6M12 17v4"/>
+                  </svg>
+                  Presencial
+                </button>
+                <button
+                  type="button"
+                  class="mod-pill font-[inherit]"
+                  [class.active]="modalidadConsulta() === 'videoconsulta'"
+                  (click)="modalidadConsulta.set('videoconsulta')">
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                    <path d="m22 8-6 4 6 4V8z"/>
+                    <rect width="14" height="12" x="2" y="6" rx="2"/>
+                  </svg>
+                  Video
+                </button>
+              </div>
+              @if (modalidadConsulta() === 'videoconsulta') {
+                <div class="flex items-start gap-1.5 mt-2 p-2.5 bg-[var(--c-100)] border border-[var(--c-200)] rounded-lg text-[0.66rem] text-[var(--c-500)] leading-relaxed animate-smooth-enter">
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="text-[var(--c-400)] shrink-0 mt-px" aria-hidden="true">
+                    <circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/>
+                  </svg>
+                  <span>Se enviará link de videollamada por WhatsApp al paciente.</span>
+                </div>
+              }
+            </div>
+
+            <!-- Profesional — lista vertical con scroll propio -->
+            <div class="flex flex-col min-h-0 flex-1">
+              <p class="section-label">Profesional</p>
+              <div class="s2-prof-list">
+                @for (p of profesionales(); track p.uid) {
+                  <button
+                    type="button"
+                    class="prof-card w-full flex items-center gap-2.5 px-3 py-2.5 border-[1.5px] rounded-xl bg-[var(--c-50)] cursor-pointer font-[inherit] text-left transition-all duration-200"
+                    [class.sel]="profesionalId() === p.uid"
+                    (click)="seleccionarProfesional(p.uid)">
+                    <div class="prof-av w-8 h-8 rounded-full bg-[var(--c-800)] text-[var(--c-50)] flex items-center justify-center text-[0.65rem] font-bold shrink-0 transition-all duration-200">
+                      {{ iniciales(p) }}
+                    </div>
+                    <div class="flex-1 min-w-0">
+                      <div class="prof-name text-[0.75rem] font-semibold text-[var(--c-800)] truncate leading-tight transition-colors duration-200">
+                        Dr. {{ p.nombre }} {{ p.apellido }}
+                      </div>
+                      <div class="prof-meta text-[0.6rem] text-[var(--c-400)] truncate transition-colors duration-200">
+                        {{ p.tituloProfesional || 'Dermatólogo/a' }} · {{ p.duracionConsulta }} min
+                      </div>
+                    </div>
+                    <div class="prof-check w-[18px] h-[18px] rounded-full flex items-center justify-center shrink-0 transition-all duration-300 opacity-0 scale-50">
+                      <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="m5 13 4 4L19 7"/>
+                      </svg>
+                    </div>
+                  </button>
+                }
+              </div>
+            </div>
+
+          </div><!-- /left -->
+
+          <!-- ─── Columna derecha: Fecha + Slots ─── -->
+          <div class="s2-right">
+
+            @if (!profesionalId()) {
+              <!-- Empty state -->
+              <div class="flex flex-col items-center justify-center h-full text-center border-[1.5px] border-dashed border-[var(--c-200)] rounded-[16px] min-h-[260px] px-6">
+                <div class="w-12 h-12 rounded-2xl bg-[var(--c-100)] flex items-center justify-center mb-3">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" class="text-[var(--c-300)]" aria-hidden="true">
+                    <rect x="3" y="4" width="18" height="18" rx="2"/><path d="M8 2v4M16 2v4M3 10h18"/>
+                  </svg>
+                </div>
+                <p class="text-[0.85rem] font-semibold text-[var(--c-600)] m-0">Seleccioná un profesional</p>
+                <p class="text-[0.7rem] text-[var(--c-400)] mt-1.5 m-0">para ver su disponibilidad</p>
+              </div>
+            } @else {
+
+              <p class="section-label">Disponibilidad</p>
+
+              <!-- Fecha carousel — horizontal scroll, sin botones -->
+              <div class="flex gap-1.5 overflow-x-auto pb-2 snap-carousel" style="scroll-snap-type: x mandatory;">
+                @for (d of fechasCarousel(); track d.getTime()) {
+                  <button
+                    type="button"
+                    class="date-chip shrink-0 min-w-[50px] flex flex-col items-center gap-[3px] py-2.5 px-1.5 rounded-xl border-[1.5px] border-[var(--c-200)] bg-[var(--c-50)] cursor-pointer font-[inherit] transition-all duration-200 hover:border-[var(--c-500)] hover:bg-[var(--c-100)]"
+                    [class.on]="mismaFecha(d, fechaTurno())"
+                    [class.none]="!fechaTieneFranjas(d)"
+                    style="scroll-snap-align: start;"
+                    (click)="seleccionarFecha(d)">
+                    <span class="date-chip-dow text-[0.52rem] font-bold uppercase tracking-wide text-[var(--c-400)]">
+                      {{ diaSemanaCorto(d) }}
+                    </span>
+                    <span class="date-chip-num text-[0.95rem] font-bold leading-tight text-[var(--c-800)]">
+                      {{ d.getDate() }}
+                    </span>
+                    <span class="date-chip-mon text-[0.52rem] text-[var(--c-400)]">
+                      {{ mesCorto(d) }}
+                    </span>
+                  </button>
+                }
+              </div>
+
+              <!-- Info chip -->
+              @if (hintFranjasDia(); as hint) {
+                <div class="flex items-center gap-1.5 mt-2.5 mb-2 px-2.5 py-1.5 bg-[var(--c-100)] border border-[var(--c-200)] rounded-lg">
+                  <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="text-[var(--c-400)] shrink-0" aria-hidden="true">
+                    <rect x="3" y="4" width="18" height="18" rx="2"/><path d="M8 2v4M16 2v4M3 10h18"/>
+                  </svg>
+                  <span class="text-[0.63rem] text-[var(--c-500)]">
+                    {{ fmtFechaCompleta(fechaTurno()) }} · <strong class="text-[var(--c-700)]">{{ hint }}</strong> · {{ duracionSel() }} min
+                  </span>
+                </div>
+              }
+
+              <!-- Slots — scroll interno, no crece el modal -->
+              <div class="s2-slots-wrap">
+                @if (franjasSlots().length === 0) {
+                  <div class="flex flex-col items-center py-6 text-center">
+                    <div class="w-9 h-9 rounded-full bg-[var(--c-100)] flex items-center justify-center mb-2">
+                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" class="text-[var(--c-300)]" aria-hidden="true">
+                        <rect x="3" y="4" width="18" height="18" rx="2"/><path d="M8 2v4M16 2v4M3 10h18"/>
+                      </svg>
+                    </div>
+                    <p class="text-[0.8rem] font-semibold text-[var(--c-600)] m-0">
+                      Sin horarios — {{ diasSemanaFull[fechaTurno().getDay()] }}
+                    </p>
+                    <p class="text-[0.68rem] text-[var(--c-400)] mt-1 m-0">
+                      {{ profesionalNombreSel() }} no atiende este día.
+                    </p>
+                  </div>
+                } @else {
+                  <div class="flex flex-col gap-3">
+                    @for (franja of franjasSlots(); track franja.horaInicio + franja.horaFin) {
+                      <div>
+                        <div class="flex items-center gap-1.5 mb-2">
+                          <div class="w-1.5 h-1.5 rounded-full bg-[var(--c-300)] shrink-0"></div>
+                          <span class="text-[0.58rem] font-bold uppercase tracking-[0.14em] text-[var(--c-500)]">
+                            {{ franja.label }} · {{ franja.horaInicio }}–{{ franja.horaFin }}
+                          </span>
+                          <span class="text-[0.58rem] text-[var(--c-400)] ml-auto">{{ franja.disponibles }} disp.</span>
+                        </div>
+                        <div class="sl-grid">
+                          @for (slot of franja.slots; track slot.hora) {
+                            <button
+                              type="button"
+                              class="sl-btn h-9 rounded-lg text-[0.72rem] font-semibold border-[1.5px] border-[var(--c-200)] bg-[var(--c-50)] text-[var(--c-700)] cursor-pointer font-[inherit] transition-all duration-150 hover:border-[var(--c-600)] hover:bg-[var(--c-100)] hover:-translate-y-px"
+                              [class.picked]="horaInicio() === slot.hora"
+                              [class.booked]="slot.ocupado"
+                              [disabled]="slot.ocupado"
+                              (click)="seleccionarSlot(slot.hora, slot.ocupado)">
+                              {{ slot.hora }}
+                            </button>
+                          }
+                        </div>
+                      </div>
+                    }
+                  </div>
+                  @if (errorDisponibilidad()) {
+                    <div class="mt-3 text-[0.72rem] text-[var(--st-canc)] bg-[var(--st-canc-bg)] border border-[rgba(140,68,68,0.15)] rounded-lg px-3 py-2.5">
+                      {{ errorDisponibilidad() }}
+                    </div>
+                  }
+                }
+              </div><!-- /slots-wrap -->
+
+            }<!-- /if profesionalId -->
+
+          </div><!-- /right -->
+
+        </div><!-- /s2-grid -->
+      </div><!-- /step 2 -->
+
+      <!-- ══ STEP 3: Confirmar ════════════════════════ -->
+      <div class="step" [class.vis]="step() === 3" [class.rev]="stepAnimRev() && step() === 3">
+
+        <div class="border border-[var(--c-200)] rounded-[20px] overflow-hidden bg-[var(--c-50)] shadow-sm animate-smooth-enter">
+
+          <!-- Dark header using palette -->
+          <div class="flex items-center gap-3 px-5 py-4 bg-[var(--c-800)]">
+            <div class="w-7 h-7 rounded-full flex items-center justify-center shrink-0 text-[var(--c-50)]" style="background: rgba(248,249,250,0.15);">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true">
+                <path stroke-linecap="round" stroke-linejoin="round" d="m5 13 4 4L19 7"/>
+              </svg>
+            </div>
+            <span class="text-[0.82rem] font-semibold text-[var(--c-50)] tracking-wide">Resumen del turno</span>
+          </div>
+
+          <div class="px-5 py-4 flex flex-col gap-4">
+
+            <!-- Paciente -->
+            <div>
+              <p class="section-label mt-0">Paciente</p>
+              <div class="flex items-center gap-3">
+                <div class="w-10 h-10 rounded-full bg-[var(--c-800)] text-[var(--c-50)] flex items-center justify-center text-[0.78rem] font-bold shrink-0">
+                  {{ iniciales({ nombre: nombre(), apellido: apellido() }) }}
+                </div>
+                <div>
+                  <div class="text-[0.88rem] font-semibold text-[var(--c-800)]">{{ nombre() }} {{ apellido() }}</div>
+                  <div class="text-[0.68rem] text-[var(--c-400)] mt-0.5">DNI: {{ dni() || '—' }}</div>
+                </div>
+              </div>
+            </div>
+
+            <div class="h-px bg-[var(--c-200)]"></div>
+
+            <!-- Datos del turno -->
+            <div>
+              <p class="section-label mt-0">Datos del turno</p>
+              <div class="grid grid-cols-2 gap-x-6 gap-y-3">
+                <div>
+                  <div class="field-key">Fecha</div>
+                  <div class="field-val">{{ fmtFechaCompleta(fechaTurno()) }}</div>
+                </div>
+                <div>
+                  <div class="field-key">Hora</div>
+                  <div class="field-val">{{ horaInicio() }} – {{ horaFinSel() }}</div>
+                </div>
+                <div>
+                  <div class="field-key">Profesional</div>
+                  <div class="field-val">{{ profesionalNombreSel() }}</div>
+                </div>
+                <div>
+                  <div class="field-key">Duración</div>
+                  <div class="field-val">{{ duracionSel() }} min</div>
+                </div>
+                <div class="col-span-2">
+                  <div class="field-key">Modalidad</div>
+                  <div class="field-val">{{ modalidadConsulta() === 'presencial' ? 'Presencial' : 'Videoconsulta' }}</div>
+                </div>
+              </div>
+            </div>
+
+            @if (telefonoNotificacionesEfectivo()) {
+              <div class="h-px bg-[var(--c-200)]"></div>
+              <div>
+                <p class="section-label mt-0">Notificaciones</p>
+                <div class="flex items-center gap-3">
+                  <span class="text-[0.82rem] font-medium text-[var(--c-800)] flex-1">
+                    {{ telefonoNotificacionesEfectivo() }}
+                    @if (personalizarTelNotifs()) {
+                      <span class="ml-1.5 inline-flex text-[0.58rem] font-bold uppercase tracking-wide text-[var(--c-600)] bg-[var(--c-100)] border border-[var(--c-200)] px-1.5 py-0.5 rounded-full">
+                        Otro número
+                      </span>
+                    }
+                  </span>
+                  <span class="text-[0.62rem] font-bold uppercase tracking-wide text-[var(--c-600)] bg-[var(--c-100)] border border-[var(--c-200)] px-2.5 py-1 rounded-full">
+                    WhatsApp
+                  </span>
+                </div>
+              </div>
+            }
+
+            <div class="h-px bg-[var(--c-200)]"></div>
+
+            <!-- Monto -->
+            <div class="flex items-center justify-between gap-4">
+              <div>
+                <label class="block text-[0.65rem] font-bold uppercase tracking-[0.12em] text-[var(--c-500)] mb-0.5" for="tn-monto">
+                  Monto de la consulta
+                </label>
+                <p class="text-[0.63rem] text-[var(--c-400)] m-0">Pesos argentinos</p>
+              </div>
+              <div class="relative">
+                <span class="absolute left-3 top-1/2 -translate-y-1/2 text-[0.82rem] text-[var(--c-500)] pointer-events-none select-none">$</span>
+                <input
+                  id="tn-monto"
+                  type="number"
+                  class="w-[130px] h-11 pl-7 pr-3 text-right bg-[var(--c-50)] border-[1.5px] border-[var(--c-300)] rounded-xl text-[0.92rem] font-semibold text-[var(--c-800)] outline-none transition-all duration-200 focus:border-[var(--c-800)] focus:shadow-[0_0_0_3px_rgba(33,37,41,0.06)] focus:bg-[var(--c-50)]"
+                  min="0" step="100"
+                  [ngModel]="monto()"
+                  (ngModelChange)="monto.set(+$event)" />
+              </div>
+            </div>
+
+          </div>
         </div>
-      }
 
-      <label class="field-label">Profesional</label>
-      <select class="field-input"
-              [ngModel]="profesionalId()"
-              (ngModelChange)="profesionalId.set($event)">
-        <option value="">Seleccionar…</option>
-        @for (p of profesionales(); track p.uid) {
-          <option [value]="p.uid">{{ p.nombre }} {{ p.apellido }}</option>
+      </div><!-- /step 3 -->
+
+      <!-- ══ STEP 4: Pago ═══════════════════════════════ -->
+      <div class="step" [class.vis]="step() === 4" [class.rev]="stepAnimRev() && step() === 4">
+
+        <!-- Estado: pagado — éxito con animación (no cierra solo) -->
+        @if (fasePago() === 'pagado') {
+          <div class="pago-exito" role="status" aria-live="polite">
+            <div class="pago-exito__burst" aria-hidden="true"></div>
+            <div class="pago-exito__sparkles" aria-hidden="true">
+              <span class="pago-exito__spark pago-exito__spark--1"></span>
+              <span class="pago-exito__spark pago-exito__spark--2"></span>
+              <span class="pago-exito__spark pago-exito__spark--3"></span>
+              <span class="pago-exito__spark pago-exito__spark--4"></span>
+              <span class="pago-exito__spark pago-exito__spark--5"></span>
+              <span class="pago-exito__spark pago-exito__spark--6"></span>
+            </div>
+            <div class="pago-exito__pig-wrap">
+              <derm-pago-exito-pig />
+            </div>
+            <p class="pago-exito__title">¡Pago confirmado!</p>
+            <p class="pago-exito__subtitle">
+              @if (metodoPagoExito() === 'mercado_pago') {
+                @if (whatsappExitoEnvio() === true) {
+                  Mercado Pago acreditó el cobro y enviamos la confirmación por WhatsApp.
+                } @else if (whatsappExitoEnvio() === false) {
+                  Mercado Pago acreditó el cobro. No pudimos enviar el WhatsApp.
+                } @else {
+                  Mercado Pago acreditó el cobro. El turno ya está confirmado en la agenda.
+                }
+              } @else {
+                @if (whatsappExitoEnvio() === true) {
+                  Registramos el pago en efectivo y enviamos la confirmación por WhatsApp.
+                } @else if (whatsappExitoEnvio() === false) {
+                  Registramos el pago en efectivo. No pudimos enviar el WhatsApp.
+                } @else {
+                  Registramos el pago en efectivo. El turno ya está confirmado en la agenda.
+                }
+              }
+            </p>
+            <button
+              type="button"
+              class="pago-exito__btn"
+              (click)="confirmarExitoYCerrar()">
+              Listo, volver a la agenda
+            </button>
+          </div>
+
+        } @else {
+
+          <!-- Selector de método -->
+          <p class="section-label">Método de pago</p>
+          <div class="inline-flex gap-0 bg-[var(--c-100)] rounded-full p-[3px] mb-5">
+            <button
+              type="button"
+              class="mod-pill font-[inherit]"
+              [class.active]="tipoPago() === 'efectivo'"
+              [disabled]="fasePago() === 'generando' || fasePago() === 'listo_qr'"
+              (click)="tipoPago.set('efectivo')">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                <rect width="20" height="12" x="2" y="6" rx="2"/><circle cx="12" cy="12" r="2"/>
+              </svg>
+              Efectivo
+            </button>
+            <button
+              type="button"
+              class="mod-pill font-[inherit]"
+              [class.active]="tipoPago() === 'mercado_pago'"
+              [disabled]="fasePago() === 'generando' || fasePago() === 'listo_qr'"
+              (click)="tipoPago.set('mercado_pago')">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                <circle cx="12" cy="12" r="10"/><path d="M9.5 15.5 12 9l2.5 6.5M10.5 13h3"/>
+              </svg>
+              Mercado Pago
+            </button>
+          </div>
+
+          <!-- Monto resumen -->
+          <div class="flex items-center justify-between px-4 py-3 bg-[var(--c-100)] border border-[var(--c-200)] rounded-xl mb-5">
+            <span class="text-[0.72rem] font-semibold text-[var(--c-500)] uppercase tracking-wide">Total a cobrar</span>
+            <span class="text-[1.1rem] font-bold text-[var(--c-800)]">{{ fmtMonto(monto()) }}</span>
+          </div>
+
+          <!-- ── Efectivo ── -->
+          @if (tipoPago() === 'efectivo') {
+            <button
+              type="button"
+              class="w-full flex items-center justify-center gap-2 h-11 text-[0.85rem] font-semibold text-[var(--c-50)] bg-[var(--c-800)] rounded-xl border-none cursor-pointer transition-all duration-200 hover:bg-[var(--c-700)] disabled:opacity-40 disabled:cursor-not-allowed"
+              [disabled]="fasePago() === 'generando'"
+              (click)="registrarEfectivo()">
+              @if (fasePago() === 'generando') {
+                <span class="spinner show" aria-hidden="true"></span>
+                Registrando…
+              } @else {
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                  <rect width="20" height="12" x="2" y="6" rx="2"/><circle cx="12" cy="12" r="2"/>
+                </svg>
+                Registrar pago en efectivo
+              }
+            </button>
+          }
+
+          <!-- ── Mercado Pago ── -->
+          @if (tipoPago() === 'mercado_pago') {
+
+            <!-- Email para Mercado Pago -->
+            @if (necesitaEmailMP()) {
+              <!-- Paciente sin email: pedir uno -->
+              <div class="mb-4">
+                <label class="section-label block mb-1.5" for="pago-email">Email del paciente</label>
+                <input
+                  id="pago-email"
+                  type="email"
+                  placeholder="paciente@gmail.com"
+                  class="field-input"
+                  [ngModel]="emailPago()"
+                  (ngModelChange)="emailPago.set($event)"
+                  [disabled]="fasePago() === 'generando' || fasePago() === 'listo_qr'" />
+                <p class="text-[0.65rem] text-[var(--c-400)] mt-1 m-0">Se enviará el comprobante de pago a este correo.</p>
+              </div>
+            } @else {
+              <!-- Paciente con email: mostrar cuál se usa -->
+              <div class="flex items-center gap-2 px-3 py-2 mb-4 bg-[var(--c-100)] border border-[var(--c-200)] rounded-lg">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="text-[var(--c-400)] shrink-0" aria-hidden="true">
+                  <rect width="20" height="16" x="2" y="4" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/>
+                </svg>
+                <span class="text-[0.68rem] text-[var(--c-500)]">
+                  Comprobante a <strong class="text-[var(--c-700)]">{{ emailPagoEfectivo() }}</strong>
+                </span>
+              </div>
+            }
+
+            <!-- Estado: esperando — botón Generar QR -->
+            @if (fasePago() === 'esperando') {
+              <button
+                type="button"
+                class="w-full flex items-center justify-center gap-2 h-11 text-[0.85rem] font-semibold text-[var(--c-50)] bg-[var(--c-800)] rounded-xl border-none cursor-pointer transition-all duration-200 hover:bg-[var(--c-700)] disabled:opacity-40 disabled:cursor-not-allowed"
+                [disabled]="!puedeIniciarPagoMP()"
+                (click)="iniciarPagoMP()">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                  <rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/>
+                  <rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="3" height="3" rx="0.5"/>
+                  <rect x="18" y="14" width="3" height="3" rx="0.5"/><rect x="14" y="18" width="3" height="3" rx="0.5"/>
+                </svg>
+                Generar QR de cobro
+              </button>
+            }
+
+            <!-- Estado: generando — spinner -->
+            @if (fasePago() === 'generando') {
+              <div class="flex items-center justify-center gap-3 py-6 text-[var(--c-500)] text-[0.8rem]">
+                <span class="spinner show" aria-hidden="true"></span>
+                Generando cobro en Mercado Pago…
+              </div>
+            }
+
+            <!-- Estado: listo_qr — QR + espera de pago -->
+            @if (fasePago() === 'listo_qr' && datosQR(); as qr) {
+              <div class="flex flex-col items-center gap-3 animate-smooth-enter">
+                @if (qr.qr) {
+                  <img [src]="qr.qr" width="180" height="180" alt="QR de pago Mercado Pago" class="rounded-2xl border border-[var(--c-200)] p-2 bg-[var(--c-50)]" />
+                }
+                <div class="flex items-center gap-2 text-[0.72rem] text-[var(--c-500)]">
+                  <span class="spinner show" aria-hidden="true"></span>
+                  Esperando confirmación del pago…
+                </div>
+                @if (qr.linkPago) {
+                  <button
+                    type="button"
+                    class="text-[0.72rem] font-medium text-[var(--c-600)] underline bg-transparent border-none cursor-pointer"
+                    (click)="openCheckout(qr.linkPago)">
+                    Abrir en Mercado Pago
+                  </button>
+                }
+              </div>
+            }
+
+          }
+
+          <!-- Error -->
+          @if (fasePago() === 'error' && errorPago()) {
+            <div class="mt-4 flex items-start gap-2 p-3 bg-[var(--st-canc-bg)] border border-[rgba(140,68,68,0.2)] rounded-xl text-[0.72rem] text-[var(--st-canc)] leading-relaxed animate-smooth-enter">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="shrink-0 mt-px" aria-hidden="true">
+                <circle cx="12" cy="12" r="10"/><path d="M12 8v4M12 16h.01"/>
+              </svg>
+              {{ errorPago() }}
+            </div>
+          }
+
         }
-      </select>
 
-      <label class="field-label">Hora de inicio</label>
-      <input type="time" class="field-input" [ngModel]="horaInicio()" (ngModelChange)="horaInicio.set($event)" />
-      @if (hintFranjasDia(); as hint) {
-        <p class="field-hint disp-hint">Horario de atención ese día: {{ hint }} · Duración del turno: {{ duracionSel() }} min</p>
-      } @else if (profesionalId()) {
-        <p class="field-hint disp-hint disp-hint--soft">Sin franjas cargadas para ese día en el perfil del profesional; no se valida contra agenda.</p>
-      }
-      @if (errorDisponibilidad()) {
-        <div class="mp-err-banner">{{ errorDisponibilidad() }}</div>
-      }
+      </div><!-- /step 4 -->
 
-      <label class="field-label">Paciente — nombre</label>
-      <input type="text" class="field-input" placeholder="Nombre" [ngModel]="nombre()" (ngModelChange)="nombre.set($event)" />
+    </div><!-- /body -->
 
-      <label class="field-label">Paciente — apellido</label>
-      <input type="text" class="field-input" placeholder="Apellido" [ngModel]="apellido()" (ngModelChange)="apellido.set($event)" />
+    <!-- ── Footer ──────────────────────────────────── -->
+    <div class="relative z-10 h-px bg-[var(--c-200)] shrink-0"></div>
+    <div class="relative z-10 flex items-center justify-between gap-4 px-6 py-4 bg-[var(--c-50)] shrink-0">
 
-      <label class="field-label">Teléfono</label>
-      <input type="text" class="field-input" [ngModel]="telefono()" (ngModelChange)="telefono.set($event)" />
+      <!-- Izquierda: Volver (pasos 2 y 3) / Cancelar turno (paso 4) -->
+      <div>
+        @if (step() > 1 && step() < 4) {
+          <button
+            type="button"
+            class="inline-flex items-center gap-1.5 px-4 py-2.5 text-[0.78rem] font-semibold text-[var(--c-600)] bg-[var(--c-100)] border border-[var(--c-200)] rounded-xl cursor-pointer transition-all duration-200 hover:bg-[var(--c-200)] hover:text-[var(--c-800)]"
+            (click)="retroceder()">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true">
+              <path d="m15 18-6-6 6-6"/>
+            </svg>
+            Volver
+          </button>
+        }
+        @if (step() === 4 && fasePago() !== 'pagado') {
+          <button
+            type="button"
+            class="inline-flex items-center gap-1.5 px-4 py-2.5 text-[0.75rem] font-medium text-[var(--st-canc)] bg-transparent border border-[rgba(140,68,68,0.25)] rounded-xl cursor-pointer transition-all duration-200 hover:bg-[var(--st-canc-bg)]"
+            (click)="cancelarTurnoDesdeStep4()">
+            Cancelar turno
+          </button>
+        }
+      </div>
 
-      <label class="field-label">DNI (opcional)</label>
-      <input type="text" class="field-input" [ngModel]="dni()" (ngModelChange)="dni.set($event)" />
+      <!-- Derecha: Paso X de 4 + Siguiente (solo pasos 1-3) -->
+      <div class="flex items-center gap-3">
+        <span class="text-[0.68rem] text-[var(--c-400)]">
+          Paso <strong class="text-[var(--c-600)]">{{ step() }}</strong> de 4
+        </span>
+        @if (step() < 4) {
+          <button
+            type="button"
+            class="inline-flex items-center gap-1.5 px-5 py-2.5 text-[0.82rem] font-semibold text-[var(--c-50)] bg-[var(--c-800)] rounded-xl cursor-pointer border-none transition-all duration-200 hover:bg-[var(--c-700)] hover:-translate-y-px hover:shadow-md disabled:opacity-40 disabled:cursor-not-allowed disabled:translate-y-0 disabled:shadow-none"
+            [disabled]="(step() === 1 && !puedePaso1()) || (step() === 2 && !puedePaso2()) || (step() === 3 && (!puedeConfirmar() || guardandoTurno()))"
+            (click)="avanzar()">
+            @if (step() === 3 && guardandoTurno()) {
+              <span class="spinner show" aria-hidden="true"></span>
+              Guardando…
+            } @else if (step() === 3) {
+              Confirmar y pagar
+            } @else {
+              Siguiente
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true">
+                <path d="m9 18 6-6-6-6"/>
+              </svg>
+            }
+          </button>
+        }
+      </div>
 
-      <label class="field-label">Monto ($)</label>
-      <input type="number" class="field-input" min="0" step="100" [ngModel]="monto()" (ngModelChange)="monto.set(+$event)" />
     </div>
 
-    <div class="modal-footer">
-      <button type="button" class="btn btn--ghost" (click)="close.emit()">Cancelar</button>
-      <button type="button" class="btn btn--primary" [disabled]="!puedeConfirmar()" (click)="onConfirm()">Crear turno</button>
-    </div>
-  </div>
-</div>
+  </div><!-- /modal shell -->
+</div><!-- /backdrop -->

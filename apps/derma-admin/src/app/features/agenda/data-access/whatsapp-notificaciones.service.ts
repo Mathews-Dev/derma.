@@ -3,12 +3,27 @@ import { HttpClient } from '@angular/common/http';
 import { firstValueFrom } from 'rxjs';
 import { environment } from '../../../../environments/environment';
 
-export interface ConfirmacionTurnoWhatsappPayload {
+export interface TurnoWhatsappBasePayload {
   telefono: string;
   pacienteNombre: string;
   fecha: string;
   horaInicio: string;
+  accessToken: string;
+}
+
+export interface ConfirmacionTurnoWhatsappPayload extends TurnoWhatsappBasePayload {
   profesionalNombre: string;
+}
+
+export type CancelacionTurnoWhatsappPayload = TurnoWhatsappBasePayload;
+
+export interface ReprogramacionTurnoWhatsappPayload {
+  telefono: string;
+  pacienteNombre: string;
+  fechaNueva: string;
+  horaNueva: string;
+  profesionalNombre: string;
+  accessToken: string;
 }
 
 /** Misma convención que el backend `whatsapp` (`formatFecha` en date.utils). */
@@ -27,7 +42,26 @@ export class WhatsappNotificacionesService {
   private readonly baseUrl = environment.whatsappApiUrl.replace(/\/$/, '');
 
   enviarConfirmacionTurno(payload: ConfirmacionTurnoWhatsappPayload): Promise<{ ok: boolean }> {
-    const url = `${this.baseUrl}/messages/confirmar`;
-    return firstValueFrom(this.http.post<{ ok: boolean }>(url, payload));
+    return firstValueFrom(
+      this.http.post<{ ok: boolean }>(`${this.baseUrl}/messages/confirmar`, payload),
+    );
+  }
+
+  enviarCancelacionTurno(payload: CancelacionTurnoWhatsappPayload): Promise<{ ok: boolean }> {
+    return firstValueFrom(
+      this.http.post<{ ok: boolean }>(`${this.baseUrl}/messages/cancelar`, payload),
+    );
+  }
+
+  enviarReprogramacionTurno(payload: ReprogramacionTurnoWhatsappPayload): Promise<{ ok: boolean }> {
+    return firstValueFrom(
+      this.http.post<{ ok: boolean }>(`${this.baseUrl}/messages/reprogramar`, payload),
+    );
+  }
+
+  enviarNoAsistioTurno(payload: TurnoWhatsappBasePayload): Promise<{ ok: boolean }> {
+    return firstValueFrom(
+      this.http.post<{ ok: boolean }>(`${this.baseUrl}/messages/no-asistio`, payload),
+    );
   }
 }

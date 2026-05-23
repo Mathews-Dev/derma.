@@ -29,6 +29,9 @@ export async function sendTemplate(to: string, template: TemplateMessage): Promi
       type: 'template',
       template,
     }, { headers });
+    console.log(
+      `[WhatsApp] enviado ${template.name} (${template.language.code}) → ${to}`,
+    );
   } catch (err) {
     const error = err as AxiosError;
     const detail = error.response?.data ?? error.message;

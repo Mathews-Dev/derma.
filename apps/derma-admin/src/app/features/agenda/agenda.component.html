@@ -1,20 +1,4 @@
-<section class="mb-4 animate-smooth-enter">
-  <ui-page-header
-    title="Agenda"
-    description="Gestioná los turnos, horarios y ocupación de los profesionales."
-  >
-    <div actions class="flex items-center gap-2">
-      <ui-button
-        label="Nuevo Turno"
-        size="h-[40px]"
-        (click)="onNewTurn()"
-        buttonClass="shadow-sm">
-      </ui-button>
-    </div>
-  </ui-page-header>
-</section>
-
-<div class="scheduler-layout relative bg-[var(--c-50)] rounded-xl border border-[var(--c-200)] overflow-hidden animate-smooth-enter stagger-1"
+<div class="scheduler-layout relative bg-[var(--c-50)] rounded-xl border border-[var(--c-200)] overflow-hidden animate-smooth-enter"
      [class.sidebar-collapsed]="sidebarCollapsed()"
      [class.right-panel-collapsed]="rightPanelCollapsed()">
 
@@ -28,7 +12,10 @@
   <ui-agenda-sidebar
     class="agenda-sidebar-comp"
     [profesionales]="profesionalesSidebar() ?? []"
+    [selectedDate]="selectedDate()"
+    [datesWithTurns]="datesWithTurns()"
     (dateSelect)="onDateSelect($event)"
+    (monthChange)="onSidebarMonthChange($event)"
     (filterChange)="onFilterChange($event)"
     (searchChange)="onSearchChange($event)"
     (newTurn)="onNewTurn()">
@@ -91,7 +78,10 @@
     [mpPhase]="pagoMpPhase()"
     [mpCheckout]="pagoMpCheckout()"
     [mpError]="pagoMpError()"
+    [metodoPagoExito]="pagoMetodoExito()"
+    [whatsappExitoOk]="pagoWaExitoOk()"
     (confirm)="onPagoConfirm($event)"
+    (listo)="onPagoListo()"
     (close)="onPagoClose()">
   </derm-turno-pago-modal>
 }
@@ -100,7 +90,8 @@
   <derm-turno-nuevo-modal
     [profesionales]="profesionales() ?? []"
     [fechaSeleccionada]="selectedDate()"
-    (confirm)="onNuevoConfirm($event)"
+    [turnosOcupados]="allTurns() ?? []"
+    (turnoConfirmado)="onNuevoTurnoConfirmado($event)"
     (close)="onNuevoClose()">
   </derm-turno-nuevo-modal>
 }

@@ -4,10 +4,10 @@
     #triggerButton
     type="button"
     (click)="$event.stopPropagation(); toggleOpen()"
-    class="w-full px-4 py-2 bg-[var(--c-50)] border border-[var(--c-200)] rounded-[10px] 
-           text-left text-[var(--c-800)] hover:border-[var(--c-300)] transition-colors
-           flex items-center justify-between">
-    <span class="text-[0.93rem]">
+    class="w-full px-4 py-[8px] min-h-[40px] bg-[var(--c-50)] border border-[var(--c-200)] rounded-[10px] 
+           text-left text-[12px] leading-snug text-[var(--c-800)] hover:border-[var(--c-300)] transition-colors
+           flex items-center justify-between gap-2">
+    <span class="block min-w-0 flex-1 truncate font-normal">
       {{ selectedOption()?.label || placeholder() }}
     </span>
     <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" 
@@ -29,8 +29,8 @@
           (input)="onSearchChange($event.target.value)"
           [placeholder]="placeholder()"
           class="w-full px-3 py-2 bg-[var(--c-100)] border border-[var(--c-200)] rounded-[6px]
-                 text-[0.875rem] text-[var(--c-800)] outline-none
-                 focus:border-[var(--c-300)] transition-colors" />
+                 text-[12px] leading-snug text-[var(--c-800)] outline-none
+                 focus:border-[var(--c-300)] transition-colors placeholder:text-[var(--c-400)]" />
       </div>
 
       <!-- Options list -->
@@ -41,11 +41,11 @@
               <button
                 type="button"
                 (click)="select(option)"
-                class="w-full px-4 py-3 text-left text-[0.875rem] text-[var(--c-800)]
+                class="w-full px-4 py-[10px] text-left text-[12px] leading-snug text-[var(--c-800)]
                        hover:bg-[var(--c-100)] transition-colors
                        border-b border-[var(--c-200)] last:border-b-0
-                       flex items-center justify-between
-                       [&.active]:bg-[var(--c-100)] [&.active]:font-medium"
+                       flex items-center justify-between gap-2
+                       [&.active]:bg-[var(--c-100)] [&.active]:font-semibold font-normal"
                 [class.active]="selectedValue() === option.id">
                 {{ option.label }}
                 @if (selectedValue() === option.id) {
@@ -58,7 +58,7 @@
             </li>
           }
         } @else {
-          <li class="px-4 py-6 text-center text-[var(--c-400)] text-[0.875rem]">
+          <li class="px-4 py-6 text-center text-[var(--c-400)] text-[12px] leading-snug">
             Sin resultados
           </li>
         }

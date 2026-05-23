@@ -25,6 +25,12 @@ export class TooltipComponent implements OnDestroy {
   readonly text = input('');
   readonly placement = input<TooltipPlacement>('top');
   readonly caption = input('Tip');
+  /** Texto largo: permite varias líneas y ancho máximo. */
+  readonly wrapText = input(false);
+  /** Cuando false, el trigger no ocupa todo el ancho (p. ej. icono de ayuda junto a un label). */
+  readonly fullWidthTrigger = input(true);
+  /** Si false, CDK no «empuja» el overlay; evita saltos lejos del botón en los bordes del panel (puede recortarse un poco en viewport). */
+  readonly allowPushWithinViewport = input(true);
 
   @ViewChild('trigger', { static: true }) private trigger!: ElementRef<HTMLElement>;
   @ViewChild('tooltipPanel', { static: true }) private tooltipPanel!: TemplateRef<unknown>;
@@ -58,7 +64,7 @@ export class TooltipComponent implements OnDestroy {
       .position()
       .flexibleConnectedTo(this.trigger)
       .withPositions(positions)
-      .withPush(true)
+      .withPush(this.allowPushWithinViewport())
       .withViewportMargin(12);
 
     const config = new OverlayConfig({
@@ -114,8 +120,18 @@ export class TooltipComponent implements OnDestroy {
   private getPositions(placement: TooltipPlacement): ConnectedPosition[] {
     const map: Record<TooltipPlacement, ConnectedPosition[]> = {
       top: [
-        { originX: 'center', originY: 'top', overlayX: 'center', overlayY: 'bottom', offsetY: -8 },
-        { originX: 'center', originY: 'bottom', overlayX: 'center', overlayY: 'top', offsetY: 8 }
+        /* Encima del centro del trigger — separación clara del icono / botón */
+        {
+          originX: 'center',
+          originY: 'center',
+          overlayX: 'center',
+          overlayY: 'bottom',
+          offsetY: -16
+        },
+        { originX: 'center', originY: 'top', overlayX: 'center', overlayY: 'bottom', offsetY: -14 },
+        { originX: 'end', originY: 'top', overlayX: 'end', overlayY: 'bottom', offsetY: -12 },
+        { originX: 'start', originY: 'top', overlayX: 'start', overlayY: 'bottom', offsetY: -12 },
+        { originX: 'center', originY: 'bottom', overlayX: 'center', overlayY: 'top', offsetY: 10 }
       ],
       right: [
         { originX: 'end', originY: 'center', overlayX: 'start', overlayY: 'center', offsetX: 8 },

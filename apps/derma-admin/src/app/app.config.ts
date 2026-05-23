@@ -11,6 +11,7 @@ import { provideAuth, getAuth } from '@angular/fire/auth';
 import { provideStorage, getStorage } from '@angular/fire/storage';
 import { provideHttpClient, withFetch } from '@angular/common/http';
 import { environment } from '../environments/environment';
+import { resolveMercadoPagoApiUrl } from '../environments/mp-api-url';
 import { MERCADOPAGO_API_BASE_URL } from '@derma/mercadopago';
 import { registerLocaleData } from '@angular/common';
 import localeEs from '@angular/common/locales/es';
@@ -23,7 +24,10 @@ export const appConfig: ApplicationConfig = {
     provideZoneChangeDetection({ eventCoalescing: true }),
     provideRouter(appRoutes),
     provideHttpClient(withFetch()),
-    { provide: MERCADOPAGO_API_BASE_URL, useValue: environment.mercadoPagoApiUrl },
+    {
+      provide: MERCADOPAGO_API_BASE_URL,
+      useFactory: () => resolveMercadoPagoApiUrl(environment.mercadoPagoApiUrl),
+    },
     provideFirebaseApp(() => initializeApp(environment.firebase)),
     provideAuth(() => getAuth()),
     provideFirestore(() => getFirestore()),

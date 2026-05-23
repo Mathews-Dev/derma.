@@ -1,13 +1,14 @@
-import { ChangeDetectionStrategy, Component, computed, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
+import { toSignal } from '@angular/core/rxjs-interop';
 import {
   UiPageHeaderComponent,
-  UiButtonComponent,
   UiBadgeComponent,
   UiEmptyStateComponent,
 } from '@derma/ui';
-import { videoconsultaMockListRows, type VideoconsultaListRow } from '../../videoconsulta-mock';
+import type { VideoconsultaListRow } from '../../models/videoconsulta.view-model';
+import { VideoconsultaService } from '../../data-access/videoconsulta.service';
 
 @Component({
   selector: 'derm-videoconsulta-list',
@@ -24,9 +25,15 @@ import { videoconsultaMockListRows, type VideoconsultaListRow } from '../../vide
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class VideoconsultaListComponent {
+  private readonly videoconsultaService = inject(VideoconsultaService);
+  private readonly rango = VideoconsultaService.defaultRango();
+
   readonly busqueda = signal('');
 
-  private readonly filas = signal<VideoconsultaListRow[]>(videoconsultaMockListRows());
+  private readonly filas = toSignal(
+    this.videoconsultaService.videoconsultaListRows$(this.rango.desde, this.rango.hasta),
+    { initialValue: [] as VideoconsultaListRow[] },
+  );
 
   readonly filtradas = computed(() => {
     const q = this.busqueda().toLowerCase().trim();
@@ -47,6 +54,7 @@ export class VideoconsultaListComponent {
       case 'error':
         return 'danger';
       case 'pendiente':
+      case 'sin_crear':
         return 'warning';
       default:
         return 'neutral';
@@ -59,6 +67,8 @@ export class VideoconsultaListComponent {
         return 'Meet listo';
       case 'pendiente':
         return 'Link pendiente';
+      case 'sin_crear':
+        return 'Sin crear';
       case 'error':
         return 'Error';
       default:

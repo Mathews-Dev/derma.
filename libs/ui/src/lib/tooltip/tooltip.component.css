@@ -27,3 +27,10 @@
 .animate-tooltip-out {
   animation: tooltip-out 0.12s cubic-bezier(0.4, 0, 1, 1) forwards;
 }
+
+.tooltip-panel--wrap {
+  white-space: normal;
+  text-align: left;
+  line-height: 1.45;
+  max-width: min(240px, 88vw);
+}

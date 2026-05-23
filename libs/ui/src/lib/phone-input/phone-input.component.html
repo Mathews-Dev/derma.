@@ -1,0 +1,156 @@
+<div class="flex flex-col sm:flex-row gap-2 w-full" (click)="$event.stopPropagation()">
+
+  @if (showLabel()) {
+
+    <span class="block text-[0.65rem] uppercase font-light text-[var(--c-500)] tracking-[0.12em] sm:pt-[10px]">
+
+      {{ label() }}
+
+    </span>
+
+  }
+
+
+
+  <!-- Selector de país: panel en CDK overlay (no estira el layout ni el scroll del padre) -->
+
+  <div class="relative w-full sm:w-[150px] shrink-0">
+
+    <button
+
+      #countryTriggerBtn
+
+      type="button"
+
+      (click)="toggleDropdown($event)"
+
+      [disabled]="disabled()"
+
+      class="flex items-center justify-between w-full h-[44px] bg-[var(--c-50)] border border-[var(--c-200)] text-[var(--c-800)] pl-3 pr-2 rounded-xl outline-none transition-all duration-200 ease-out hover:border-[var(--c-400)] disabled:opacity-65 disabled:pointer-events-none disabled:cursor-not-allowed disabled:hover:border-[var(--c-200)]"
+
+      [class.border-[var(--c-800)]]="isDropdownOpen() && !disabled()"
+
+      [class.ring-1]="isDropdownOpen() && !disabled()"
+
+      [class.ring-[var(--c-800)]]="isDropdownOpen() && !disabled()">
+
+
+
+      <div class="flex items-center gap-2 min-w-0">
+
+        <img
+
+          [src]="selectedCountry().flagUrl"
+
+          [alt]="selectedCountry().name"
+
+          class="w-6 h-4 rounded-[2px] object-cover shadow-sm flex-shrink-0">
+
+        <span class="text-sm font-semibold truncate">{{ selectedCountry().dialCode }}</span>
+
+      </div>
+
+
+
+      <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+
+           class="text-[var(--c-400)] flex-shrink-0 transition-transform duration-200"
+
+           [class.rotate-180]="isDropdownOpen()">
+
+        <path d="m6 9 6 6 6-6"/>
+
+      </svg>
+
+    </button>
+
+  </div>
+
+
+
+  <div class="flex-1 min-w-0">
+
+    <input
+
+      type="tel"
+
+      [disabled]="disabled()"
+
+      class="w-full h-[44px] bg-[var(--c-50)] border border-[var(--c-200)] text-[0.875rem] text-[var(--c-800)] px-3 rounded-xl outline-none transition-all duration-200 ease-out hover:border-[var(--c-400)] focus:border-[var(--c-800)] focus:ring-1 focus:ring-[var(--c-800)] placeholder:text-[var(--c-400)] disabled:opacity-65 disabled:cursor-not-allowed disabled:bg-[var(--c-50)] disabled:hover:border-[var(--c-200)]"
+
+      [placeholder]="placeholder()"
+
+      [ngModel]="localNumber()"
+
+      (ngModelChange)="onLocalChange($event)" />
+
+  </div>
+
+
+
+  @if (showError()) {
+
+    <p class="text-[0.65rem] text-red-600 font-normal mt-1 sm:col-span-2">{{ errorMessage() }}</p>
+
+  }
+
+</div>
+
+
+
+<ng-template #countryDropdownPanel>
+
+  <div
+
+    class="ui-thin-scrollbar bg-[var(--c-50)] border border-[var(--c-200)] rounded-xl shadow-[0_12px_40px_rgba(10,10,10,0.14)] max-h-[280px] overflow-y-auto overflow-x-hidden box-border"
+
+    role="listbox"
+
+    aria-label="País"
+
+    (click)="$event.stopPropagation()">
+
+    @for (country of countries; track country.isoCode) {
+
+      <button
+
+        type="button"
+
+        role="option"
+
+        [attr.aria-selected]="country.isoCode === selectedCountry().isoCode"
+
+        (click)="selectCountry(country)"
+
+        class="flex items-center gap-3 w-full px-3 py-2.5 text-left transition-colors duration-100 hover:bg-[var(--c-100)]"
+
+        [class.bg-[var(--c-100)]]="country.isoCode === selectedCountry().isoCode">
+
+
+
+        <img
+
+          [src]="country.flagUrl"
+
+          [alt]="country.name"
+
+          class="w-6 h-4 rounded-[2px] object-cover shadow-sm flex-shrink-0">
+
+
+
+        <div class="flex items-center justify-between w-full min-w-0">
+
+          <span class="text-xs font-semibold text-[var(--c-700)] truncate">{{ country.name }}</span>
+
+          <span class="text-[11px] text-[var(--c-400)] font-medium ml-2 flex-shrink-0">{{ country.dialCode }}</span>
+
+        </div>
+
+      </button>
+
+    }
+
+  </div>
+
+</ng-template>
+

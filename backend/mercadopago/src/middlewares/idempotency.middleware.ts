@@ -24,12 +24,10 @@ export async function idempotencyMiddleware(req: Request, res: Response, next: N
 
   if (existing) {
     if (existing.status === 'completed') {
-      console.log(`[Idempotency] Key ${key} ya completada. Devolviendo caché.`);
       return res.json({ success: true, ...existing.response });
     }
 
     if (existing.status === 'processing') {
-      console.log(`[Idempotency] Key ${key} en procesamiento.`);
       return res.status(409).json({
         success: false,
         error: 'Pago en proceso. Aguardá unos segundos.',

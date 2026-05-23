@@ -41,6 +41,31 @@ function cabeEnAlgunaFranja(horaInicio: string, horaFin: string, franjas: Franja
   return franjas.some(f => intervaloDentroDeFranja(horaInicio, horaFin, f));
 }
 
+/** Genera horarios de inicio cada `duracionMinutos` dentro de [horaInicio, horaFin]. */
+export function generarSlotsEnFranja(
+  horaInicio: string,
+  horaFin: string,
+  duracionMinutos: number,
+): string[] {
+  const slots: string[] = [];
+  const [hi, mi] = horaInicio.split(':').map(Number);
+  const [hf, mf] = horaFin.split(':').map(Number);
+  let h = hi ?? 0;
+  let m = mi ?? 0;
+  const end = (hf ?? 0) * 60 + (mf ?? 0);
+  while (true) {
+    const cur = h * 60 + m;
+    if (cur + duracionMinutos > end) break;
+    slots.push(`${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}`);
+    m += duracionMinutos;
+    if (m >= 60) {
+      h += Math.floor(m / 60);
+      m %= 60;
+    }
+  }
+  return slots;
+}
+
 /**
  * Valida que [horaInicio, horaFin] quede dentro de al menos una franja del profesional ese día.
  * Si no hay franjas cargadas para ese día, no bloquea (compatibilidad con datos viejos).

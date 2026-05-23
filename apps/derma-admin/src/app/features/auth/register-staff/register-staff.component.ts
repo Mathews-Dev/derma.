@@ -1,24 +1,30 @@
 import { CommonModule } from '@angular/common';
 import { ChangeDetectionStrategy, Component, computed, effect, inject, OnInit, signal } from '@angular/core';
-import { FormBuilder, ReactiveFormsModule, Validators, FormControl } from '@angular/forms';
+import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import { InvitacionService, AuthService } from '@derma/firebase';
 import { SolicitudInvitacion } from '@derma/models';
-import { UiInputComponent, UiButtonComponent, SelectOption, UiDropdownSelectComponent, LoadingService } from '@derma/ui';
+import {
+  UiInputComponent,
+  UiButtonComponent,
+  UiPhoneInputComponent,
+  formatPhoneNumberByIso,
+  LoadingService,
+} from '@derma/ui';
 import { ExpiredInvitationModalComponent } from './ui/expired-invitation-modal/expired-invitation-modal.component';
-
-interface Country {
-  code: string;
-  name: string;
-  flagUrl: string;
-  dialCode: string;
-}
 
 @Component({
   selector: 'derm-register-staff',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [CommonModule, ReactiveFormsModule, UiInputComponent, UiButtonComponent, UiDropdownSelectComponent, ExpiredInvitationModalComponent],
+  imports: [
+    CommonModule,
+    ReactiveFormsModule,
+    UiInputComponent,
+    UiButtonComponent,
+    UiPhoneInputComponent,
+    ExpiredInvitationModalComponent,
+  ],
   templateUrl: './register-staff.component.html',
   styleUrls: ['./register-staff.component.css']
 })
@@ -47,20 +53,7 @@ export class RegisterStaffComponent implements OnInit {
     password: ['', [Validators.required, Validators.minLength(6)]]
   });
 
-  countryControl = new FormControl<string>('AR', Validators.required);
-
-  countries: Country[] = [
-    { code: 'AR', name: 'Argentina', flagUrl: 'https://flagcdn.com/w40/ar.png', dialCode: '+54' },
-    { code: 'ES', name: 'España', flagUrl: 'https://flagcdn.com/w40/es.png', dialCode: '+34' },
-    { code: 'MX', name: 'México', flagUrl: 'https://flagcdn.com/w40/mx.png', dialCode: '+52' },
-    { code: 'CL', name: 'Chile', flagUrl: 'https://flagcdn.com/w40/cl.png', dialCode: '+56' },
-  ];
-
-  countryOptions = signal<SelectOption[]>(
-    this.countries.map(c => ({ label: `${c.dialCode} ${c.name}`, id: c.code }))
-  );
-
-  selectedCountry = signal<Country>(this.countries[0]); // Default Argentina
+  countryIso = signal('AR');
 
   ngOnInit() {
     this.validarInvitacionDelLink();
@@ -103,13 +96,6 @@ export class RegisterStaffComponent implements OnInit {
     this.router.navigate(['/auth/login']);
   }
 
-  onCountryChange(option: SelectOption) {
-    const country = this.countries.find(c => c.code === option.id);
-    if (country) {
-      this.selectedCountry.set(country);
-    }
-  }
-
   async onSubmit() {
     if (this.formulario.invalid) {
       this.formulario.markAllAsTouched();
@@ -125,14 +111,7 @@ export class RegisterStaffComponent implements OnInit {
 
       const { email, password, nombre, apellido, dni, telefono } = this.formulario.getRawValue();
 
-      const country = this.selectedCountry();
-      let telefonoFormatted = telefono;
-
-      if (country.code === 'AR') {
-        telefonoFormatted = `${country.dialCode}9${telefono}`;
-      } else {
-        telefonoFormatted = `${country.dialCode}${telefono}`;
-      }
+      const telefonoFormatted = formatPhoneNumberByIso(this.countryIso(), telefono);
 
       const usuarioObj = await this.authService.register({
         email,

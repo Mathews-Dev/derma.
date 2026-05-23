@@ -45,6 +45,30 @@
           }
         }
       }
+    },
+    "test": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "npx -y tsx --test backend/whatsapp/src/**/*.test.ts"
+      }
+    },
+    "serve": {
+      "continuous": true,
+      "executor": "@nx/js:node",
+      "defaultConfiguration": "development",
+      "dependsOn": ["build"],
+      "options": {
+        "buildTarget": "whatsapp:build",
+        "runBuildTargetDependencies": false
+      },
+      "configurations": {
+        "development": {
+          "buildTarget": "whatsapp:build:development"
+        },
+        "production": {
+          "buildTarget": "whatsapp:build:production"
+        }
+      }
     }
   }
 }

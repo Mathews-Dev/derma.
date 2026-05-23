@@ -1,180 +1,470 @@
 <div class="modal-backdrop" (click)="onBackdropClick($event)">
-  <aside class="detalle-drawer animate-slide-in">
+
+  <aside class="detalle-drawer animate-slide-in" (click)="$event.stopPropagation()">
+
+
 
     <!-- Header -->
-    <div class="drawer-header">
+
+    <div class="drawer-header stagger-1">
+
       <div class="drawer-title">
+
         <span class="drawer-title-text">Detalle del turno</span>
+
         <span class="estado-badge"
+
               [style.background]="getEstadoBg()"
+
               [style.color]="getEstadoColor()">
+
           {{ getEstadoLabel() }}
+
         </span>
+
       </div>
-      <button class="drawer-close" (click)="close.emit()" title="Cerrar">
+
+      <button type="button" class="drawer-close" (click)="close.emit()" title="Cerrar" aria-label="Cerrar panel">
+
         <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
+
       </button>
+
     </div>
+
+
 
     <!-- Body -->
-    <div class="drawer-body">
+
+    <div class="drawer-body drawer-body-scroll">
 
       <!-- Paciente -->
-      <section class="detail-section">
+
+      <section class="detail-section stagger-2">
+
         <h3 class="section-title">
+
           <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+
           Paciente
+
         </h3>
+
         <div class="detail-card">
+
           <div class="detail-row">
+
             <span class="detail-label">Nombre</span>
+
             <span class="detail-value">{{ turno().pacienteNombre }}</span>
+
           </div>
+
           @if (turno().pacienteDNI) {
+
             <div class="detail-row">
+
               <span class="detail-label">DNI</span>
+
               <span class="detail-value">{{ turno().pacienteDNI }}</span>
+
             </div>
+
           }
+
           @if (turno().pacienteTelefono) {
+
             <div class="detail-row">
+
               <span class="detail-label">Teléfono</span>
+
               <a class="detail-value detail-link" [href]="'tel:' + turno().pacienteTelefono">
+
                 {{ turno().pacienteTelefono }}
+
               </a>
+
             </div>
+
           }
+
           @if (turno().pacienteEmail) {
+
             <div class="detail-row">
+
               <span class="detail-label">Email</span>
+
               <a class="detail-value detail-link" [href]="'mailto:' + turno().pacienteEmail">
+
                 {{ turno().pacienteEmail }}
+
               </a>
+
             </div>
+
           }
+
         </div>
+
       </section>
+
+
 
       <!-- Turno -->
-      <section class="detail-section">
+
+      <section class="detail-section stagger-3">
+
         <h3 class="section-title">
+
           <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="18" height="18" x="3" y="4" rx="2"/><path d="M16 2v4"/><path d="M8 2v4"/><path d="M3 10h18"/></svg>
+
           Turno
+
         </h3>
+
         <div class="detail-card">
+
           <div class="detail-row">
+
             <span class="detail-label">Fecha</span>
+
             <span class="detail-value">{{ fmtFecha(turno().fecha) }}</span>
+
           </div>
+
           <div class="detail-row">
+
             <span class="detail-label">Horario</span>
-            <span class="detail-value">{{ turno().horaInicio }} – {{ turno().horaFin }} ({{ turno().duracion }} min)</span>
+
+            <span class="detail-value">{{ turno().horaInicio }} – {{ turno().horaFin }} <span class="detail-meta">({{ turno().duracion }} min)</span></span>
+
           </div>
+
           <div class="detail-row">
+
             <span class="detail-label">Profesional</span>
+
             <span class="detail-value">{{ turno().profesionalNombre }}</span>
+
           </div>
+
           <div class="detail-row">
+
             <span class="detail-label">Tipo</span>
+
             <span class="detail-value capitalize">{{ turno().tipo }}</span>
+
           </div>
+
           @if (turno().tratamientoNombre) {
+
             <div class="detail-row">
+
               <span class="detail-label">Tratamiento</span>
+
               <span class="detail-value">{{ turno().tratamientoNombre }}</span>
+
             </div>
+
           }
+
           @if (turno().turnoOriginalId) {
+
             <div class="detail-row">
+
               <span class="detail-label">Reprogramado de</span>
+
               <span class="detail-value detail-mono">{{ turno().turnoOriginalId }}</span>
+
             </div>
+
           }
+
         </div>
+
       </section>
+
+
 
       <!-- Pago -->
-      <section class="detail-section">
+
+      <section class="detail-section stagger-4">
+
         <h3 class="section-title">
+
           <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="20" height="14" x="2" y="5" rx="2"/><line x1="2" x2="22" y1="10" y2="10"/></svg>
+
           Pago
+
         </h3>
+
         <div class="detail-card">
+
           <div class="detail-row">
+
             <span class="detail-label">Estado</span>
+
             <span class="pago-badge"
+
                   [style.background]="getPagoBg()"
+
                   [style.color]="getPagoColor()">
+
               {{ getPagoLabel() }}
+
             </span>
+
           </div>
+
           <div class="detail-row">
+
             <span class="detail-label">Monto</span>
+
             <span class="detail-value detail-amount">{{ fmtMonto(turno().monto) }}</span>
+
           </div>
+
           @if (turno().metodoPago) {
+
             <div class="detail-row">
+
               <span class="detail-label">Método</span>
+
               <span class="detail-value capitalize">{{ turno().metodoPago }}</span>
+
             </div>
+
           }
+
           @if (turno().fechaPago) {
+
             <div class="detail-row">
+
               <span class="detail-label">Pagado el</span>
+
               <span class="detail-value">{{ fmtFecha(turno().fechaPago) }}</span>
+
             </div>
+
           }
+
           @if (turno().mpPaymentId) {
+
             <div class="detail-row">
+
               <span class="detail-label">ID pago MP</span>
+
               <span class="detail-value detail-mono">{{ turno().mpPaymentId }}</span>
+
             </div>
+
           }
+
         </div>
+
       </section>
 
+
+
       <!-- Notas -->
+
       @if (turno().motivo || turno().notasPaciente || turno().notasProfesional) {
-        <section class="detail-section">
+
+        <section class="detail-section stagger-5">
+
           <h3 class="section-title">
+
             <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+
             Notas
+
           </h3>
+
           <div class="detail-card">
+
             @if (turno().motivo) {
+
               <div class="notes-block">
+
                 <span class="notes-label">Motivo</span>
+
                 <p class="notes-text">{{ turno().motivo }}</p>
+
               </div>
+
             }
+
             @if (turno().notasPaciente) {
+
               <div class="notes-block">
+
                 <span class="notes-label">Notas del paciente</span>
+
                 <p class="notes-text">{{ turno().notasPaciente }}</p>
+
               </div>
+
             }
+
             @if (turno().notasProfesional) {
+
               <div class="notes-block">
+
                 <span class="notes-label">Notas del profesional</span>
+
                 <p class="notes-text">{{ turno().notasProfesional }}</p>
+
               </div>
+
             }
+
           </div>
+
         </section>
+
+      }
+
+
+
+      <div class="drawer-body-spacer" aria-hidden="true"></div>
+
+    </div>
+
+
+
+    <!-- Footer acciones -->
+
+    <div class="drawer-footer stagger-6">
+
+      @if (footerGroups.primary.length > 0) {
+
+        <div class="footer-block footer-block--grid" [class.footer-block--single]="footerGroups.primary.length === 1">
+
+          @for (btn of footerGroups.primary; track btn.accion) {
+
+            <button type="button" class="action-btn action-btn--primary" (click)="emitAccion(btn.accion)">
+
+              @switch (btn.icon) {
+
+                @case ('check') {
+
+                  <svg class="action-ico" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path stroke-linecap="round" stroke-linejoin="round" d="M20 6 9 17l-5-5"/></svg>
+
+                }
+
+                @case ('heart') {
+
+                  <svg class="action-ico" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"/></svg>
+
+                }
+
+              }
+
+              <span>{{ btn.label }}</span>
+
+            </button>
+
+          }
+
+        </div>
+
+      }
+
+
+
+      @if (footerGroups.success.length > 0) {
+
+        <div class="footer-block">
+
+          @for (btn of footerGroups.success; track btn.accion) {
+
+            <button type="button" class="action-btn action-btn--success action-btn--block" (click)="emitAccion(btn.accion)">
+
+              @if (btn.icon === 'credit-card') {
+
+                <svg class="action-ico" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect width="20" height="14" x="2" y="5" rx="2"/><path d="M2 10h20"/></svg>
+
+              }
+
+              <span>{{ btn.label }}</span>
+
+            </button>
+
+          }
+
+        </div>
+
+      }
+
+
+
+      @if (footerGroups.ghost.length > 0) {
+
+        <div class="footer-block footer-block--muted">
+
+          @for (btn of footerGroups.ghost; track btn.accion) {
+
+            <button type="button" class="action-btn action-btn--ghost" (click)="emitAccion(btn.accion)">
+
+              @switch (btn.icon) {
+
+                @case ('calendar') {
+
+                  <svg class="action-ico" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M8 2v4"/><path d="M16 2v4"/><rect width="18" height="18" x="3" y="4" rx="2"/><path d="M3 10h18"/></svg>
+
+                }
+
+                @case ('x-circle') {
+
+                  <svg class="action-ico" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="m15 9-6 6"/><path d="m9 9 6 6"/></svg>
+
+                }
+
+              }
+
+              <span>{{ btn.label }}</span>
+
+            </button>
+
+          }
+
+        </div>
+
+      }
+
+
+
+      @if (footerGroups.danger.length > 0) {
+
+        <div class="footer-divider"></div>
+
+        <div class="footer-block footer-block--danger">
+
+          @for (btn of footerGroups.danger; track btn.accion) {
+
+            <button type="button" class="action-btn action-btn--danger action-btn--block" (click)="emitAccion(btn.accion)">
+
+              @if (btn.icon === 'trash') {
+
+                <svg class="action-ico" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/><line x1="10" x2="10" y1="11" y2="17"/><line x1="14" x2="14" y1="11" y2="17"/></svg>
+
+              }
+
+              <span>{{ btn.label }}</span>
+
+            </button>
+
+          }
+
+        </div>
+
       }
 
     </div>
 
-    <!-- Footer con acciones -->
-    <div class="drawer-footer">
-      @for (btn of accionesDisponibles; track btn.accion) {
-        <button class="action-btn"
-                [class]="'action-btn--' + btn.variant"
-                (click)="emitAccion(btn.accion)">
-          {{ btn.label }}
-        </button>
-      }
-    </div>
+
 
   </aside>
+
 </div>
+

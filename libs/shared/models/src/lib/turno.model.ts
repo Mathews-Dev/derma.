@@ -37,6 +37,9 @@ export enum AccionTurno {
     REGISTRAR_PAGO   = 'registrar_pago',
 }
 
+/** Modalidad de la consulta al cargar el turno. */
+export type ModalidadConsulta = 'presencial' | 'videoconsulta';
+
 // ─── Interfaz Principal ──────────────────────────────────────────────────────
 
 export interface Turno {
@@ -57,6 +60,8 @@ export interface Turno {
     // Tipo y tratamiento
     tipo?: 'consulta' | 'tratamiento';
     tratamientoId?: string | null;
+    /** Consultorio vs. videoconsulta (Meet / Calendar). */
+    modalidadConsulta?: ModalidadConsulta | null;
 
     // Horario
     fecha: Timestamp;           // Fecha del turno (sin hora)
@@ -88,6 +93,9 @@ export interface Turno {
     // Reprogramación
     turnoOriginalId?: string | null;
     motivoReprogramacion?: string | null;
+
+    /** Token opaco para links de WhatsApp (/t/, /c/) — no exponer el id de Firestore. */
+    accessToken?: string | null;
 
     // Pago
     estadoPago: EstadoPago;
