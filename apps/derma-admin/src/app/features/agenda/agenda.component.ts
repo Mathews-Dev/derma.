@@ -8,8 +8,8 @@ import {
 import { HttpErrorResponse } from '@angular/common/http';
 import { CommonModule } from '@angular/common';
 import { toSignal } from '@angular/core/rxjs-interop';
-import { switchMap, map, startWith, Subscription, timer, firstValueFrom } from 'rxjs';
-import { filter, take } from 'rxjs/operators';
+import { switchMap, map, startWith, Subscription, firstValueFrom } from 'rxjs';
+import { filter, take, timeout } from 'rxjs/operators';
 import { Timestamp } from 'firebase/firestore';
 import {
   AgendaSidebarComponent,
@@ -17,8 +17,6 @@ import {
   AgendaListComponent,
   AgendaFilters,
   defaultAgendaFilters,
-  UiPageHeaderComponent,
-  UiButtonComponent,
   ProfesionalSidebar,
 } from '@derma/ui';
 import { TurnosService, FirestoreService } from '@derma/firebase';
@@ -41,7 +39,6 @@ import {
   type TurnoPagoConfirmPayload,
 } from './components/turno-pago-modal/turno-pago-modal.component';
 import { TurnoNuevoModalComponent } from './components/turno-nuevo-modal/turno-nuevo-modal.component';
-import type { TurnoNuevoPayload } from './components/turno-nuevo-modal/turno-nuevo-modal.component';
 import { ToastService } from '@derma/ui';
 import { MercadoPagoPaymentService, createIdempotencyKey } from '@derma/mercadopago';
 import {
@@ -61,8 +58,6 @@ const CLINICA_ID = 'clinica_default';
     AgendaSidebarComponent,
     CalendarGridComponent,
     AgendaListComponent,
-    UiPageHeaderComponent,
-    UiButtonComponent,
     TurnoDetalleModalComponent,
     TurnoCancelarModalComponent,
     TurnoReprogramarModalComponent,
@@ -103,6 +98,8 @@ export class AgendaComponent {
   pagoMpPhase = signal<TurnoPagoMpPhase>('idle');
   pagoMpCheckout = signal<TurnoPagoMpCheckout | null>(null);
   pagoMpError = signal<string | null>(null);
+  pagoMetodoExito = signal<'efectivo' | 'mercado_pago' | null>(null);
+  pagoWaExitoOk = signal<boolean | null>(null);
 
   // ─── Profesionales (para el sidebar) ─────────────────────────────────────
   profesionales$ = this.firestoreService.getCollectionByFilter<Profesional>(
@@ -151,6 +148,39 @@ export class AgendaComponent {
 
   allTurns = toSignal(this.turns$.pipe(startWith([] as Turno[])));
 
+  /** Mes visible en el mini-calendario del sidebar (para indicadores de turnos). */
+  sidebarCalMonth = signal(
+    new Date(new Date().getFullYear(), new Date().getMonth(), 1),
+  );
+
+  private readonly monthTurns$ = toObservable(this.sidebarCalMonth).pipe(
+    switchMap(m => {
+      const desde = new Date(m.getFullYear(), m.getMonth(), 1);
+      const hasta = new Date(m.getFullYear(), m.getMonth() + 1, 0);
+      return this.turnosService.getTurnosByRango(desde, hasta, CLINICA_ID);
+    }),
+  );
+
+  monthTurns = toSignal(this.monthTurns$.pipe(startWith([] as Turno[])));
+
+  /** Días del mes visible que tienen turnos (respeta filtros activos). */
+  datesWithTurns = computed(() => {
+    const f = this.filters();
+    const keys = new Set<string>();
+    for (const t of this.monthTurns() ?? []) {
+      if (
+        f.profesionalesIds.length > 0 &&
+        !f.profesionalesIds.includes(t.profesionalId)
+      ) {
+        continue;
+      }
+      if (f.status !== 'todos' && t.estado !== f.status) continue;
+      if (f.type !== 'todos' && t.tipo !== f.type) continue;
+      keys.add(toLocalDateKey(t.fecha.toDate()));
+    }
+    return [...keys];
+  });
+
   // ─── Filtrado reactivo en memoria ─────────────────────────────────────────
   filteredTurns = computed(() => {
     const f = this.filters();
@@ -193,6 +223,10 @@ export class AgendaComponent {
 
   onDateSelect(dateStr: string) {
     this.selectedDate.set(new Date(dateStr + 'T12:00:00'));
+  }
+
+  onSidebarMonthChange(e: { year: number; month: number }): void {
+    this.sidebarCalMonth.set(new Date(e.year, e.month, 1));
   }
 
   onFilterChange(f: AgendaFilters) {
@@ -282,6 +316,9 @@ export class AgendaComponent {
           this.pagoMpPhase.set('idle');
           this.pagoMpCheckout.set(null);
           this.pagoMpError.set(null);
+          this.pagoMetodoExito.set(null);
+          this.pagoWaExitoOk.set(null);
+          this.pagoWhatsappPendienteMp.set(null);
           this.turnoSeleccionado.set(turno);
           this.modalPago.set(true);
           break;
@@ -291,10 +328,27 @@ export class AgendaComponent {
           this.modalReprogramar.set(true);
           break;
 
-        case AccionTurno.MARCAR_NO_ASISTIO:
+        case AccionTurno.MARCAR_NO_ASISTIO: {
           await this.turnosService.marcarNoAsistio(e.id);
-          this.toast.show('Turno marcado como no asistió', 'success');
+          const telefono = this.telefonoWhatsappDesdeTurno(turno);
+          if (telefono) {
+            try {
+              await this.whatsappNotificaciones.enviarNoAsistioTurno({
+                telefono,
+                pacienteNombre: turno.pacienteNombre,
+                fecha: formatFechaPlantillaWhatsapp(turno.fecha.toDate()),
+                horaInicio: turno.horaInicio,
+                accessToken: await this.accessTokenParaWhatsapp(turno),
+              });
+              this.toast.show('Marcado como no asistió y WhatsApp enviado', 'success');
+            } catch {
+              this.toast.show('Marcado como no asistió; no se pudo enviar el WhatsApp', 'warning');
+            }
+          } else {
+            this.toast.show('Turno marcado como no asistió', 'success');
+          }
           break;
+        }
       }
     } catch {
       this.toast.show('Error al ejecutar la acción', 'error');
@@ -323,7 +377,23 @@ export class AgendaComponent {
     if (!t) return;
     try {
       await this.turnosService.cancelar(t.id, e.motivo, e.conReembolso);
-      this.toast.show('Turno cancelado', 'success');
+      const telefono = this.telefonoWhatsappDesdeTurno(t);
+      if (telefono) {
+        try {
+          await this.whatsappNotificaciones.enviarCancelacionTurno({
+            telefono,
+            pacienteNombre: t.pacienteNombre,
+            fecha: formatFechaPlantillaWhatsapp(t.fecha.toDate()),
+            horaInicio: t.horaInicio,
+            accessToken: await this.accessTokenParaWhatsapp(t),
+          });
+          this.toast.show('Turno cancelado y WhatsApp enviado', 'success');
+        } catch {
+          this.toast.show('Turno cancelado; no se pudo enviar el WhatsApp', 'warning');
+        }
+      } else {
+        this.toast.show('Turno cancelado', 'success');
+      }
     } catch {
       this.toast.show('Error al cancelar el turno', 'error');
     } finally {
@@ -362,7 +432,25 @@ export class AgendaComponent {
         e.horaFin,
         e.motivo,
       );
-      this.toast.show(`Turno reprogramado (nuevo ID: ${nuevoId})`, 'success');
+      const telefono = this.telefonoWhatsappDesdeTurno(t);
+      const turnoNuevo = await this.turnosService.getById(nuevoId);
+      if (telefono && turnoNuevo) {
+        try {
+          await this.whatsappNotificaciones.enviarReprogramacionTurno({
+            telefono,
+            pacienteNombre: turnoNuevo.pacienteNombre,
+            fechaNueva: formatFechaPlantillaWhatsapp(e.nuevaFecha),
+            horaNueva: e.horaInicio,
+            profesionalNombre: turnoNuevo.profesionalNombre,
+            accessToken: await this.accessTokenParaWhatsapp(turnoNuevo),
+          });
+          this.toast.show(`Turno reprogramado y WhatsApp enviado`, 'success');
+        } catch {
+          this.toast.show(`Turno reprogramado; no se pudo enviar el WhatsApp`, 'warning');
+        }
+      } else {
+        this.toast.show(`Turno reprogramado (nuevo ID: ${nuevoId})`, 'success');
+      }
     } catch {
       this.toast.show('Error al reprogramar el turno', 'error');
     } finally {
@@ -380,23 +468,27 @@ export class AgendaComponent {
     if (!t) return;
 
     if (e.tipo === 'efectivo') {
+      this.pagoMpPhase.set('creating');
+      this.pagoMpError.set(null);
       try {
         await this.turnosService.registrarPagoEfectivo(t.id, e.monto);
+        let waOk: boolean | null = null;
         if (e.whatsapp?.enviar && e.whatsapp.telefono) {
           try {
             await this.persistTelefonoWhatsapp(t.id, e.whatsapp.telefono);
             await this.enviarConfirmacionWhatsapp(t, e.whatsapp.telefono);
-            this.toast.show('Pago en efectivo registrado y WhatsApp enviado', 'success');
+            waOk = true;
           } catch {
-            this.toast.show('Pago registrado; no se pudo enviar el WhatsApp', 'warning');
+            waOk = false;
           }
-        } else {
-          this.toast.show('Pago en efectivo registrado', 'success');
         }
+        this.pagoMetodoExito.set('efectivo');
+        this.pagoWaExitoOk.set(waOk);
+        this.pagoMpPhase.set('pagado');
       } catch {
+        this.pagoMpPhase.set('error');
+        this.pagoMpError.set('No se pudo registrar el pago. Intentá de nuevo.');
         this.toast.show('Error al registrar el pago', 'error');
-      } finally {
-        this.closePagoModal();
       }
       return;
     }
@@ -465,14 +557,17 @@ export class AgendaComponent {
       this.pagoMpPhase.set('ready');
       // Evita que quede `metodoPago: null` cuando el flujo es MP.
       void this.turnosService.registrarPagoMP(t.id, { mpStatus: 'pending' });
-      this.startMpPolling(resp.external_reference);
+      this.startMpWatch(t.id);
     } catch (err: unknown) {
       this.pagoWhatsappPendienteMp.set(null);
       this.pagoMpPhase.set('error');
       const msg = parseMpHttpError(err);
       this.pagoMpError.set(msg);
-      this.toast.show(msg, 'error');
     }
+  }
+
+  onPagoListo(): void {
+    this.closePagoModal();
   }
 
   onPagoClose() {
@@ -483,47 +578,14 @@ export class AgendaComponent {
     this.modalNuevo.set(false);
   }
 
-  async onNuevoConfirm(payload: TurnoNuevoPayload) {
-    const day = this.selectedDate();
-    const prof = (this.profesionales() ?? []).find(p => p.uid === payload.profesionalId);
-    const disp = turnoDentroDeDisponibilidadProfesional(prof, day, payload.horaInicio, payload.horaFin);
-    if (!disp.ok) {
-      this.toast.show(disp.mensaje, 'error');
-      return;
-    }
-    if (this.turnoSolapa(payload.profesionalId, day, payload.horaInicio, payload.horaFin)) {
-      this.toast.show('Ese horario ya está ocupado para el profesional elegido', 'error');
-      return;
-    }
-
-    const pacienteId = payload.pacienteId;
-    const fecha = Timestamp.fromDate(new Date(day.getFullYear(), day.getMonth(), day.getDate()));
-
-    try {
-      await this.turnosService.create({
-        clinicaId: CLINICA_ID,
-        pacienteId,
-        profesionalId: payload.profesionalId,
-        pacienteNombre: payload.pacienteNombre,
-        profesionalNombre: payload.profesionalNombre,
-        fecha,
-        horaInicio: payload.horaInicio,
-        horaFin: payload.horaFin,
-        duracion: payload.duracionMinutos,
-        estado: EstadoTurno.PENDIENTE,
-        estadoPago: EstadoPago.PENDIENTE,
-        monto: payload.monto,
-        pacienteTelefono: payload.pacienteTelefono,
-        pacienteDNI: payload.pacienteDNI,
-        notificacionesWhatsApp: false,
-        tipo: 'consulta',
-        colorProfesional: '#4a6fa5',
-      });
-      this.toast.show('Turno creado', 'success');
-      this.modalNuevo.set(false);
-    } catch {
-      this.toast.show('No se pudo crear el turno', 'error');
-    }
+  /**
+   * El modal ya creó el turno y registró el pago.
+   * Aquí solo cerramos y mostramos el toast de confirmación.
+   */
+  onNuevoTurnoConfirmado(e: { turnoId: string; metodoPago: 'efectivo' | 'mercado_pago'; telefonoNotificaciones: string | null }): void {
+    this.modalNuevo.set(false);
+    const msg = e.metodoPago === 'efectivo' ? 'Turno creado y pago en efectivo registrado' : 'Turno creado y pago acreditado';
+    this.toast.show(msg, 'success');
   }
 
   private turnoSolapa(
@@ -564,6 +626,15 @@ export class AgendaComponent {
     });
   }
 
+  private telefonoWhatsappDesdeTurno(turno: Turno): string {
+    return turno.telefonoNotificaciones?.trim() || turno.pacienteTelefono?.trim() || '';
+  }
+
+  private async accessTokenParaWhatsapp(turno: Turno): Promise<string> {
+    if (turno.accessToken) return turno.accessToken;
+    return this.turnosService.ensureAccessToken(turno.id);
+  }
+
   private async enviarConfirmacionWhatsapp(turno: Turno, telefono: string): Promise<void> {
     await this.whatsappNotificaciones.enviarConfirmacionTurno({
       telefono,
@@ -571,40 +642,42 @@ export class AgendaComponent {
       fecha: formatFechaPlantillaWhatsapp(turno.fecha.toDate()),
       horaInicio: turno.horaInicio,
       profesionalNombre: turno.profesionalNombre,
+      accessToken: await this.accessTokenParaWhatsapp(turno),
     });
   }
 
-  private startMpPolling(externalReference: string): void {
+  /**
+   * Escucha el turno en Firestore hasta que el campo `estadoPago` cambie a PAGADO.
+   * El backend actualiza ese campo vía webhook cuando Mercado Pago confirma el pago.
+   */
+  private startMpWatch(turnoId: string): void {
     this.mpPollSub?.unsubscribe();
-    this.mpPollSub = timer(0, 3500)
-      .pipe(
-        switchMap(() => this.mpPayment.estadoPago(externalReference)),
-        filter(r => r.status === 'approved'),
-        take(1),
-      )
-      .subscribe({
-        next: async () => {
-          const wa = this.pagoWhatsappPendienteMp();
-          const turno = this.turnoSeleccionado();
-          this.pagoWhatsappPendienteMp.set(null);
-          let mensaje = 'Pago acreditado en Mercado Pago';
-          let variant: 'success' | 'warning' = 'success';
-          if (wa && turno) {
-            try {
-              await this.enviarConfirmacionWhatsapp(turno, wa.telefono);
-              mensaje = 'Pago acreditado en Mercado Pago y WhatsApp enviado';
-            } catch {
-              mensaje = 'Pago acreditado; no se pudo enviar el WhatsApp';
-              variant = 'warning';
-            }
+    this.mpPollSub = this.turnosService.watchById(turnoId).pipe(
+      filter(t => t?.estadoPago === EstadoPago.PAGADO),
+      take(1),
+      timeout(10 * 60 * 1000),
+    ).subscribe({
+      next: async () => {
+        const wa    = this.pagoWhatsappPendienteMp();
+        const turno = this.turnoSeleccionado();
+        this.pagoWhatsappPendienteMp.set(null);
+        let waOk: boolean | null = null;
+        if (wa && turno) {
+          try {
+            await this.enviarConfirmacionWhatsapp(turno, wa.telefono);
+            waOk = true;
+          } catch {
+            waOk = false;
           }
-          this.toast.show(mensaje, variant);
-          this.closePagoModal();
-        },
-        error: () => {
-          this.toast.show('No se pudo consultar el estado del pago', 'error');
-        },
-      });
+        }
+        this.pagoMetodoExito.set('mercado_pago');
+        this.pagoWaExitoOk.set(waOk);
+        this.pagoMpPhase.set('pagado');
+      },
+      error: () => {
+        this.toast.show('El tiempo de espera del pago se agotó', 'warning');
+      },
+    });
   }
 
   private closePagoModal(): void {
@@ -615,6 +688,8 @@ export class AgendaComponent {
     this.pagoMpPhase.set('idle');
     this.pagoMpCheckout.set(null);
     this.pagoMpError.set(null);
+    this.pagoMetodoExito.set(null);
+    this.pagoWaExitoOk.set(null);
     this.turnoSeleccionado.set(null);
   }
 }
@@ -641,4 +716,11 @@ function parseMpHttpError(err: unknown): string {
   }
   if (err instanceof Error) return err.message;
   return 'Error desconocido';
+}
+
+function toLocalDateKey(d: Date): string {
+  const y = d.getFullYear();
+  const m = String(d.getMonth() + 1).padStart(2, '0');
+  const day = String(d.getDate()).padStart(2, '0');
+  return `${y}-${m}-${day}`;
 }

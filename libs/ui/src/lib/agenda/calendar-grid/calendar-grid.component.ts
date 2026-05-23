@@ -33,6 +33,8 @@ interface LayoutItem {
     :host {
       display: block;
       position: relative;
+      height: 100%;
+      min-height: 0;
     }
   `
 })
@@ -55,11 +57,16 @@ export class CalendarGridComponent implements OnInit, OnDestroy {
   gridArea = viewChild<ElementRef<HTMLDivElement>>('gridArea');
   dropIndicator = viewChild<ElementRef<HTMLDivElement>>('dropIndicator');
 
-  // Constants
   readonly START_HOUR = 7;
   readonly END_HOUR = 21;
   readonly TOTAL_HOURS = this.END_HOUR - this.START_HOUR;
   readonly HOUR_H = 96;
+  /** 30 min ↔ px (debe cuadrar con altura de cada .time-label). */
+  readonly HALF_SLOT_PX = this.HOUR_H / 2;
+  /** Espacio superior en vista semana para cabeceras de columnas (.week-col-hdr). */
+  readonly WEEK_GRID_TOP_PAD_PX = 28;
+  /** .cal-grid-wrap tiene borde 1px arriba y abajo; con border-box el height debe incluirlos. */
+  readonly GRID_WRAP_BORDER_Y_PX = 2;
   readonly PX_PER_MIN = this.HOUR_H / 60;
   readonly SNAP_MIN = 15;
 
@@ -280,17 +287,26 @@ export class CalendarGridComponent implements OnInit, OnDestroy {
   buildHours() {
     const labels: string[] = [];
     const lines: { top: number; half?: boolean }[] = [];
-    for (let h = this.START_HOUR; h < this.END_HOUR; h++) {
-      labels.push(`${String(h).padStart(2, '0')}:00`);
-      lines.push({ top: (h - this.START_HOUR) * this.HOUR_H });
-      if (h < this.END_HOUR - 1) {
-        lines.push({
-          top: (h - this.START_HOUR) * this.HOUR_H + this.HOUR_H / 2,
-          half: true,
-        });
-      }
+
+    let minuteOfDay = this.START_HOUR * 60;
+    const endExclusive = this.END_HOUR * 60;
+    while (minuteOfDay < endExclusive) {
+      const h = Math.floor(minuteOfDay / 60);
+      const m = minuteOfDay % 60;
+      labels.push(`${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}`);
+      minuteOfDay += 30;
     }
-    lines.push({ top: (this.END_HOUR - this.START_HOUR) * this.HOUR_H });
+
+    const span = this.END_HOUR - this.START_HOUR;
+    for (let k = 0; k <= span; k++) {
+      lines.push({ top: k * this.HOUR_H });
+    }
+    for (let k = 0; k < span; k++) {
+      lines.push({
+        top: k * this.HOUR_H + this.HOUR_H / 2,
+        half: true,
+      });
+    }
     this.hourLabels.set(labels);
     this.hourLines.set(lines);
   }

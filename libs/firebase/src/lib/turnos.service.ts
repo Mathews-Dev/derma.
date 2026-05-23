@@ -1,18 +1,20 @@
-import { inject, Injectable } from '@angular/core';
+import { EnvironmentInjector, inject, Injectable, runInInjectionContext } from '@angular/core';
 import {
   Firestore,
   collection,
   collectionData,
+  docData,
   query,
   where,
   orderBy,
   doc,
   updateDoc,
   addDoc,
+  runTransaction,
   Timestamp,
   serverTimestamp,
 } from '@angular/fire/firestore';
-import { Observable } from 'rxjs';
+import { Observable, Subscription } from 'rxjs';
 import {
   AccionTurno,
   EstadoPago,
@@ -22,13 +24,21 @@ import {
   Turno,
 } from '@derma/models';
 import { FirestoreService } from './firestore.service';
+import { generateTurnoAccessToken } from './turno-access-token';
+
+/** Se lanza cuando el slot ya fue reservado por otro proceso. */
+export class SlotOcupadoError extends Error {
+  constructor() { super('SLOT_OCUPADO'); }
+}
 
 @Injectable({ providedIn: 'root' })
 export class TurnosService {
   private readonly firestore = inject(Firestore);
   private readonly fs = inject(FirestoreService);
+  private readonly injector = inject(EnvironmentInjector);
 
   private static readonly COL = 'turnos';
+  private static readonly SLOTS_COL = 'turno_slots';
 
   // ─── Helpers ──────────────────────────────────────────────────────────────
 
@@ -121,17 +131,91 @@ export class TurnosService {
     return this.fs.getDocument<Turno>(TurnosService.COL, id);
   }
 
+  /** Busca un turno por token de portal (link WhatsApp). */
+  async getByAccessToken(accessToken: string): Promise<Turno | undefined> {
+    const list = await this.fs.getDocumentsByFilter<Turno>(
+      TurnosService.COL,
+      'accessToken',
+      accessToken,
+    );
+    return list[0];
+  }
+
+  /** Crea o reutiliza el token del turno (turnos viejos sin token). */
+  async ensureAccessToken(turnoId: string): Promise<string> {
+    const turno = await this.getById(turnoId);
+    if (!turno) throw new Error('Turno no encontrado');
+    if (turno.accessToken) return turno.accessToken;
+    const accessToken = generateTurnoAccessToken();
+    await this.update(turnoId, { accessToken });
+    return accessToken;
+  }
+
+  private withAccessToken<T extends Omit<Turno, 'id' | 'fechaCreacion'>>(data: T): T & { accessToken: string } {
+    return {
+      ...data,
+      accessToken: data.accessToken ?? generateTurnoAccessToken(),
+    };
+  }
+
+  /**
+   * Tiempo real — un turno por id.
+   * Firestore se registra dentro del injection context (AngularFire); si no, el listener
+   * solo emite caché y no recibe actualizaciones del servidor (p. ej. webhook de MP).
+   */
+  watchById(id: string): Observable<Turno | undefined> {
+    return new Observable(observer => {
+      let innerSub: Subscription | undefined;
+      runInInjectionContext(this.injector, () => {
+        const ref = doc(this.firestore, TurnosService.COL, id);
+        innerSub = docData(ref, { idField: 'id' }).subscribe({
+          next: data => observer.next(data as Turno | undefined),
+          error: err => observer.error(err),
+        });
+      });
+      return () => innerSub?.unsubscribe();
+    });
+  }
+
   // ─── CRUD ─────────────────────────────────────────────────────────────────
 
   /** Crea un nuevo turno y retorna su ID (`fechaCreacion` lo setea el servidor). */
   async create(data: Omit<Turno, 'id' | 'fechaCreacion'>): Promise<string> {
     const col = collection(this.firestore, TurnosService.COL);
     const ref = await addDoc(col, {
-      ...data,
+      ...this.withAccessToken(data),
       fechaCreacion: serverTimestamp(),
       fechaModificacion: serverTimestamp(),
     });
     return ref.id;
+  }
+
+  /**
+   * Reserva el slot de horario y crea el turno en una sola operación atómica.
+   * Si otro proceso ya tomó ese horario, lanza SlotOcupadoError.
+   *
+   * La reserva vive en `turno_slots/{clinicaId}_{profesionalId}_{YYYYMMDD}_{HHmm}`.
+   * Cuando el turno se cancela, cancelar() libera la reserva.
+   */
+  async createWithSlotLock(data: Omit<Turno, 'id' | 'fechaCreacion'>): Promise<string> {
+    const slotId = buildSlotId(data);
+    const slotRef = doc(this.firestore, TurnosService.SLOTS_COL, slotId);
+    const turnoRef = doc(collection(this.firestore, TurnosService.COL));
+
+    await runTransaction(this.firestore, async (tx) => {
+      const slot = await tx.get(slotRef);
+      if (slot.exists() && slot.data()['estado'] !== 'cancelado') {
+        throw new SlotOcupadoError();
+      }
+      tx.set(slotRef, { turnoId: turnoRef.id, estado: 'reservado', at: serverTimestamp() });
+      tx.set(turnoRef, {
+        ...this.withAccessToken(data),
+        fechaCreacion: serverTimestamp(),
+        fechaModificacion: serverTimestamp(),
+      });
+    });
+
+    return turnoRef.id;
   }
 
   /** Actualización genérica de un turno. */
@@ -153,16 +237,21 @@ export class TurnosService {
    * Cancela un turno. Requiere motivo.
    * Si había un pago aprobado, deja `estadoPago` como REEMBOLSADO para que
    * el operario gestione la devolución manualmente o via backend MP.
+   * También libera la reserva del slot para que pueda volver a tomarse.
    */
   async cancelar(id: string, motivo: string, conReembolso = false): Promise<void> {
-    const data: Partial<Turno> = {
-      estado: EstadoTurno.CANCELADO,
-      motivo,
-    };
-    if (conReembolso) {
-      data.estadoPago = EstadoPago.REEMBOLSADO;
-    }
-    return this.update(id, data);
+    const data: Partial<Turno> = { estado: EstadoTurno.CANCELADO, motivo };
+    if (conReembolso) data.estadoPago = EstadoPago.REEMBOLSADO;
+    await this.update(id, data);
+    // Liberar la reserva del slot (best-effort: no bloquea si falla)
+    try {
+      const turno = await this.getById(id);
+      if (turno) {
+        const slotId = buildSlotId(turno);
+        const slotRef = doc(this.firestore, TurnosService.SLOTS_COL, slotId);
+        await updateDoc(slotRef, { estado: 'cancelado' });
+      }
+    } catch { /* slot puede no existir en turnos creados antes de esta mejora */ }
   }
 
   /** Marca el turno como atendido. Opcionalmente agrega notas del profesional. */
@@ -212,6 +301,7 @@ export class TurnosService {
       mpPreferenceId: null,
       mpStatus: null,
       fechaPago: null,
+      accessToken: generateTurnoAccessToken(),
     };
     return this.create(nuevoTurno);
   }
@@ -297,4 +387,16 @@ export class TurnosService {
       mpStatus,
     });
   }
+}
+
+// ─── Helper interno ───────────────────────────────────────────────────────────
+
+/** Genera el ID determinístico del documento de reserva de slot. */
+function buildSlotId(data: { clinicaId: string; profesionalId: string; fecha: Timestamp; horaInicio: string }): string {
+  const d = data.fecha.toDate();
+  const yyyy = d.getFullYear();
+  const mm   = String(d.getMonth() + 1).padStart(2, '0');
+  const dd   = String(d.getDate()).padStart(2, '0');
+  const hhmm = data.horaInicio.replace(':', '');
+  return `${data.clinicaId}_${data.profesionalId}_${yyyy}${mm}${dd}_${hhmm}`;
 }

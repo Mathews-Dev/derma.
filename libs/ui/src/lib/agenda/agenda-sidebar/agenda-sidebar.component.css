@@ -1,3 +1,52 @@
+:host {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  min-height: 0;
+}
+
+/* Área scrollable del sidebar — mismo tratamiento liviano que .modal-scroll */
+.sidebar-scroll {
+  scrollbar-width: thin;
+  scrollbar-color: var(--c-200) transparent;
+}
+
+.sidebar-scroll::-webkit-scrollbar {
+  width: 4px;
+}
+
+.sidebar-scroll::-webkit-scrollbar-thumb {
+  background: var(--c-200);
+  border-radius: 4px;
+}
+
+/* Ícono (?) ayuda filtros — no envuelve el select */
+.filter-help-trigger {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 18px;
+  height: 18px;
+  padding: 0;
+  border: 1px solid var(--c-200);
+  border-radius: 999px;
+  background: var(--c-50);
+  color: var(--c-500);
+  cursor: help;
+  transition: background 0.12s ease, border-color 0.12s ease, color 0.12s ease;
+}
+
+.filter-help-trigger:hover {
+  background: var(--c-100);
+  border-color: var(--c-300);
+  color: var(--c-700);
+}
+
+.filter-help-trigger:focus-visible {
+  outline: 2px solid var(--c-800);
+  outline-offset: 2px;
+}
+
 .sidebar {
   width: 272px;
   min-width: 272px;
@@ -135,6 +184,12 @@
   margin-top: 2px;
 }
 
+/* Triggers ui-tooltip junto al título sin romper el flex del mini-calendario */
+.mini-cal .cal-head ui-tooltip {
+  display: inline-flex;
+  flex-shrink: 0;
+}
+
 .cal-month-title {
   font-size: 13px;
   font-weight: 700;
@@ -191,8 +246,11 @@
   width: 100%;
   aspect-ratio: 1;
   display: flex;
+  flex-direction: column;
   align-items: center;
   justify-content: center;
+  gap: 1px;
+  padding: 2px 0 3px;
   font-size: 11px;
   font-weight: 500;
   border-radius: 6px;
@@ -204,11 +262,23 @@
   background: var(--c-50);
 }
 
-.cal-day:hover {
+.cal-day-num {
+  line-height: 1;
+}
+
+.cal-day-dot {
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  background: var(--c-500);
+  flex-shrink: 0;
+}
+
+.cal-day:hover:not(.selected) {
   background: var(--c-100);
 }
 
-.cal-day.today {
+.cal-day.today:not(.selected) {
   color: var(--c-800);
   font-weight: 700;
   box-shadow: inset 0 0 0 1.5px var(--c-800);
@@ -221,9 +291,46 @@
   box-shadow: none;
 }
 
+.cal-day.selected .cal-day-dot {
+  background: var(--c-50);
+}
+
+.cal-day.today.selected {
+  box-shadow: none;
+}
+
 .cal-day.other-month {
   color: var(--c-300);
-  opacity: 0.5;
+  opacity: 0.55;
+}
+
+.cal-day.other-month .cal-day-dot {
+  background: var(--c-300);
+}
+
+.cal-day.other-month.selected .cal-day-dot {
+  background: var(--c-50);
+  opacity: 1;
+}
+
+.cal-legend {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin: 8px 0 0;
+  padding-top: 6px;
+  border-top: 1px solid var(--c-100);
+  font-size: 9px;
+  color: var(--c-400);
+  font-weight: 500;
+}
+
+.cal-legend-dot {
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  background: var(--c-500);
+  flex-shrink: 0;
 }
 
 .filters-toggle {

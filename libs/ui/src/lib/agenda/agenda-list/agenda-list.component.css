@@ -150,8 +150,13 @@
   transform: translateY(-50%);
   display: flex;
   gap: 1px;
+  align-items: center;
   opacity: 0;
   transition: 0.12s;
+}
+
+.ac-actions ui-tooltip {
+  flex: 0 0 auto;
 }
 
 .agenda-card:hover .ac-actions {
@@ -173,9 +178,9 @@
 }
 
 .ac-act-btn:hover {
-  background: var(--c-800);
-  color: var(--c-50);
-  border-color: var(--c-800);
+  background: var(--c-200);
+  color: var(--c-700);
+  border-color: var(--c-300);
 }
 
 .empty-state {

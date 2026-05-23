@@ -38,7 +38,13 @@
 <div class="vc-card animate-smooth-enter stagger-2 overflow-hidden">
   @if (filtradas().length === 0) {
     <div class="py-16">
-      <ui-empty-state message="No hay videoconsultas que coincidan" />
+      @if (busqueda().trim()) {
+        <ui-empty-state message="No hay videoconsultas que coincidan con la búsqueda" />
+      } @else {
+        <ui-empty-state
+          message="No hay videoconsultas en el rango visible. En la agenda, al crear un turno, elegí «Videoconsulta»; cuando generes Meet en el detalle aparecerá el enlace."
+        />
+      }
     </div>
   } @else {
     <div class="overflow-x-auto">

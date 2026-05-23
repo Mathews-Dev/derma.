@@ -1,11 +1,12 @@
 import { Component, input, output } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Turno, STATUS, PAGO_STATUS, AccionTurno } from '../types';
+import { TooltipComponent } from '../../tooltip/tooltip.component';
 
 @Component({
   selector: 'ui-agenda-list',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, TooltipComponent],
   templateUrl: './agenda-list.component.html',
   styleUrl: './agenda-list.component.css'
 })

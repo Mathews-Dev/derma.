@@ -1,0 +1,42 @@
+<div class="vc-meet-block">
+  <span class="vc-label-upper">Enlace de reunión</span>
+  <div class="vc-url-box">
+    @if (linkMeet().trim()) {
+      <p class="vc-url-text">{{ linkMeet() }}</p>
+    } @else {
+      <p class="vc-muted">
+        @if (linkEstado() === 'sin_crear') {
+          Generá el evento en Google Calendar para crear el enlace de Meet y avisar al paciente.
+        } @else {
+          El enlace debería aparecer cuando Calendar confirme el evento.
+        }
+      </p>
+    }
+  </div>
+
+  @if (!calendarBaseOk()) {
+    <p class="vc-warn">
+      Falta configurar <code class="text-[11px]">googleCalendarApiUrl</code> en el entorno del admin.
+    </p>
+  }
+
+  <div class="vc-meet-actions flex flex-wrap gap-2 items-center">
+    <ui-button
+      label="Generar Meet"
+      [disabled]="!puedeGenerar()"
+      [isLoading]="generating()"
+      (click)="generarMeet.emit()"
+    />
+    <button type="button" class="vc-btn-primary" [disabled]="!linkMeet().trim()" (click)="abrirMeet.emit()">
+      Abrir en navegador
+      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-4 h-4">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M13.5 6H5.25A2.25 2.25 0 0 0 3 8.25v10.5A2.25 2.25 0 0 0 5.25 21h10.5A2.25 2.25 0 0 0 18 18.75V10.5m-10.5 6L21 3m0 0h-5.25M21 3v5.25" />
+      </svg>
+    </button>
+    <button type="button" class="vc-btn-ghost" (click)="copiar.emit()">Copiar</button>
+    <button type="button" class="vc-btn-ghost" (click)="conectarGoogle.emit()">
+      Conectar Google del profesional
+    </button>
+  </div>
+  <p class="vc-privacy-note">Por privacidad, no compartas este enlace fuera del paciente y el profesional.</p>
+</div>

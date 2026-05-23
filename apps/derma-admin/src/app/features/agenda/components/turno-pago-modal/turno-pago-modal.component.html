@@ -1,152 +1,275 @@
-<div class="modal-backdrop" (click)="$event.target === $event.currentTarget && mpPhase() !== 'creating' && close.emit()">
-  <div class="modal-box animate-scale-in">
-    <div class="modal-header">
-      <span class="modal-icon modal-icon--success">
-        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="20" height="14" x="2" y="5" rx="2"/><line x1="2" x2="22" y1="10" y2="10"/></svg>
-      </span>
-      <div>
-        <h2 class="modal-title">Registrar pago</h2>
-        <p class="modal-subtitle">{{ turno().pacienteNombre }} · {{ fmtMonto(turno().monto) }}</p>
-      </div>
-      <button type="button" class="modal-close" [disabled]="mpPhase() === 'creating'" (click)="close.emit()">
-        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
-      </button>
+<div
+  class="tp-backdrop fixed inset-0 z-[300] flex items-end sm:items-center justify-center sm:p-4 animate-backdrop-in"
+  (click)="$event.target === $event.currentTarget && mpPhase() !== 'creating' && close.emit()">
+
+  <div
+    class="tp-modal relative w-full bg-[var(--c-50)] border border-[var(--c-200)] rounded-t-[22px] sm:rounded-[22px] flex flex-col overflow-hidden animate-modal-in"
+    style="max-width: 640px; max-height: 92vh; box-shadow: var(--shadow-lg);"
+    (click)="$event.stopPropagation()">
+
+    <div class="absolute inset-0 pointer-events-none overflow-hidden z-0" aria-hidden="true">
+      <div class="absolute w-[220px] h-[220px] rounded-full border border-[var(--c-200)] opacity-40 -top-[90px] -right-[60px]"></div>
     </div>
 
-    <div class="modal-body">
-      @if (mpPhase() === 'creating') {
-        <div class="mp-creating">
-          <span class="mp-spinner" aria-hidden="true"></span>
-          <p>Generando cobro en Mercado Pago…</p>
+    <!-- Header -->
+    <div class="relative z-10 px-6 pt-5 pb-4 shrink-0 border-b border-[var(--c-200)]">
+      <div class="flex items-start justify-between gap-3">
+        <div class="flex flex-col gap-1.5 min-w-0">
+          <h2 class="m-0 text-[0.95rem] font-semibold text-[var(--c-800)] tracking-tight leading-none">
+            Registrar pago
+          </h2>
+          <span class="inline-flex items-center gap-1.5 px-2.5 py-[3px] bg-[var(--c-100)] border border-[var(--c-200)] rounded-full text-[0.62rem] font-medium text-[var(--c-500)] tracking-wide w-fit max-w-full truncate">
+            {{ turno().pacienteNombre }}
+          </span>
+        </div>
+        <button
+          type="button"
+          class="w-8 h-8 shrink-0 rounded-full border border-[var(--c-200)] bg-[var(--c-50)] text-[var(--c-400)] flex items-center justify-center cursor-pointer transition-all duration-200 hover:border-[var(--c-700)] hover:text-[var(--c-700)] hover:bg-[var(--c-100)] disabled:opacity-40"
+          [disabled]="mpPhase() === 'creating'"
+          (click)="close.emit()"
+          aria-label="Cerrar">
+          <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true">
+            <path d="M18 6 6 18M6 6l12 12"/>
+          </svg>
+        </button>
+      </div>
+
+      @if (mpPhase() !== 'pagado') {
+        <div class="mt-3 flex flex-wrap gap-x-4 gap-y-1 text-[0.68rem] text-[var(--c-500)]">
+          <span>{{ fmtFechaTurno() }}</span>
+          <span>{{ turno().horaInicio }} – {{ turno().horaFin }}</span>
+          <span>{{ turno().profesionalNombre }}</span>
         </div>
       }
+    </div>
 
-      @if (mpPhase() === 'error' && mpError()) {
-        <div class="mp-err-banner">{{ mpError() }}</div>
-      }
+    <!-- Body -->
+    <div class="relative z-10 px-6 py-5 overflow-y-auto modal-scroll flex-1">
 
-      @if (tipoPago() === 'mercado_pago' && emailMissing()) {
-        <div class="mp-err-banner">Ingresá un email válido para poder cobrar con Mercado Pago.</div>
-      }
+      @if (mpPhase() === 'pagado') {
+        <div class="pago-exito" role="status" aria-live="polite">
+          <div class="pago-exito__burst" aria-hidden="true"></div>
+          <div class="pago-exito__sparkles" aria-hidden="true">
+            <span class="pago-exito__spark pago-exito__spark--1"></span>
+            <span class="pago-exito__spark pago-exito__spark--2"></span>
+            <span class="pago-exito__spark pago-exito__spark--3"></span>
+            <span class="pago-exito__spark pago-exito__spark--4"></span>
+            <span class="pago-exito__spark pago-exito__spark--5"></span>
+            <span class="pago-exito__spark pago-exito__spark--6"></span>
+          </div>
+          <div class="pago-exito__pig-wrap">
+            <derm-pago-exito-pig />
+          </div>
+          <p class="pago-exito__title">¡Pago confirmado!</p>
+          <p class="pago-exito__subtitle">{{ subtituloExito() }}</p>
+          <button type="button" class="pago-exito__btn" (click)="listo.emit()">
+            Listo, volver a la agenda
+          </button>
+        </div>
+      } @else {
 
-      <!-- Selector de método -->
-      <div class="method-tabs">
-        <button type="button" class="method-tab" [class.active]="tipoPago() === 'efectivo'" [disabled]="mpPhase() === 'creating'" (click)="setTipo('efectivo')">
-          <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect width="20" height="12" x="2" y="6" rx="2"/><circle cx="12" cy="12" r="2"/></svg>
-          Efectivo
-        </button>
-        <button type="button" class="method-tab" [class.active]="tipoPago() === 'mercado_pago'" [disabled]="mpPhase() === 'creating'" (click)="setTipo('mercado_pago')">
-          <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2z"/></svg>
-          Mercado Pago
-        </button>
-      </div>
+        @if (mpPhase() === 'error' && mpError()) {
+          <div class="mb-4 flex items-start gap-2 p-3 bg-[var(--st-canc-bg)] border border-[rgba(140,68,68,0.2)] rounded-xl text-[0.72rem] text-[var(--st-canc)] leading-relaxed">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="shrink-0 mt-px" aria-hidden="true">
+              <circle cx="12" cy="12" r="10"/><path d="M12 8v4M12 16h.01"/>
+            </svg>
+            {{ mpError() }}
+          </div>
+        }
 
-      <!-- Monto -->
-      <label class="field-label">Monto a cobrar</label>
-      <div class="monto-input-wrap">
-        <span class="monto-prefix">$</span>
-        <input class="field-input monto-input"
-               type="number"
-               min="0"
-               step="100"
-               [disabled]="mpPhase() === 'creating'"
-               [ngModel]="monto()"
-               (ngModelChange)="monto.set(+$event)" />
-      </div>
+        <p class="section-label">Método de pago</p>
+        <div class="inline-flex gap-0 bg-[var(--c-100)] rounded-full p-[3px] mb-5">
+          <button
+            type="button"
+            class="mod-pill font-[inherit]"
+            [class.active]="tipoPago() === 'efectivo'"
+            [disabled]="mpBloqueado()"
+            (click)="setTipo('efectivo')">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+              <rect width="20" height="12" x="2" y="6" rx="2"/><circle cx="12" cy="12" r="2"/>
+            </svg>
+            Efectivo
+          </button>
+          <button
+            type="button"
+            class="mod-pill font-[inherit]"
+            [class.active]="tipoPago() === 'mercado_pago'"
+            [disabled]="mpBloqueado()"
+            (click)="setTipo('mercado_pago')">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+              <circle cx="12" cy="12" r="10"/><path d="M9.5 15.5 12 9l2.5 6.5M10.5 13h3"/>
+            </svg>
+            Mercado Pago
+          </button>
+        </div>
 
-      @if (mpPhase() !== 'creating' && mpPhase() !== 'ready') {
-        <div class="wa-card">
-          <label class="checkbox-row wa-main-toggle">
-            <input
-              type="checkbox"
-              [disabled]="mpPhase() === 'creating'"
-              [ngModel]="notificarPorWhatsapp()"
-              (ngModelChange)="onNotificarWaChange($event)" />
-            <span>Enviar confirmación por WhatsApp</span>
-          </label>
-          @if (notificarPorWhatsapp()) {
-            <p class="wa-script-hint">
-              Podés confirmarle al paciente: «¿Este es tu número para que te lleguen avisos de Derma sobre tu turno?».
-              Si cambió o es de otra persona, marcá «Otro número» y escribilo abajo.
-            </p>
-            <label class="field-label">Teléfono para WhatsApp</label>
-            <input
-              class="field-input"
-              type="tel"
-              inputmode="tel"
-              autocomplete="tel"
-              placeholder="Ej. 11 2345-6789"
-              [disabled]="usarOtroNumeroWhatsapp()"
-              [ngModel]="telefonoPrincipal()"
-              (ngModelChange)="telefonoPrincipal.set($event)" />
-            @if (!telefonoPrincipal().trim() && !usarOtroNumeroWhatsapp()) {
-              <p class="field-hint wa-hint-warn">No hay teléfono cargado en el turno: cargalo arriba o usá «Otro número».</p>
-            }
-            <label class="checkbox-row wa-sub-toggle">
+        <p class="section-label">Monto a cobrar</p>
+        <div class="monto-card mb-5">
+          <span class="monto-card__prefix">$</span>
+          <input
+            class="monto-card__input"
+            type="number"
+            min="0"
+            step="100"
+            [disabled]="mpBloqueado()"
+            [ngModel]="monto()"
+            (ngModelChange)="monto.set(+$event)" />
+        </div>
+
+        @if (mpPhase() !== 'ready') {
+          <div class="wa-block mb-5">
+            <label class="wa-toggle">
               <input
                 type="checkbox"
-                [ngModel]="usarOtroNumeroWhatsapp()"
-                (ngModelChange)="onUsarOtroNumeroChange($event)" />
-              <span>Otro número (cambió / es de otra persona)</span>
+                [disabled]="mpBloqueado()"
+                [ngModel]="notificarPorWhatsapp()"
+                (ngModelChange)="onNotificarWaChange($event)" />
+              <span>Enviar confirmación por WhatsApp</span>
             </label>
-            @if (usarOtroNumeroWhatsapp()) {
-              <label class="field-label">Número alternativo</label>
+
+            @if (notificarPorWhatsapp()) {
+              <div class="wa-block__body animate-smooth-enter">
+                <p class="wa-block__hint">
+                  Confirmá con el paciente si este es el número para avisos del turno.
+                </p>
+                <ui-phone-input
+                  [showLabel]="false"
+                  placeholder="9 1234 5678"
+                  [(countryIso)]="waCountryIso"
+                  [(localNumber)]="waLocal"
+                  countryWidthClass="w-[42%] min-w-[110px] shrink-0"
+                  (valueChange)="onWaInputChange()" />
+
+                <ui-accordion class="wa-accordion block mt-3 border border-[var(--c-200)] rounded-xl overflow-hidden bg-[var(--c-50)]">
+                  <ui-accordion-item
+                    title="¿Enviar la confirmación a otro número?"
+                    [(isOpen)]="waAltAbierto"
+                    (opened)="onWaAltAccordionOpened($event)">
+                    <p class="text-[0.68rem] text-[var(--c-500)] mt-2 mb-3 leading-relaxed m-0">
+                      Usá esta opción si el paciente prefiere otro WhatsApp.
+                    </p>
+                    <ui-phone-input
+                      [showLabel]="false"
+                      placeholder="9 1234 5678"
+                      [(countryIso)]="waCountryIsoAlt"
+                      [(localNumber)]="waLocalAlt"
+                      countryWidthClass="w-[42%] min-w-[110px] shrink-0"
+                      (valueChange)="onWaInputChange()" />
+                  </ui-accordion-item>
+                </ui-accordion>
+
+                @if (waError()) {
+                  <p class="wa-block__err">Ingresá un número válido para enviar WhatsApp.</p>
+                }
+              </div>
+            }
+          </div>
+        }
+
+        @if (tipoPago() === 'efectivo') {
+          <button
+            type="button"
+            class="tp-btn-primary w-full"
+            [disabled]="!puedeRegistrarEfectivo()"
+            (click)="onConfirmEfectivo()">
+            @if (mpPhase() === 'creating') {
+              <span class="spinner show" aria-hidden="true"></span>
+              Registrando…
+            } @else {
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                <rect width="20" height="12" x="2" y="6" rx="2"/><circle cx="12" cy="12" r="2"/>
+              </svg>
+              Registrar pago en efectivo
+            }
+          </button>
+        }
+
+        @if (tipoPago() === 'mercado_pago') {
+          @if (necesitaEmailMP()) {
+            <div class="mb-4">
+              <label class="section-label block mb-1.5" for="tp-pago-email">Email del paciente</label>
               <input
+                id="tp-pago-email"
+                type="email"
+                placeholder="paciente@gmail.com"
                 class="field-input"
-                type="tel"
-                inputmode="tel"
-                autocomplete="off"
-                placeholder="Código de área + número"
-                [ngModel]="telefonoAlternativo()"
-                (ngModelChange)="telefonoAlternativo.set($event)" />
-            }
-            @if (whatsappBloqueaConfirmar()) {
-              <p class="wa-err-inline">Ingresá un número con al menos 8 dígitos para poder enviar WhatsApp.</p>
-            }
+                [disabled]="mpBloqueado()"
+                [ngModel]="emailMp()"
+                (ngModelChange)="emailMp.set($event)" />
+              <p class="text-[0.65rem] text-[var(--c-400)] mt-1 m-0">Se enviará el comprobante de pago a este correo.</p>
+            </div>
+          } @else {
+            <div class="flex items-center gap-2 px-3 py-2 mb-4 bg-[var(--c-100)] border border-[var(--c-200)] rounded-lg">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="text-[var(--c-400)] shrink-0" aria-hidden="true">
+                <rect width="20" height="16" x="2" y="4" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/>
+              </svg>
+              <span class="text-[0.68rem] text-[var(--c-500)]">
+                Comprobante a <strong class="text-[var(--c-700)]">{{ emailPagoEfectivo() }}</strong>
+              </span>
+            </div>
           }
-        </div>
-      }
 
-      @if (tipoPago() === 'mercado_pago' && !(turno().pacienteEmail?.includes('@') ?? false)) {
-        <label class="field-label">Email para Mercado Pago</label>
-        <input class="field-input"
-               type="email"
-               placeholder="ej. paciente@gmail.com"
-               [disabled]="mpPhase() === 'creating'"
-               [ngModel]="emailMp()"
-               (ngModelChange)="emailMp.set($event)" />
-      }
-
-      @if (tipoPago() === 'mercado_pago' && mpPhase() !== 'ready') {
-        <div class="mp-notice">
-          <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/></svg>
-          <span>Se creará una preferencia de pago. Podés mostrar el QR o abrir el link. El estado se actualiza cuando MP confirma el pago.</span>
-        </div>
-      }
-
-      @if (mpPhase() === 'ready' && mpCheckout(); as chk) {
-        <div class="mp-checkout">
-          <p class="mp-checkout-title">Cobro listo</p>
-          @if (chk.qr_code_base64) {
-            <img class="mp-qr" [src]="chk.qr_code_base64" width="200" height="200" alt="QR Mercado Pago" />
+          @if (mpPhase() === 'idle' || mpPhase() === 'error') {
+            <button
+              type="button"
+              class="tp-btn-primary w-full"
+              [disabled]="!puedeIniciarPagoMP()"
+              (click)="onConfirmMp()">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                <rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/>
+                <rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="3" height="3" rx="0.5"/>
+                <rect x="18" y="14" width="3" height="3" rx="0.5"/><rect x="14" y="18" width="3" height="3" rx="0.5"/>
+              </svg>
+              Generar QR de cobro
+            </button>
           }
-          @if (chk.init_point) {
-            <button type="button" class="btn btn--primary" (click)="openCheckout(chk.init_point)">Abrir en Mercado Pago</button>
+
+          @if (mpPhase() === 'creating') {
+            <div class="flex items-center justify-center gap-3 py-6 text-[var(--c-500)] text-[0.8rem]">
+              <span class="spinner show" aria-hidden="true"></span>
+              Generando cobro en Mercado Pago…
+            </div>
           }
-          <p class="mp-ref">Ref: {{ chk.external_reference }}</p>
-        </div>
+
+          @if (mpPhase() === 'ready' && mpCheckout(); as chk) {
+            <div class="flex flex-col items-center gap-3 animate-smooth-enter">
+              @if (chk.qr_code_base64) {
+                <img
+                  [src]="chk.qr_code_base64"
+                  width="180"
+                  height="180"
+                  alt="QR de pago Mercado Pago"
+                  class="rounded-2xl border border-[var(--c-200)] p-2 bg-[var(--c-50)]" />
+              }
+              <div class="flex items-center gap-2 text-[0.72rem] text-[var(--c-500)]">
+                <span class="spinner show" aria-hidden="true"></span>
+                Esperando confirmación del pago…
+              </div>
+              @if (chk.init_point) {
+                <button
+                  type="button"
+                  class="text-[0.72rem] font-medium text-[var(--c-600)] underline bg-transparent border-none cursor-pointer"
+                  (click)="openCheckout(chk.init_point)">
+                  Abrir en Mercado Pago
+                </button>
+              }
+            </div>
+          }
+        }
       }
     </div>
 
-    <div class="modal-footer">
-      <button type="button" class="btn btn--ghost" [disabled]="mpPhase() === 'creating'" (click)="close.emit()">
-        {{ mpPhase() === 'ready' ? 'Cerrar' : 'Cancelar' }}
-      </button>
-      @if (mpPhase() !== 'ready') {
-        <button type="button" class="btn btn--primary" [disabled]="!puedeConfirmar()" (click)="onConfirm()">
-          {{ tipoPago() === 'efectivo' ? 'Registrar efectivo' : (mpPhase() === 'creating' ? '…' : 'Iniciar pago MP') }}
+    @if (mpPhase() !== 'pagado') {
+      <div class="relative z-10 h-px bg-[var(--c-200)] shrink-0"></div>
+      <div class="relative z-10 flex items-center px-6 py-4 bg-[var(--c-50)] shrink-0">
+        <button
+          type="button"
+          class="inline-flex items-center gap-1.5 px-4 py-2.5 text-[0.78rem] font-semibold text-[var(--c-600)] bg-[var(--c-100)] border border-[var(--c-200)] rounded-xl cursor-pointer transition-all duration-200 hover:bg-[var(--c-200)] hover:text-[var(--c-800)] disabled:opacity-40"
+          [disabled]="mpPhase() === 'creating'"
+          (click)="close.emit()">
+          {{ mpPhase() === 'ready' ? 'Cerrar (el cobro sigue activo)' : 'Cancelar' }}
         </button>
-      }
-    </div>
+      </div>
+    }
   </div>
 </div>

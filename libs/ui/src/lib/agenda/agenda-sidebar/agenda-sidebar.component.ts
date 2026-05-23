@@ -1,4 +1,4 @@
-import { Component, signal, output, input, computed } from '@angular/core';
+import { Component, signal, output, input, effect } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { STATUS, TIPO_TURNO_OPTIONS, AgendaFilters, defaultAgendaFilters } from '../types';
@@ -26,6 +26,7 @@ export interface ProfesionalSidebar {
     UiDropdownSelectComponent,
     AccordionComponent,
     UiAccordionItemComponent,
+    TooltipComponent,
   ],
   templateUrl: './agenda-sidebar.component.html',
   styleUrl: './agenda-sidebar.component.css'
@@ -36,6 +37,8 @@ export class AgendaSidebarComponent {
   filterChange = output<AgendaFilters>();
   searchChange = output<string>();
   newTurn      = output<void>();
+  /** Mes visible en el mini-calendario (para cargar turnos del rango). */
+  monthChange  = output<{ year: number; month: number }>();
 
   /**
    * Lista de profesionales que proviene del feature (cargados desde Firebase).
@@ -43,11 +46,31 @@ export class AgendaSidebarComponent {
    */
   profesionales = input<ProfesionalSidebar[]>([]);
 
+  /** Fecha activa (sincronizada con la agenda principal). */
+  selectedDate = input.required<Date>();
+
+  /** Claves YYYY-MM-DD de días con al menos un turno (según filtros del padre). */
+  datesWithTurns = input<string[]>([]);
+
   // ─── State ────────────────────────────────────────────────────────────────
   calMonth    = signal(new Date(new Date().getFullYear(), new Date().getMonth(), 1));
-  selectedDate = signal(new Date());
   filters     = signal<AgendaFilters>(defaultAgendaFilters());
   search      = signal('');
+
+  constructor() {
+    effect(() => {
+      const sel = this.selectedDate();
+      const cm = this.calMonth();
+      if (
+        sel.getFullYear() !== cm.getFullYear() ||
+        sel.getMonth() !== cm.getMonth()
+      ) {
+        const next = new Date(sel.getFullYear(), sel.getMonth(), 1);
+        this.calMonth.set(next);
+        this.monthChange.emit({ year: next.getFullYear(), month: next.getMonth() });
+      }
+    });
+  }
 
   // ─── Calendar ─────────────────────────────────────────────────────────────
   get daysOfWeek() { return ['L', 'M', 'M', 'J', 'V', 'S', 'D']; }
@@ -89,28 +112,45 @@ export class AgendaSidebarComponent {
   }
 
   isSelected(date: Date): boolean {
-    return date.getDate() === this.selectedDate().getDate() &&
-           date.getMonth() === this.selectedDate().getMonth() &&
-           date.getFullYear() === this.selectedDate().getFullYear();
+    const sel = this.selectedDate();
+    return (
+      date.getDate() === sel.getDate() &&
+      date.getMonth() === sel.getMonth() &&
+      date.getFullYear() === sel.getFullYear()
+    );
   }
 
-  fmtDate(d: Date): string {
-    return d.toISOString().split('T')[0];
+  hasTurns(date: Date): boolean {
+    return this.datesWithTurns().includes(this.fmtDateLocal(date));
+  }
+
+  fmtDateLocal(d: Date): string {
+    const y = d.getFullYear();
+    const m = String(d.getMonth() + 1).padStart(2, '0');
+    const day = String(d.getDate()).padStart(2, '0');
+    return `${y}-${m}-${day}`;
+  }
+
+  private emitMonthChange(month: Date): void {
+    this.monthChange.emit({ year: month.getFullYear(), month: month.getMonth() });
   }
 
   prevMonth() {
     const cm = this.calMonth();
-    this.calMonth.set(new Date(cm.getFullYear(), cm.getMonth() - 1, 1));
+    const next = new Date(cm.getFullYear(), cm.getMonth() - 1, 1);
+    this.calMonth.set(next);
+    this.emitMonthChange(next);
   }
 
   nextMonth() {
     const cm = this.calMonth();
-    this.calMonth.set(new Date(cm.getFullYear(), cm.getMonth() + 1, 1));
+    const next = new Date(cm.getFullYear(), cm.getMonth() + 1, 1);
+    this.calMonth.set(next);
+    this.emitMonthChange(next);
   }
 
   selectDate(date: Date) {
-    this.selectedDate.set(date);
-    this.dateSelect.emit(this.fmtDate(date));
+    this.dateSelect.emit(this.fmtDateLocal(date));
   }
 
   // ─── Filtros ──────────────────────────────────────────────────────────────

@@ -26,6 +26,11 @@ export async function enviarRecordatorios(): Promise<void> {
       const fecha = formatSoloFechaHumanaWhatsApp(turno.fecha.toDate());
       const hora  = formatSoloHoraDesdeString(turno.horaInicio);
 
+      if (!turno.accessToken) {
+        console.warn(`[Recordatorios] Turno ${turno.id} sin accessToken, saltando`);
+        return;
+      }
+
       await sendTemplate(
         telefono,
         templates.turnoRecordatorio(
@@ -33,6 +38,7 @@ export async function enviarRecordatorios(): Promise<void> {
           fecha,
           hora,
           turno.profesionalNombre,
+          turno.accessToken,
         ),
       );
 

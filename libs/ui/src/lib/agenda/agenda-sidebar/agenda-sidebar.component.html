@@ -1,63 +1,112 @@
-<aside class="sidebar">
-  <div class="sidebar-header">
-    <div class="search-box">
-      <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="s-icon" aria-hidden="true"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
-      <input
-        type="search"
-        placeholder="Buscar paciente, DNI, teléfono…"
-        [value]="search()"
-        (input)="onSearchInput($any($event.target).value)"
-        autocomplete="off"
-        aria-label="Buscar paciente o contacto"
-      />
+<aside class="flex flex-1 min-h-0 w-[272px] min-w-[272px] flex-col overflow-x-hidden bg-[var(--c-50)] border-r border-[var(--c-200)]">
+  
+  <!-- ── Header (Consistente con .rp-header) ── -->
+  <div class="p-[14px] pb-3 border-b border-[var(--c-200)] flex-shrink-0">
+    
+    <div class="mb-3">
+      <h1 class="text-[14px] font-bold tracking-[-0.2px] text-[var(--c-800)]">Agenda</h1>
+      <p class="text-[11px] text-[var(--c-400)] font-normal mt-0.5">Gestioná turnos y horarios del equipo.</p>
     </div>
+
+    <!-- Buscador (Consistente con inputs del sistema) -->
+    <div class="relative mb-3">
+      <svg class="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-[var(--c-400)] pointer-events-none" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+      <ui-tooltip text="Filtrá los turnos visibles por nombre de paciente o DNI." placement="top">
+        <input
+          type="search"
+          placeholder="Paciente, DNI..."
+          [value]="search()"
+          (input)="onSearchInput($any($event.target).value)"
+          autocomplete="off"
+          class="w-full pl-9 pr-3 py-[8px] text-[12px] bg-[var(--c-50)] border border-[var(--c-200)] rounded-[6px] text-[var(--c-800)] placeholder:text-[var(--c-400)] focus:outline-none focus:border-[var(--c-800)] transition-colors"
+        />
+      </ui-tooltip>
+    </div>
+
+    <!-- Botón Nuevo Turno -->
+    <ui-tooltip text="Registrar un nuevo turno en la agenda." placement="top">
+      <button
+        type="button"
+        (click)="newTurn.emit()"
+        class="w-full flex items-center justify-center gap-2 py-[9px] px-4 bg-[var(--c-800)] hover:bg-[var(--c-700)] active:scale-[0.98] text-[var(--c-50)] text-[12px] font-semibold rounded-[6px] transition-all shadow-sm">
+        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="M12 5v14"/></svg>
+        Nuevo Turno
+      </button>
+    </ui-tooltip>
   </div>
 
-  <div class="sidebar-main">
+  <!-- ── Contenido Principal ── -->
+  <div class="sidebar-scroll flex-1 min-h-0 overflow-y-auto overflow-x-hidden">
     <ui-accordion>
       <!-- Sección: Calendario -->
       <ui-accordion-item title="Calendario" [isOpen]="true">
-        <div class="mini-cal animate-smooth-enter">
+        <div class="mini-cal animate-smooth-enter px-2.5 pt-3.5 pb-2">
           <div class="cal-head">
-            <button type="button" class="cal-btn" (click)="prevMonth()" title="Mes anterior">
-              <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg>
-            </button>
-            <span class="cal-month-title">{{ monthName }}</span>
-            <button type="button" class="cal-btn" (click)="nextMonth()" title="Mes siguiente">
-              <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg>
-            </button>
+            <ui-tooltip text="Mes anterior" placement="top" [fullWidthTrigger]="false">
+              <button type="button" class="cal-btn" (click)="prevMonth()">
+                <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg>
+              </button>
+            </ui-tooltip>
+            <span class="cal-month-title text-[var(--c-800)]">{{ monthName }}</span>
+            <ui-tooltip text="Mes siguiente" placement="top" [fullWidthTrigger]="false">
+              <button type="button" class="cal-btn" (click)="nextMonth()">
+                <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg>
+              </button>
+            </ui-tooltip>
           </div>
 
           <div class="cal-dow">
             @for (dow of daysOfWeek; track $index) {
-              <span>{{ dow }}</span>
+              <span class="text-[var(--c-400)]">{{ dow }}</span>
             }
           </div>
 
           <div class="cal-grid">
             @for (day of calendarDays; track $index) {
-              <button type="button" class="cal-day"
-                      [class.today]="isToday(day.date)"
-                      [class.selected]="isSelected(day.date)"
-                      [class.other-month]="day.isOther"
-                      (click)="selectDate(day.date)">
-                {{ day.day }}
+              <button
+                type="button"
+                class="cal-day"
+                [class.today]="isToday(day.date)"
+                [class.selected]="isSelected(day.date)"
+                [class.other-month]="day.isOther"
+                [class.has-turns]="hasTurns(day.date)"
+                (click)="selectDate(day.date)">
+                <span class="cal-day-num">{{ day.day }}</span>
+                @if (hasTurns(day.date)) {
+                  <span class="cal-day-dot" aria-hidden="true"></span>
+                }
               </button>
             }
           </div>
+          <p class="cal-legend">
+            <span class="cal-legend-dot" aria-hidden="true"></span>
+            Día con turnos
+          </p>
         </div>
       </ui-accordion-item>
 
       <!-- Sección: Filtros -->
       <ui-accordion-item title="Filtros">
         @if (activeFiltersCount > 0) {
-          <span header-extra class="filters-badge ml-2">{{ activeFiltersCount }}</span>
+          <span header-extra class="ml-2 inline-flex items-center justify-center min-w-[20px] h-5 px-[6px] rounded-[4px] bg-[var(--c-800)] text-[var(--c-50)] text-[10px] font-semibold flex-shrink-0">{{ activeFiltersCount }}</span>
         }
 
-        <div class="filters-content">
+        <div class="px-[14px] pb-[14px] pt-2 flex flex-col gap-4">
+          
           <!-- Profesionales -->
-          <div class="filter-field">
-            <label class="filter-field-label">Profesionales</label>
+          <div class="flex flex-col gap-2">
+            <div class="flex items-center gap-2 min-w-0">
+              <label class="flex-1 min-w-0 text-[10px] font-semibold text-[var(--c-400)] tracking-wide uppercase">Profesionales</label>
+              <ui-tooltip
+                text="Filtrá la agenda por uno o más profesionales. Abrí la lista para buscar y agregar cada uno."
+                placement="top"
+                [fullWidthTrigger]="false"
+                [allowPushWithinViewport]="false">
+                <button type="button" class="filter-help-trigger" aria-label="Ayuda: filtro por profesional">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><path d="M12 17h.01"/></svg>
+                </button>
+              </ui-tooltip>
+            </div>
             <app-select-with-search
               [options]="profesionalesAsOptions"
               placeholder="Buscar profesional..."
@@ -66,22 +115,30 @@
             </app-select-with-search>
 
             @if (filters().profesionalesIds.length > 0) {
-              <div class="prof-chips-list">
+              <div class="flex flex-col gap-[4px] mt-1">
                 @for (id of filters().profesionalesIds; track id) {
-                  <div class="prof-tab">
-                    <div class="prof-tab-content">
-                      <span class="prof-tab-avatar"
-                            [style.background]="getColorProfesional(id)"
-                            [style.color]="'#fff'">
+                  <!-- Tarjeta de profesional idéntica en estructura a .agenda-card -->
+                  <div class="flex items-center justify-between p-[8px] bg-[var(--c-50)] border border-[var(--c-200)] rounded-[6px] hover:border-[var(--c-300)] hover:bg-[var(--c-100)] transition-all">
+                    <div class="flex items-center gap-3 min-w-0">
+                      <span class="flex items-center justify-center w-7 h-7 rounded-[4px] text-white text-[10px] font-bold flex-shrink-0"
+                            [style.background]="getColorProfesional(id)">
                         {{ getInitialesProfesional(id) }}
                       </span>
-                      <span class="prof-tab-name">{{ getNombreProfesional(id) }}</span>
+                      <span class="text-[11px] font-semibold text-[var(--c-800)] truncate">{{ getNombreProfesional(id) }}</span>
                     </div>
-                    <button type="button" class="prof-tab-remove"
-                            (click)="removeProfesional(id)"
-                            [title]="'Quitar ' + getNombreProfesional(id)">
-                      <svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
-                    </button>
+                    <!-- Botón eliminar idéntico a .ac-act-btn -->
+                    <ui-tooltip
+                      placement="top"
+                      [allowPushWithinViewport]="false"
+                      [fullWidthTrigger]="false"
+                      [text]="'Quitar del filtro: ' + getNombreProfesional(id)">
+                      <button
+                        type="button"
+                        (click)="removeProfesional(id)"
+                        class="w-[24px] h-[24px] border border-[var(--c-200)] bg-[var(--c-50)] text-[var(--c-500)] rounded-[4px] flex items-center justify-center cursor-pointer transition-colors hover:bg-[var(--c-200)] hover:text-[var(--c-700)] hover:border-[var(--c-300)]">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
+                      </button>
+                    </ui-tooltip>
                   </div>
                 }
               </div>
@@ -89,8 +146,19 @@
           </div>
 
           <!-- Estado -->
-          <div class="filter-field">
-            <label class="filter-field-label">Estado</label>
+          <div class="flex flex-col gap-2">
+            <div class="flex items-center gap-2 min-w-0">
+              <label class="flex-1 min-w-0 text-[10px] font-semibold text-[var(--c-400)] tracking-wide uppercase">Estado</label>
+              <ui-tooltip
+                text="Mostrá solo turnos con este estado (pendiente, confirmado, etc.)."
+                placement="top"
+                [fullWidthTrigger]="false"
+                [allowPushWithinViewport]="false">
+                <button type="button" class="filter-help-trigger" aria-label="Ayuda: filtro por estado">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><path d="M12 17h.01"/></svg>
+                </button>
+              </ui-tooltip>
+            </div>
             <ui-dropdown-select
               [options]="statusOptions"
               [selectedValue]="filters().status"
@@ -99,8 +167,19 @@
           </div>
 
           <!-- Tipo de turno -->
-          <div class="filter-field">
-            <label class="filter-field-label">Tipo de turno</label>
+          <div class="flex flex-col gap-2">
+            <div class="flex items-center gap-2 min-w-0">
+              <label class="flex-1 min-w-0 text-[10px] font-semibold text-[var(--c-400)] tracking-wide uppercase">Tipo de turno</label>
+              <ui-tooltip
+                text="Filtrá la vista por tipo de prestación del turno."
+                placement="top"
+                [fullWidthTrigger]="false"
+                [allowPushWithinViewport]="false">
+                <button type="button" class="filter-help-trigger" aria-label="Ayuda: filtro por tipo de turno">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><path d="M12 17h.01"/></svg>
+                </button>
+              </ui-tooltip>
+            </div>
             <ui-dropdown-select
               [options]="typeOptions"
               [selectedValue]="filters().type"

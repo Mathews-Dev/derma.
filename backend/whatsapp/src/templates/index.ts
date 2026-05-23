@@ -4,6 +4,8 @@ import {
   TemplateMessage,
 } from './types';
 
+const TEMPLATE_LANG = { code: 'es_AR' } as const;
+
 function bodyParams(...values: string[]): TemplateComponent[] {
   return [{
     type: 'body',
@@ -11,7 +13,23 @@ function bodyParams(...values: string[]): TemplateComponent[] {
   }];
 }
 
-function urlButton(meetCode: string): TemplateButtonComponent {
+function verTurnoUrlButton(accessToken: string): TemplateButtonComponent {
+  return {
+    type: 'button',
+    sub_type: 'url',
+    index: '0',
+    parameters: [{ type: 'text', text: accessToken }],
+  };
+}
+
+function withVerTurnoButton(
+  body: TemplateComponent[],
+  accessToken: string,
+): TemplateMessage['components'] {
+  return [...body, verTurnoUrlButton(accessToken)];
+}
+
+function urlButtonMeet(meetCode: string): TemplateButtonComponent {
   return {
     type: 'button',
     sub_type: 'url',
@@ -24,7 +42,7 @@ function withMeetButton(
   body: TemplateComponent[],
   meetCode: string,
 ): TemplateMessage['components'] {
-  return [...body, urlButton(meetCode)];
+  return [...body, urlButtonMeet(meetCode)];
 }
 
 export const templates = {
@@ -34,10 +52,14 @@ export const templates = {
     fecha: string,
     hora: string,
     profesional: string,
+    accessToken: string,
   ): TemplateMessage => ({
     name: 'derma_turno_confirmado',
-    language: { code: 'es_AR' },
-    components: bodyParams(nombre, fecha, hora, profesional),
+    language: TEMPLATE_LANG,
+    components: withVerTurnoButton(
+      bodyParams(nombre, fecha, hora, profesional),
+      accessToken,
+    ),
   }),
 
   turnoRecordatorio: (
@@ -45,21 +67,24 @@ export const templates = {
     fecha: string,
     hora: string,
     profesional: string,
+    accessToken: string,
   ): TemplateMessage => ({
     name: 'derma_turno_recordatorio',
-    language: { code: 'es_AR' },
-    components: bodyParams(nombre, fecha, hora, profesional),
+    language: TEMPLATE_LANG,
+    components: withVerTurnoButton(
+      bodyParams(nombre, fecha, hora, profesional),
+      accessToken,
+    ),
   }),
 
   turnoCancelado: (
     nombre: string,
     fecha: string,
     hora: string,
-    motivo: string,
   ): TemplateMessage => ({
     name: 'derma_turno_cancelado',
-    language: { code: 'es_AR' },
-    components: bodyParams(nombre, fecha, hora, motivo),
+    language: TEMPLATE_LANG,
+    components: bodyParams(nombre, fecha, hora),
   }),
 
   turnoReprogramado: (
@@ -67,10 +92,14 @@ export const templates = {
     fechaNueva: string,
     horaNueva: string,
     profesional: string,
+    accessToken: string,
   ): TemplateMessage => ({
     name: 'derma_turno_reprogramado',
-    language: { code: 'es_AR' },
-    components: bodyParams(nombre, fechaNueva, horaNueva, profesional),
+    language: TEMPLATE_LANG,
+    components: withVerTurnoButton(
+      bodyParams(nombre, fechaNueva, horaNueva, profesional),
+      accessToken,
+    ),
   }),
 
   turnoNoAsistio: (
@@ -79,7 +108,7 @@ export const templates = {
     hora: string,
   ): TemplateMessage => ({
     name: 'derma_turno_no_asistio',
-    language: { code: 'es_AR' },
+    language: TEMPLATE_LANG,
     components: bodyParams(nombre, fecha, hora),
   }),
 
@@ -90,7 +119,7 @@ export const templates = {
     meetCode: string,
   ): TemplateMessage => ({
     name: 'derma_videoconsulta',
-    language: { code: 'es_AR' },
+    language: TEMPLATE_LANG,
     components: withMeetButton(
       bodyParams(pacienteNombre, profesionalNombre, fechaHora),
       meetCode,
@@ -104,7 +133,7 @@ export const templates = {
     meetCode: string,
   ): TemplateMessage => ({
     name: 'derma_videoconsulta_recordatorio',
-    language: { code: 'es_AR' },
+    language: TEMPLATE_LANG,
     components: withMeetButton(
       bodyParams(pacienteNombre, profesionalNombre, hora),
       meetCode,

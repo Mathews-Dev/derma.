@@ -88,32 +88,13 @@
                   [control]="formulario.get('dni')">
                 </ui-input>
 
-                <!-- Teléfono (60%) -->
-                <div class="space-y-[6px]">
-                  <span class="block text-[0.65rem] uppercase font-light text-[var(--c-500)] tracking-[0.12em]">
-                    Teléfono
-                  </span>
-                  <div class="flex gap-2">
-                    <!-- Select País (2/5 = 40%) -->
-                    <div class="w-2/8">
-                      <ui-dropdown-select
-                        [options]="countryOptions()"
-                        [selectedValue]="countryControl.value"
-                        placeholder="País"
-                        (valueChanged)="onCountryChange($event)">
-                      </ui-dropdown-select>
-                    </div>
-                    <!-- Input Teléfono (3/5 = 60%) -->
-                    <input 
-                      type="text" 
-                      formControlName="telefono" 
-                      placeholder="1122334455"
-                      class="w-3/2 h-[44px] bg-[var(--c-50)] border border-[var(--c-200)] text-[0.875rem] text-[var(--c-800)] px-3 rounded-xl outline-none hover:border-[var(--c-400)] focus:border-[var(--c-800)] focus:ring-1 focus:ring-[var(--c-800)] placeholder:text-[var(--c-400)] transition-all duration-200 ease-out">
-                  </div>
-                  @if (formulario.get('telefono')?.touched && formulario.get('telefono')?.hasError('required')) {
-                    <p class="text-[0.65rem] text-[var(--c-800)] font-light mt-1">Campo requerido</p>
-                  }
-                </div>
+                <ui-phone-input
+                  label="Teléfono"
+                  [(countryIso)]="countryIso"
+                  [localNumber]="formulario.controls.telefono.value"
+                  (localNumberChange)="formulario.controls.telefono.setValue($event)"
+                  [touched]="!!formulario.get('telefono')?.touched"
+                  [required]="true" />
               </div>
 
               <div class="space-y-4 animate-in-form-group-3">

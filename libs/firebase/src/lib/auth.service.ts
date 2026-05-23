@@ -42,6 +42,27 @@ export interface LoginParams {
 
 export interface LoginOptions {
   navigate?: boolean;
+  returnUrl?: string | null;
+}
+
+const RETURN_URL_STORAGE_KEY = 'auth.returnUrl';
+
+export function saveAuthReturnUrl(url: string): void {
+  if (typeof sessionStorage === 'undefined') return;
+  sessionStorage.setItem(RETURN_URL_STORAGE_KEY, url);
+}
+
+export function consumeAuthReturnUrl(): string | null {
+  if (typeof sessionStorage === 'undefined') return null;
+  const url = sessionStorage.getItem(RETURN_URL_STORAGE_KEY);
+  sessionStorage.removeItem(RETURN_URL_STORAGE_KEY);
+  return url && isSafeReturnUrl(url) ? url : null;
+}
+
+export function isSafeReturnUrl(url: string): boolean {
+  if (!url.startsWith('/')) return false;
+  if (url.startsWith('//')) return false;
+  return url.startsWith('/t/') || url.startsWith('/c/') || url.startsWith('/turnos');
 }
 
 @Injectable({
@@ -198,7 +219,7 @@ export class AuthService {
       this.currentUser.set(userWithVerification);
 
       if (options.navigate !== false) {
-        this.navigateBasedOnRole(appUser.rol);
+        this.navigateAfterLogin(appUser.rol, options.returnUrl);
       }
     } catch (error) {
       console.error("Error en el login", error);
@@ -248,18 +269,24 @@ export class AuthService {
         lastSeen: new Date().toISOString()
       });
 
-      this.navigateBasedOnRole(appUser.rol);
+      const returnUrl = consumeAuthReturnUrl();
+      this.navigateAfterLogin(appUser.rol, returnUrl);
     } catch (error) {
       console.error('Error en login con google', error);
       throw error;
     }
   }
 
-  private navigateBasedOnRole(rol: RolUsuario) {
+  navigateAfterLogin(rol: RolUsuario, returnUrl?: string | null): void {
+    const stored = returnUrl ?? consumeAuthReturnUrl();
+    if (stored && isSafeReturnUrl(stored)) {
+      void this.router.navigateByUrl(stored);
+      return;
+    }
     if (rol === RolUsuario.PACIENTE) {
-      this.router.navigate(['/paciente']);
+      void this.router.navigate(['/turnos']);
     } else {
-      this.router.navigate(['/admin']);
+      void this.router.navigate(['/admin']);
     }
   }
 

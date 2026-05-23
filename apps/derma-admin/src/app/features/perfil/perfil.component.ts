@@ -5,7 +5,7 @@ import { ActivatedRoute } from '@angular/router';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { AuthService, FirestoreService } from '@derma/firebase';
 import { Usuario } from '@derma/models';
-import { UiInputComponent, UiButtonComponent, UiPageHeaderComponent, UiDropdownSelectComponent, SelectOption, TooltipComponent, UiVerticalTabsComponent, VerticalTabItem, UiProfileAvatarComponent, UiStickyFooterComponent } from '@derma/ui';
+import { UiInputComponent, UiButtonComponent, UiPageHeaderComponent, UiDropdownSelectComponent, SelectOption, TooltipComponent, UiVerticalTabsComponent, VerticalTabItem, UiProfileAvatarComponent, UiStickyFooterComponent, countryFlagUrl } from '@derma/ui';
 import { LayoutStateService } from '../../core/services/layout-state.service';
 
 interface Country {
@@ -62,10 +62,10 @@ export class PerfilComponent {
   passwordSuccess = signal<boolean>(false);
 
   countries: Country[] = [
-    { code: 'AR', name: 'Argentina', flagUrl: 'https://flagcdn.com/w40/ar.png', dialCode: '+54' },
-    { code: 'ES', name: 'España', flagUrl: 'https://flagcdn.com/w40/es.png', dialCode: '+34' },
-    { code: 'MX', name: 'México', flagUrl: 'https://flagcdn.com/w40/mx.png', dialCode: '+52' },
-    { code: 'CL', name: 'Chile', flagUrl: 'https://flagcdn.com/w40/cl.png', dialCode: '+56' },
+    { code: 'AR', name: 'Argentina', flagUrl: countryFlagUrl('AR'), dialCode: '+54' },
+    { code: 'ES', name: 'España', flagUrl: countryFlagUrl('ES'), dialCode: '+34' },
+    { code: 'MX', name: 'México', flagUrl: countryFlagUrl('MX'), dialCode: '+52' },
+    { code: 'CL', name: 'Chile', flagUrl: countryFlagUrl('CL'), dialCode: '+56' },
   ];
 
   countryOptions = signal<SelectOption[]>(

@@ -7,12 +7,19 @@ import {
   coerceHoraWhatsAppBody,
 } from '../utils/date.utils';
 
-// Helper para no repetir try/catch en cada acción
 function asyncHandler(
   fn: (req: Request, res: Response) => Promise<void>
 ) {
   return (req: Request, res: Response, next: NextFunction) =>
     fn(req, res).catch(next);
+}
+
+function requireAccessToken(body: Record<string, unknown>): string {
+  const token = body['accessToken'];
+  if (typeof token !== 'string' || !token.trim()) {
+    throw new Error('accessToken es requerido');
+  }
+  return token.trim();
 }
 
 export const messageController = {
@@ -26,27 +33,33 @@ export const messageController = {
         coerceFechaWhatsAppBody(fecha, new Date()),
         coerceHoraWhatsAppBody(horaInicio),
         profesionalNombre,
+        requireAccessToken(req.body),
       ),
     );
     res.json({ ok: true, mensaje: 'Confirmación enviada' });
   }),
 
   cancelar: asyncHandler(async (req, res) => {
-    const { telefono, pacienteNombre, fecha, horaInicio, motivo } = req.body;
+    const { telefono, pacienteNombre, fecha, horaInicio } = req.body;
     await sendTemplate(
       formatPhoneAR(telefono),
       templates.turnoCancelado(
         pacienteNombre,
         coerceFechaWhatsAppBody(fecha, new Date()),
         coerceHoraWhatsAppBody(horaInicio),
-        motivo ?? 'Sin especificar',
       ),
     );
     res.json({ ok: true, mensaje: 'Cancelación enviada' });
   }),
 
   reprogramar: asyncHandler(async (req, res) => {
-    const { telefono, pacienteNombre, fechaNueva, horaNueva, profesionalNombre } = req.body;
+    const {
+      telefono,
+      pacienteNombre,
+      fechaNueva,
+      horaNueva,
+      profesionalNombre,
+    } = req.body;
     await sendTemplate(
       formatPhoneAR(telefono),
       templates.turnoReprogramado(
@@ -54,6 +67,7 @@ export const messageController = {
         coerceFechaWhatsAppBody(fechaNueva, new Date()),
         coerceHoraWhatsAppBody(horaNueva),
         profesionalNombre,
+        requireAccessToken(req.body),
       ),
     );
     res.json({ ok: true, mensaje: 'Reprogramación enviada' });

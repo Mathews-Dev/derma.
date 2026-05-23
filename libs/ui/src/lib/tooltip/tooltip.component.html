@@ -1,6 +1,7 @@
 <span
   #trigger
-  class="inline-flex w-full"
+  class="inline-flex"
+  [class.w-full]="fullWidthTrigger()"
   (mouseenter)="show()"
   (mouseleave)="hide()"
   (focusin)="show()"
@@ -10,7 +11,9 @@
 
 <ng-template #tooltipPanel>
   <div
-    class="pointer-events-none relative rounded-md bg-[var(--c-800)] px-2.5 py-1.5 text-[10px] text-[var(--c-50)] whitespace-nowrap transition-all"
+    class="pointer-events-none relative rounded-md bg-[var(--c-800)] px-2.5 py-1.5 text-[10px] text-[var(--c-50)] transition-all"
+    [class.tooltip-panel--wrap]="wrapText()"
+    [class.whitespace-nowrap]="!wrapText()"
     [class.animate-tooltip-in]="!isClosing()"
     [class.animate-tooltip-out]="isClosing()"
     style="box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);"

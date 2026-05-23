@@ -4,7 +4,7 @@ import { ChangeDetectionStrategy, Component } from '@angular/core';
   selector: 'ui-accordion',
   standalone: true,
   template: `
-    <div class="overflow-hidden bg-transparent">
+    <div class="min-h-0 bg-transparent">
       <ng-content></ng-content>
     </div>
   `,

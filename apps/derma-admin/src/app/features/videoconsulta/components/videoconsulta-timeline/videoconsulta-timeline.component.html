@@ -1,0 +1,25 @@
+<div class="vc-card-block">
+  <span class="vc-label-upper block mb-4">Historial de notificaciones</span>
+  <div class="vc-timeline">
+    @for (n of items(); track $index) {
+      <div class="vc-tl-item">
+        <div
+          class="vc-tl-dot"
+          [class.vc-tl-dot--ok]="n.tipo === 'ok'"
+          [class.vc-tl-dot--err]="n.tipo === 'error'"
+        ></div>
+        <div>
+          <div class="flex flex-wrap items-center gap-2">
+            <p class="vc-tl-text">{{ n.texto }}</p>
+            @if (n.detalleFallo) {
+              <span class="vc-fail-hint">{{ n.detalleFallo }}</span>
+            }
+          </div>
+          <p class="vc-tl-date">{{ n.fecha }}</p>
+        </div>
+      </div>
+    } @empty {
+      <p class="vc-muted text-sm">Sin eventos registrados.</p>
+    }
+  </div>
+</div>
