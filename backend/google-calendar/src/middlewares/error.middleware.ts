@@ -6,6 +6,6 @@ export function errorHandler(
   res: Response,
   _next: NextFunction,
 ): void {
-  console.error('[Error]', err.message);
+  console.error('[calendar] error', err.message, err.stack);
   res.status(500).json({ error: err.message });
 }

@@ -4,6 +4,7 @@ import {
   TemplateMessage,
 } from './types';
 
+/** Código de idioma de todas las plantillas en Meta Business (sin override por env). */
 const TEMPLATE_LANG = { code: 'es_AR' } as const;
 
 function bodyParams(...values: string[]): TemplateComponent[] {

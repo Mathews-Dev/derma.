@@ -1,11 +1,7 @@
 import { getTurnosManana } from './turno.service';
 import { sendTemplate }    from './whatsapp.service';
-import { templates }       from '../templates';
 import { formatPhoneAR }   from '../utils/phone.utils';
-import {
-  formatSoloFechaHumanaWhatsApp,
-  formatSoloHoraDesdeString,
-} from '../utils/date.utils';
+import { plantillaRecordatorioParaTurno } from './reminder-turno.utils';
 
 export async function enviarRecordatorios(): Promise<void> {
   const turnos = await getTurnosManana();
@@ -22,28 +18,32 @@ export async function enviarRecordatorios(): Promise<void> {
         return;
       }
 
-      const telefono = formatPhoneAR(rawPhone);
-      const fecha = formatSoloFechaHumanaWhatsApp(turno.fecha.toDate());
-      const hora  = formatSoloHoraDesdeString(turno.horaInicio);
-
-      if (!turno.accessToken) {
-        console.warn(`[Recordatorios] Turno ${turno.id} sin accessToken, saltando`);
+      const armado = plantillaRecordatorioParaTurno(turno);
+      if ('error' in armado) {
+        if (armado.error === 'sin_access_token') {
+          console.warn(
+            `[Recordatorios] Turno ${turno.id} sin accessToken ni Meet válido, saltando`,
+          );
+        }
         return;
       }
 
-      await sendTemplate(
-        telefono,
-        templates.turnoRecordatorio(
-          turno.pacienteNombre,
-          fecha,
-          hora,
-          turno.profesionalNombre,
-          turno.accessToken,
-        ),
-      );
+      if (
+        turno.modalidadConsulta === 'videoconsulta' &&
+        armado.tipo === 'turno'
+      ) {
+        console.warn(
+          `[Recordatorios] Turno ${turno.id} videoconsulta sin link Meet; enviando derma_turno_recordatorio`,
+        );
+      }
 
-      console.log(`[Recordatorios] Enviado a ${turno.pacienteNombre} (turno ${turno.id})`);
-    })
+      const telefono = formatPhoneAR(rawPhone);
+      await sendTemplate(telefono, armado.template);
+
+      console.log(
+        `[Recordatorios] Enviado (${armado.tipo === 'videoconsulta' ? 'derma_videoconsulta_recordatorio' : 'derma_turno_recordatorio'}) → ${turno.pacienteNombre} (turno ${turno.id})`,
+      );
+    }),
   );
 
   const fallidos = resultados.filter(r => r.status === 'rejected');
@@ -53,5 +53,7 @@ export async function enviarRecordatorios(): Promise<void> {
     }
   });
 
-  console.log(`[Recordatorios] Completado: ${resultados.length - fallidos.length} ok, ${fallidos.length} fallidos`);
+  console.log(
+    `[Recordatorios] Completado: ${resultados.length - fallidos.length} ok, ${fallidos.length} fallidos`,
+  );
 }

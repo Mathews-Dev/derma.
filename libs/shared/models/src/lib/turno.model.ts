@@ -139,6 +139,9 @@ export interface Turno {
 
     /** Meet, evento de Google Calendar y asistencia (un solo objeto en Firestore). */
     videoconsulta?: VideoconsultaTurno | null;
+
+    /** Cuando modalidad presencial pero se sincronizó igual al Google Calendar del profesional. */
+    googleCalendarSync?: { eventId: string; htmlLink: string | null } | null;
 }
 
 /** Datos de videoconsulta vinculados al turno. */

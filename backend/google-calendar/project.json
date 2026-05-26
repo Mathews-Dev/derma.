@@ -45,6 +45,24 @@
           }
         }
       }
+    },
+    "serve": {
+      "continuous": true,
+      "executor": "@nx/js:node",
+      "defaultConfiguration": "development",
+      "dependsOn": ["build"],
+      "options": {
+        "buildTarget": "google-calendar:build",
+        "runBuildTargetDependencies": false
+      },
+      "configurations": {
+        "development": {
+          "buildTarget": "google-calendar:build:development"
+        },
+        "production": {
+          "buildTarget": "google-calendar:build:production"
+        }
+      }
     }
   }
 }

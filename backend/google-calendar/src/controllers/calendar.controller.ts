@@ -1,6 +1,6 @@
 import { Request, Response, NextFunction } from 'express';
 import { crearEvento, cancelarEvento, actualizarEvento } from '../services/calendar.service';
-import { actualizarTurnoConVideoconsulta } from '../services/turno.service';
+import { actualizarTurnoConVideoconsulta, actualizarTurnoGoogleCalendarSyncExterno } from '../services/turno.service';
 import { notificarVideoconsultaConfirmada } from '../services/notification.service';
 import { formatFechaHoraParaWhatsApp } from '../utils/date.utils';
 import { CrearEventoParams } from '../types/calendar.types';
@@ -16,6 +16,15 @@ export const calendarController = {
   crearEvento: asyncHandler(async (req, res) => {
     const body = req.body as CrearEventoParams;
 
+    console.log('[calendar] POST /eventos', {
+      turnoId: body.turnoId,
+      profesionalUid: body.profesionalUid,
+      esVideoconsulta: body.esVideoconsulta,
+      pacienteEmail: body.pacienteEmail?.trim() || '(vacío)',
+      fechaInicio: body.fechaInicio,
+      fechaFin: body.fechaFin,
+    });
+
     if (!body.turnoId || !body.profesionalUid || !body.fechaInicio || !body.fechaFin) {
       res.status(400).json({
         error: 'Faltan campos: turnoId, profesionalUid, fechaInicio, fechaFin',
@@ -25,11 +34,19 @@ export const calendarController = {
 
     const resultado = await crearEvento(body);
 
-    await actualizarTurnoConVideoconsulta(body.turnoId, {
-      meetLink: resultado.meetLink,
-      googleEventId: resultado.googleEventId,
-      linkEvento: resultado.linkEvento,
-    });
+    if (body.esVideoconsulta) {
+      await actualizarTurnoConVideoconsulta(body.turnoId, {
+        meetLink: resultado.meetLink,
+        googleEventId: resultado.googleEventId,
+        linkEvento: resultado.linkEvento,
+      });
+    } else {
+      await actualizarTurnoGoogleCalendarSyncExterno(
+        body.turnoId,
+        resultado.googleEventId,
+        resultado.linkEvento ?? null,
+      );
+    }
 
     let whatsapp: { enviado: boolean; detalle?: unknown } | undefined;
     if (body.esVideoconsulta && body.telefonoNotificaciones) {

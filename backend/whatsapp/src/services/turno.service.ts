@@ -1,6 +1,14 @@
 import { getFirestore, Timestamp } from 'firebase-admin/firestore';
 import { EstadoTurno } from '../types/turno.types';
 
+export type ModalidadConsultaTurno = 'presencial' | 'videoconsulta';
+
+export interface VideoconsultaTurnoFirestore {
+  linkMeet?: string | null;
+  googleEventId?: string | null;
+  linkEvento?: string | null;
+}
+
 export interface TurnoParaNotificar {
   id:                    string;
   pacienteNombre:        string;
@@ -11,6 +19,10 @@ export interface TurnoParaNotificar {
   telefonoNotificaciones?: string | null;
   pacienteTelefono?:     string | null;
   notificacionesWhatsApp: boolean;
+  modalidadConsulta?:    ModalidadConsultaTurno | null;
+  videoconsulta?:        VideoconsultaTurnoFirestore | null;
+  /** Campo plano legacy en documentos viejos. */
+  linkMeet?:             string | null;
 }
 
 export async function getTurnosManana(): Promise<TurnoParaNotificar[]> {

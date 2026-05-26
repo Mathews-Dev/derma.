@@ -19,7 +19,6 @@ import {
 import { UiPageHeaderComponent, UiEmptyStateComponent } from '@derma/ui';
 import { UiDropdownSelectComponent, SelectOption } from '@derma/ui';
 import { InsumoCardComponent } from '../../ui/insumo-card/insumo-card.component';
-import { AlertasInsumosService } from '../../data-access/alertas-insumos.service';
 
 type FiltroEstado = 'todos' | 'ok' | 'bajo_minimo' | 'sin_stock';
 
@@ -33,8 +32,6 @@ type FiltroEstado = 'todos' | 'ok' | 'bajo_minimo' | 'sin_stock';
 export class InsumosListComponent {
   private readonly insumosService  = inject(InsumosService);
   private readonly authService     = inject(AuthService);
-  private readonly alertasService  = inject(AlertasInsumosService);
-
   readonly CATEGORIA_LABELS = CATEGORIA_INSUMO_LABELS;
 
   private readonly _insumos = toSignal(this.insumosService.getAll(), { initialValue: [] as Insumo[] });
@@ -82,7 +79,4 @@ export class InsumosListComponent {
     };
   });
 
-  constructor() {
-    this.alertasService.verificar().catch(() => {/* fire & forget */});
-  }
 }

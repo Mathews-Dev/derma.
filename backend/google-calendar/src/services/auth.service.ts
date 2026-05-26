@@ -12,7 +12,6 @@ function crearClienteOAuth() {
 
 export function generarUrlDeAutorizacion(profesionalUid: string): string {
   const clienteOAuth = crearClienteOAuth();
-
   return clienteOAuth.generateAuthUrl({
     access_type: 'offline',
     prompt: 'consent',

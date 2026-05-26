@@ -4,6 +4,7 @@ export interface GoogleCalendarIntegracion {
   emailGoogle?: string;
   calendarId?: string;
   fechaConexion?: string;
+  syncConsultasPresenciales?: boolean;
 }
 
 export interface CrearEventoParams {

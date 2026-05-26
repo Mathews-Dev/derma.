@@ -2,361 +2,550 @@
   <div class="relative w-full mx-auto pt-6 pb-28">
 
     @if (isLoading()) {
-      <ui-loader-card message="Cargando perfil" />
+    <ui-loader-card message="Cargando perfil" />
     } @else {
 
-      <!-- PAGE HEADER -->
-      <div class="animate-smooth-enter enter-delay-1 flex items-center gap-4 mb-8">
-        <div>
-          <h1 class="text-xl font-light text-[var(--c-800)] leading-tight tracking-tight">Mi Perfil Profesional</h1>
-          <p class="text-xs text-[var(--c-400)] mt-0.5">Tus datos, disponibilidad y documentación</p>
-        </div>
+    <!-- PAGE HEADER -->
+    <div class="animate-smooth-enter enter-delay-1 flex items-center gap-4 mb-8">
+      <div>
+        <h1 class="text-xl font-light text-[var(--c-800)] leading-tight tracking-tight">Mi Perfil Profesional</h1>
+        <p class="text-xs text-[var(--c-400)] mt-0.5">Tus datos, disponibilidad y documentación</p>
       </div>
+    </div>
 
-      <!-- CARD -->
-      <div class="animate-smooth-enter enter-delay-2 relative bg-[var(--c-50)] rounded-2xl border border-[var(--c-200)] overflow-hidden">
+    <!-- CARD -->
+    <div
+      class="animate-smooth-enter enter-delay-2 relative bg-[var(--c-50)] rounded-2xl border border-[var(--c-200)] overflow-hidden">
 
-        <form [formGroup]="form" id="perfilProfesionalForm" (ngSubmit)="onSubmit()" class="flex items-stretch min-h-[560px]">
+      <form [formGroup]="form" id="perfilProfesionalForm" (ngSubmit)="onSubmit()"
+        class="flex items-stretch min-h-[560px]">
 
-          <!-- ─── SIDEBAR IZQUIERDO ───────────────────────────────────────── -->
-          <aside class="w-[300px] shrink-0 border-r border-[var(--c-200)] bg-[var(--c-100)]/30 flex flex-col py-10">
+        <!-- ─── SIDEBAR IZQUIERDO ───────────────────────────────────────── -->
+        <aside class="w-[300px] shrink-0 border-r border-[var(--c-200)] bg-[var(--c-100)]/30 flex flex-col py-10">
 
-            <!-- Avatar + Info -->
-            <div class="px-7 mb-6 flex items-start gap-5">
-              <ui-profile-avatar
-                [photoUrl]="form.get('fotoPerfil')?.value"
-                [isUploading]="uploadingPhoto()"
-                shape="circle"
-                (fileSelected)="onAvatarFileSelected($event)"
-                (removed)="removerFoto()"
-              />
-              <div class="flex flex-col min-w-0 flex-1 pt-1.5">
-                <h2 class="text-xl font-light text-[var(--c-800)] break-words tracking-tight leading-snug mb-1">
-                  {{ form.get('nombre')?.value || 'Nombre' }} {{ form.get('apellido')?.value || 'Apellido' }}
-                </h2>
-                <p class="text-[11px] text-[var(--c-400)] break-all font-normal tracking-wide leading-relaxed">
-                  {{ form.get('email')?.value || 'Sin correo electrónico' }}
+          <!-- Avatar + Info -->
+          <div class="px-7 mb-6 flex items-start gap-5">
+            <ui-profile-avatar [photoUrl]="form.get('fotoPerfil')?.value" [isUploading]="uploadingPhoto()"
+              shape="circle" (fileSelected)="onAvatarFileSelected($event)" (removed)="removerFoto()" />
+            <div class="flex flex-col min-w-0 flex-1 pt-1.5">
+              <h2 class="text-xl font-light text-[var(--c-800)] break-words tracking-tight leading-snug mb-1">
+                {{ form.get('nombre')?.value || 'Nombre' }} {{ form.get('apellido')?.value || 'Apellido' }}
+              </h2>
+              <p class="text-[11px] text-[var(--c-400)] break-all font-normal tracking-wide leading-relaxed">
+                {{ form.get('email')?.value || 'Sin correo electrónico' }}
+              </p>
+            </div>
+          </div>
+
+          <!-- Divider -->
+          <div class="px-7 mb-6">
+            <div class="h-px bg-gradient-to-r from-[var(--c-200)] to-transparent"></div>
+          </div>
+
+          <!-- Tabs -->
+          <div class="flex-1">
+            <ui-vertical-tabs [tabs]="tabs" [(active)]="activeTab" />
+          </div>
+        </aside>
+
+        <!-- ─── PANEL DERECHO ──────────────────────────────────────────── -->
+        <div class="flex-1 min-w-0 flex flex-col">
+
+          <!-- PANEL: INFORMACIÓN PERSONAL -->
+          @if (activeTab() === 'personal') {
+          <div class="px-10 py-10 flex-1">
+            <h3
+              class="text-xl font-light text-[var(--c-800)] leading-tight tracking-tight mb-2 animate-smooth-enter stagger-1">
+              Información personal</h3>
+            <p class="text-xs text-[var(--c-400)] mb-8 animate-smooth-enter stagger-2">Nombre y documento de identidad.
+            </p>
+
+            <div class="flex flex-col gap-5 max-w-[400px] animate-smooth-enter stagger-3">
+              <ui-input label="Nombre" placeholder="Ej. Laura" [control]="form.get('nombre')" />
+              <ui-input label="Apellido" placeholder="Ej. González" [control]="form.get('apellido')" />
+              <ui-input label="DNI" placeholder="00.000.000" [control]="form.get('dni')" />
+            </div>
+          </div>
+          }
+
+          <!-- PANEL: CONTACTO -->
+          @if (activeTab() === 'contacto') {
+          <div class="px-10 py-10 flex-1">
+            <h3
+              class="text-xl font-light text-[var(--c-800)] leading-tight tracking-tight mb-2 animate-smooth-enter stagger-1">
+              Contacto</h3>
+            <p class="text-xs text-[var(--c-400)] mb-8 animate-smooth-enter stagger-2">Tu correo y teléfono de contacto.
+            </p>
+
+            <div class="flex flex-col gap-6 max-w-[440px] animate-smooth-enter stagger-3">
+              <div>
+                <div class="flex items-center gap-2 mb-1.5 ml-1">
+                  <span class="text-[10px] uppercase font-medium text-[var(--c-600)] tracking-widest">Correo
+                    electrónico</span>
+                </div>
+                <ui-input label="" type="email" placeholder="correo@ejemplo.com" [control]="form.get('email')" />
+                <p class="text-[9px] text-[var(--c-400)] mt-1 ml-1">El correo no puede modificarse desde aquí.</p>
+              </div>
+
+              <!-- Teléfono con código de país -->
+              <div>
+                <div class="flex items-center gap-2 mb-1.5 ml-1">
+                  <span class="text-[10px] uppercase font-medium text-[var(--c-600)] tracking-widest">Teléfono</span>
+                </div>
+                <div class="flex gap-2 items-end">
+                  <div class="w-[160px] shrink-0">
+                    <ui-dropdown-select [options]="countryOptions" [selectedValue]="selectedCountry().code"
+                      placeholder="País" (valueChanged)="onCountryChange($event)" />
+                  </div>
+                  <div class="flex-1">
+                    <ui-input label="" placeholder="11 2233-4455" [control]="form.get('telefono')" />
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          }
+
+          <!-- PANEL: DATOS PROFESIONALES -->
+          @if (activeTab() === 'profesional') {
+          <div class="px-10 py-10 flex-1">
+            <h3
+              class="text-xl font-light text-[var(--c-800)] leading-tight tracking-tight mb-2 animate-smooth-enter stagger-1">
+              Datos profesionales</h3>
+            <p class="text-xs text-[var(--c-400)] mb-8 animate-smooth-enter stagger-2">Matrícula, especialidad y tarifas
+              de atención.</p>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-5 max-w-[560px] animate-smooth-enter stagger-3">
+              <div class="md:col-span-2">
+                <ui-input label="Título profesional" placeholder="Ej: Médica Dermatóloga"
+                  [control]="form.get('tituloProfesional')" />
+              </div>
+              <ui-input label="Matrícula Nacional" placeholder="p. ej. 123456"
+                [control]="form.get('numeroMatriculaNacional')" />
+              <ui-input label="Matrícula Provincial" placeholder="p. ej. 78901"
+                [control]="form.get('numeroMatriculaProvincial')" />
+            </div>
+
+            <div class="mt-8 mb-6 max-w-[560px] animate-smooth-enter stagger-4">
+              <div class="h-px bg-gradient-to-r from-[var(--c-200)] to-transparent"></div>
+            </div>
+
+            <p
+              class="text-[10px] font-semibold text-[var(--c-400)] uppercase tracking-[0.18em] mb-5 animate-smooth-enter stagger-4">
+              Configuración de consulta</p>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-5 max-w-[560px] animate-smooth-enter stagger-5">
+              <div class="space-y-1.5">
+                <label class="block text-[10px] font-medium text-[var(--c-500)] uppercase tracking-widest ml-1">Duración
+                  de consulta</label>
+                <ui-dropdown-select [options]="duracionOptions" [selectedValue]="selectedDuracion()"
+                  placeholder="Seleccionar duración" (valueChanged)="onDuracionChange($event)" />
+              </div>
+              <ui-input label="Precio de consulta" type="number" placeholder="Ej. 15000"
+                [control]="form.get('precioConsulta')" />
+            </div>
+          </div>
+          }
+
+          <!-- PANEL: HORARIOS Y AGENDA -->
+          @if (activeTab() === 'horarios') {
+          <div class="px-10 py-10 flex-1">
+            <h3
+              class="text-xl font-light text-[var(--c-800)] leading-tight tracking-tight mb-2 animate-smooth-enter stagger-1">
+              Horarios y agenda</h3>
+            <p class="text-xs text-[var(--c-400)] mb-8 animate-smooth-enter stagger-2">Configurá los días, franjas
+              horarias y modalidad de cada bloque (presencial, videoconsulta o ambas).</p>
+
+            <div class="animate-smooth-enter stagger-3">
+              <ui-schedule-selector [initialSchedule]="horariosLaborales()" [showModalidad]="true"
+                (scheduleChange)="onScheduleChange($event)" />
+            </div>
+          </div>
+          }
+
+          <!-- PANEL: GOOGLE CALENDAR -->
+          @if (activeTab() === 'integraciones') {
+          <div class="px-10 py-10 flex-1 max-w-[720px] animate-smooth-enter stagger-1">
+
+            <!-- Header: Iconos apilados con efecto de profundidad limpia -->
+            <div class="flex items-center gap-5 mb-8 animate-smooth-enter stagger-1">
+              <div class="flex items-center -space-x-3 shrink-0">
+                <!-- Icono 1 -->
+                <div class="relative z-20">
+                  <span
+                    class="inline-flex size-16 rounded-2xl bg-[var(--c-50)] border border-[var(--c-200)] shadow-sm ring-4 ring-[var(--c-50)] items-center justify-center p-3">
+                    <svg class="w-full h-auto" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" fill="none"
+                      aria-hidden="true">
+                      <rect width="16" height="16" x="12" y="16" fill="var(--c-50)" transform="rotate(-90 20 24)" />
+                      <polygon fill="#1e88e5" points="3,17 3,31 8,32 13,31 13,17 8,16" />
+                      <path fill="#4caf50" d="M37,24v14c0,1.657-1.343,3-3,3H13l-1-5l1-5h14v-7l5-1L37,24z" />
+                      <path fill="#fbc02d" d="M37,10v14H27v-7H13l-1-5l1-5h21C35.657,7,37,8.343,37,10z" />
+                      <path fill="#1565c0" d="M13,31v10H6c-1.657,0-3-1.343-3-3v-7H13z" />
+                      <polygon fill="#e53935" points="13,7 13,17 3,17" />
+                      <polygon fill="#2e7d32" points="38,24 37,32.45 27,24 37,15.55" />
+                      <path fill="#4caf50"
+                        d="M46,10.11v27.78c0,0.84-0.98,1.31-1.63,0.78L37,32.45v-16.9l7.37-6.22C45.02,8.8,46,9.27,46,10.11z" />
+                    </svg>
+                  </span>
+                </div>
+                <!-- Icono 2 -->
+                <div class="relative z-10">
+                  <span
+                    class="inline-flex size-16 rounded-2xl bg-[var(--c-50)] border border-[var(--c-200)] shadow-sm ring-4 ring-[var(--c-50)] items-center justify-center p-3">
+                    <svg class="w-full h-auto" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" fill="none"
+                      aria-hidden="true">
+                      <rect width="22" height="22" x="13" y="13" fill="var(--c-50)" />
+                      <polygon fill="#1e88e5"
+                        points="25.68,20.92 26.688,22.36 28.272,21.208 28.272,29.56 30,29.56 30,18.616 28.56,18.616" />
+                      <path fill="#1e88e5"
+                        d="M22.943,23.745c0.625-0.574,1.013-1.37,1.013-2.249c0-1.747-1.533-3.168-3.417-3.168 c-1.602,0-2.972,1.009-3.33,2.453l1.657,0.421c0.165-0.664,0.868-1.146,1.673-1.146c0.942,0,1.709,0.646,1.709,1.44 c0,0.794-0.767,1.44-1.709,1.44h-0.997v1.728h0.997c1.081,0,1.993,0.751,1.993,1.64c0,0.904-0.866,1.64-1.931,1.64 c-0.962,0-1.784-0.61-1.914-1.418L17,26.802c0.262,1.636,1.81,2.87,3.6,2.87c2.007,0,3.64-1.511,3.64-3.368 C24.24,25.281,23.736,24.363,22.943,23.745z" />
+                      <polygon fill="#fbc02d" points="34,42 14,42 13,38 14,34 34,34 35,38" />
+                      <polygon fill="#4caf50" points="38,35 42,34 42,14 38,13 34,14 34,34" />
+                      <path fill="#1e88e5" d="M34,14l1-4l-1-4H9C7.343,6,6,7.343,6,9v25l4,1l4-1V14H34z" />
+                      <polygon fill="#e53935" points="34,34 34,42 42,34" />
+                      <path fill="#1565c0" d="M39,6h-5v8h8V9C42,7.343,40.657,6,39,6z" />
+                      <path fill="#1565c0" d="M9,42h5v-8H6v5C6,40.657,7.343,42,9,42z" />
+                    </svg>
+                  </span>
+                </div>
+              </div>
+
+              <div class="min-w-0">
+                <h3 class="text-xl font-light text-[var(--c-800)] leading-tight tracking-tight">Google Calendar y Meet
+                </h3>
+                <p class="text-xs text-[var(--c-400)] mt-1.5 max-w-lg leading-relaxed">
+                  Unificá lo que pasa en la clínica con tu calendario personal: los turnos del sistema aparecen en
+                  Google Calendar; las videoconsultas incluyen link de Meet.
                 </p>
               </div>
             </div>
 
-            <!-- Divider -->
-            <div class="px-7 mb-6">
-              <div class="h-px bg-gradient-to-r from-[var(--c-200)] to-transparent"></div>
-            </div>
+            <!-- Contenido principal -->
+            <div class="space-y-6">
 
-            <!-- Tabs -->
-            <div class="flex-1">
-              <ui-vertical-tabs [tabs]="tabs" [(active)]="activeTab" />
-            </div>
-          </aside>
-
-          <!-- ─── PANEL DERECHO ──────────────────────────────────────────── -->
-          <div class="flex-1 min-w-0 flex flex-col">
-
-            <!-- PANEL: INFORMACIÓN PERSONAL -->
-            @if (activeTab() === 'personal') {
-            <div class="px-10 py-10 flex-1">
-              <h3 class="text-xl font-light text-[var(--c-800)] leading-tight tracking-tight mb-2 animate-smooth-enter stagger-1">Información personal</h3>
-              <p class="text-xs text-[var(--c-400)] mb-8 animate-smooth-enter stagger-2">Nombre y documento de identidad.</p>
-
-              <div class="flex flex-col gap-5 max-w-[400px] animate-smooth-enter stagger-3">
-                <ui-input label="Nombre"   placeholder="Ej. Laura"    [control]="form.get('nombre')" />
-                <ui-input label="Apellido" placeholder="Ej. González" [control]="form.get('apellido')" />
-                <ui-input label="DNI"      placeholder="00.000.000"   [control]="form.get('dni')" />
-              </div>
-            </div>
-            }
-
-            <!-- PANEL: CONTACTO -->
-            @if (activeTab() === 'contacto') {
-            <div class="px-10 py-10 flex-1">
-              <h3 class="text-xl font-light text-[var(--c-800)] leading-tight tracking-tight mb-2 animate-smooth-enter stagger-1">Contacto</h3>
-              <p class="text-xs text-[var(--c-400)] mb-8 animate-smooth-enter stagger-2">Tu correo y teléfono de contacto.</p>
-
-              <div class="flex flex-col gap-6 max-w-[440px] animate-smooth-enter stagger-3">
+              @if (!calendarApiOk()) {
+              <div
+                class="p-4 rounded-xl border border-[color-mix(in_srgb,var(--st-pend)_35%,var(--c-200))] bg-[var(--st-pend-bg)] text-[var(--c-700)] text-xs leading-relaxed flex items-start gap-3 animate-smooth-enter stagger-2">
+                <svg class="w-5 h-5 text-[var(--st-pend)] shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24"
+                  stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                </svg>
                 <div>
-                  <div class="flex items-center gap-2 mb-1.5 ml-1">
-                    <span class="text-[10px] uppercase font-medium text-[var(--c-600)] tracking-widest">Correo electrónico</span>
-                  </div>
-                  <ui-input label="" type="email" placeholder="correo@ejemplo.com" [control]="form.get('email')" />
-                  <p class="text-[9px] text-[var(--c-400)] mt-1 ml-1">El correo no puede modificarse desde aquí.</p>
+                  <p class="font-semibold mb-0.5">Configuración del sistema</p>
+                  El administrador debe definir <code
+                    class="text-[11px] bg-[var(--c-100)] px-1 py-0.5 rounded font-mono text-[var(--c-700)]">googleCalendarApiUrl</code> y
+                  tener levantado el servicio <code
+                    class="text-[11px] bg-[var(--c-100)] px-1 py-0.5 rounded font-mono text-[var(--c-700)]">google-calendar</code>.
+                </div>
+              </div>
+              }
+
+              <!-- Grid Informativo: Estilo limpio y estático -->
+              <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 animate-smooth-enter stagger-2">
+                <!-- Card Calendar -->
+                <div class="rounded-2xl border border-[var(--c-200)] bg-[var(--c-50)] p-5 relative overflow-hidden">
+                  <div class="absolute top-0 left-0 w-1 h-full bg-[var(--c-300)] opacity-50"></div>
+                  <p class="text-[10px] font-bold uppercase tracking-[0.16em] text-[var(--c-500)] mb-3">Google Calendar
+                  </p>
+                  <p class="text-xs text-[var(--c-600)] leading-relaxed">
+                    Cada turno confirmado puede copiarse como evento en <strong>tu calendario principal</strong> (el
+                    mismo que usás en el celular). No reemplaza la agenda de la clínica: es un espejo para vos.
+                  </p>
                 </div>
 
-                <!-- Teléfono con código de país -->
-                <div>
-                  <div class="flex items-center gap-2 mb-1.5 ml-1">
-                    <span class="text-[10px] uppercase font-medium text-[var(--c-600)] tracking-widest">Teléfono</span>
-                  </div>
-                  <div class="flex gap-2 items-end">
-                    <div class="w-[160px] shrink-0">
-                      <ui-dropdown-select
-                        [options]="countryOptions"
-                        [selectedValue]="selectedCountry().code"
-                        placeholder="País"
-                        (valueChanged)="onCountryChange($event)"
-                      />
+                <!-- Card Meet -->
+                <div class="rounded-2xl border border-[var(--c-200)] bg-[var(--c-50)] p-5 relative overflow-hidden">
+                  <div class="absolute top-0 left-0 w-1 h-full bg-[var(--c-300)] opacity-50"></div>
+                  <p class="text-[10px] font-bold uppercase tracking-[0.16em] text-[var(--c-500)] mb-3">Google Meet</p>
+                  <p class="text-xs text-[var(--c-600)] leading-relaxed">
+                    En <strong>videoconsultas</strong> se crea la reunión con link de Meet y, si corresponde, un aviso
+                    por WhatsApp con el código o enlace.
+                  </p>
+                </div>
+              </div>
+
+              <!-- Panel de Control: Estilo "Glass" premium -->
+              <div class="rounded-2xl border border-[var(--c-200)] bg-[var(--c-50)] p-6 shadow-sm animate-smooth-enter stagger-3">
+
+                <!-- Estado de Cuenta -->
+                <div class="flex flex-wrap items-start justify-between gap-5 mb-6 pb-6 border-b border-[var(--c-100)]">
+                  <div>
+                    <p class="text-[10px] font-semibold uppercase tracking-[0.18em] text-[var(--c-500)] mb-2">Cuenta
+                      vinculada</p>
+                    @if (googleConectado()) {
+                    <div class="flex items-center gap-2">
+                      <p class="text-sm font-medium text-[var(--c-800)]">Conectado a Google</p>
+                      <!-- Indicador de estado pequeño -->
+                      <span class="w-2 h-2 rounded-full bg-[var(--st-conf)]"></span>
                     </div>
-                    <div class="flex-1">
-                      <ui-input label="" placeholder="11 2233-4455" [control]="form.get('telefono')" />
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-            }
-
-            <!-- PANEL: DATOS PROFESIONALES -->
-            @if (activeTab() === 'profesional') {
-            <div class="px-10 py-10 flex-1">
-              <h3 class="text-xl font-light text-[var(--c-800)] leading-tight tracking-tight mb-2 animate-smooth-enter stagger-1">Datos profesionales</h3>
-              <p class="text-xs text-[var(--c-400)] mb-8 animate-smooth-enter stagger-2">Matrícula, especialidad y tarifas de atención.</p>
-
-              <div class="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-5 max-w-[560px] animate-smooth-enter stagger-3">
-                <div class="md:col-span-2">
-                  <ui-input label="Título profesional" placeholder="Ej: Médica Dermatóloga" [control]="form.get('tituloProfesional')" />
-                </div>
-                <ui-input label="Matrícula Nacional"   placeholder="p. ej. 123456" [control]="form.get('numeroMatriculaNacional')" />
-                <ui-input label="Matrícula Provincial" placeholder="p. ej. 78901"  [control]="form.get('numeroMatriculaProvincial')" />
-              </div>
-
-              <div class="mt-8 mb-6 max-w-[560px] animate-smooth-enter stagger-4">
-                <div class="h-px bg-gradient-to-r from-[var(--c-200)] to-transparent"></div>
-              </div>
-
-              <p class="text-[10px] font-semibold text-[var(--c-400)] uppercase tracking-[0.18em] mb-5 animate-smooth-enter stagger-4">Configuración de consulta</p>
-
-              <div class="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-5 max-w-[560px] animate-smooth-enter stagger-5">
-                <div class="space-y-1.5">
-                  <label class="block text-[10px] font-medium text-[var(--c-500)] uppercase tracking-widest ml-1">Duración de consulta</label>
-                  <ui-dropdown-select
-                    [options]="duracionOptions"
-                    [selectedValue]="selectedDuracion()"
-                    placeholder="Seleccionar duración"
-                    (valueChanged)="onDuracionChange($event)"
-                  />
-                </div>
-                <ui-input
-                  label="Precio de consulta"
-                  type="number"
-                  placeholder="Ej. 15000"
-                  [control]="form.get('precioConsulta')"
-                />
-              </div>
-            </div>
-            }
-
-            <!-- PANEL: HORARIOS Y AGENDA -->
-            @if (activeTab() === 'horarios') {
-            <div class="px-10 py-10 flex-1">
-              <h3 class="text-xl font-light text-[var(--c-800)] leading-tight tracking-tight mb-2 animate-smooth-enter stagger-1">Horarios y agenda</h3>
-              <p class="text-xs text-[var(--c-400)] mb-8 animate-smooth-enter stagger-2">Configurá los días y franjas horarias de atención.</p>
-
-              <div class="animate-smooth-enter stagger-3">
-                <ui-schedule-selector
-                  [initialSchedule]="horariosLaborales()"
-                  (scheduleChange)="onScheduleChange($event)"
-                />
-              </div>
-            </div>
-            }
-
-            <!-- PANEL: DOCUMENTOS -->
-            @if (activeTab() === 'documentos') {
-            <div class="px-10 py-10 flex-1">
-              <h3 class="text-xl font-light text-[var(--c-800)] leading-tight tracking-tight mb-2 animate-smooth-enter stagger-1">Mis documentos</h3>
-              <p class="text-xs text-[var(--c-400)] mb-8 animate-smooth-enter stagger-2">Subí o actualizá tus documentos profesionales. El estado de aprobación lo gestiona el administrador.</p>
-
-              <div class="animate-smooth-enter stagger-3">
-                <ui-professional-docs
-                  [documentos]="documentosDetalle()"
-                  [editable]="false"
-                  (fileSelected)="onDocFileSelected($event)"
-                  (imageOpened)="viewingDocImage.set($event)"
-                />
-              </div>
-            </div>
-            }
-
-            <!-- PANEL: HONORARIOS -->
-            @if (activeTab() === 'honorarios') {
-            <div class="px-10 py-10 flex-1">
-              <h3 class="text-xl font-light text-[var(--c-800)] leading-tight tracking-tight mb-2 animate-smooth-enter stagger-1">Honorarios por tratamiento</h3>
-              <p class="text-xs text-[var(--c-400)] mb-8 animate-smooth-enter stagger-2">Configurá los precios por especialidad o tratamiento. Se guardan con "Guardar cambios".</p>
-
-              <div class="max-w-[640px] animate-smooth-enter stagger-3">
-
-                @if (honorarios().length > 0) {
-                  <div class="border border-[var(--c-200)] rounded-xl overflow-hidden mb-5">
-                    <div class="grid grid-cols-[1fr_140px_36px] gap-3 px-4 py-2.5 bg-[var(--c-100)] border-b border-[var(--c-200)]">
-                      <span class="text-[10px] font-semibold uppercase tracking-widest text-[var(--c-500)]">Tratamiento / Especialidad</span>
-                      <span class="text-[10px] font-semibold uppercase tracking-widest text-[var(--c-500)] text-right">Precio (ARS)</span>
-                      <span></span>
-                    </div>
-                    @for (honorario of honorarios(); track $index) {
-                      <div class="grid grid-cols-[1fr_140px_36px] gap-3 items-center px-4 py-2.5 border-b border-[var(--c-200)] last:border-b-0 hover:bg-[var(--c-100)]/50 group">
-                        <input
-                          type="text"
-                          [value]="honorario.nombre"
-                          (input)="actualizarHonorario($index, 'nombre', $any($event.target).value)"
-                          placeholder="Ej: Limpieza facial"
-                          class="w-full bg-transparent text-sm text-[var(--c-700)] placeholder:text-[var(--c-300)] border-b border-transparent focus:border-[var(--c-800)] focus:outline-none py-0.5 transition-colors"
-                        />
-                        <input
-                          type="number"
-                          [value]="honorario.precio"
-                          (input)="actualizarHonorario($index, 'precio', +$any($event.target).value)"
-                          placeholder="0"
-                          min="0"
-                          class="w-full bg-transparent text-sm text-[var(--c-700)] placeholder:text-[var(--c-300)] border-b border-transparent focus:border-[var(--c-800)] focus:outline-none py-0.5 text-right transition-colors"
-                        />
-                        <button
-                          type="button"
-                          (click)="eliminarHonorario($index)"
-                          class="flex items-center justify-center size-7 rounded-lg opacity-0 group-hover:opacity-100 text-[var(--c-400)] hover:text-[var(--c-800)] hover:bg-[var(--c-200)] transition-all"
-                          title="Eliminar"
-                        >
-                          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
-                            <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
-                          </svg>
-                        </button>
-                      </div>
+                    @if (googleCalendar()?.emailGoogle; as email) {
+                    <p class="text-xs text-[var(--c-500)] mt-1 break-all font-medium">{{ email }}</p>
+                    }
+                    @if (formatearFechaConexion(googleCalendar()?.fechaConexion); as fc) {
+                    <p class="text-[11px] text-[var(--c-400)] mt-0.5">Vinculado el {{ fc }}</p>
+                    }
+                    } @else {
+                    <p class="text-sm font-medium text-[var(--c-600)]">Todavía no vinculaste una cuenta</p>
+                    <p class="text-xs text-[var(--c-400)] mt-1.5 max-w-md leading-relaxed">
+                      Hacé clic en <strong>Conectar con Google</strong> y aceptá los permisos de Calendar. Es el mismo
+                      flujo que Google usa para otras apps.
+                    </p>
                     }
                   </div>
-                } @else {
-                  <div class="border border-dashed border-[var(--c-200)] rounded-xl py-10 flex flex-col items-center justify-center gap-2 text-[var(--c-400)] mb-5">
-                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round">
-                      <path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7"/>
-                    </svg>
-                    <span class="text-xs font-medium text-[var(--c-500)]">Sin honorarios configurados</span>
-                    <span class="text-[11px] text-[var(--c-400)]">Agregá el primer tratamiento con el botón de abajo</span>
+
+                  <!-- Badge Status -->
+                  <span
+                    class="inline-flex items-center px-3 py-1.5 rounded-full text-[10px] font-semibold uppercase tracking-wide shrink-0 border"
+                    [class]="googleConectado() ? 'bg-[var(--st-conf-bg)] text-[var(--st-conf)] border-[color-mix(in_srgb,var(--st-conf)_35%,var(--c-200))]' : 'bg-[var(--c-100)] text-[var(--c-600)] border-[var(--c-200)]'">
+                    {{ googleConectado() ? 'Listo' : 'Sin vincular' }}
+                  </span>
+                </div>
+
+                <!-- Toggle Sync -->
+                <div
+                  class="flex flex-wrap items-center justify-between gap-4 py-4 px-5 rounded-xl bg-[var(--c-50)] border border-[var(--c-200)]"
+                  [class.opacity-55]="!googleConectado()">
+                  <div class="min-w-0 max-w-[320px]">
+                    <p class="text-[11px] font-semibold text-[var(--c-700)] mb-1">Copiar también consultas presenciales
+                    </p>
+                    <p class="text-[10px] text-[var(--c-500)] leading-relaxed">
+                      Activá para que cada turno <strong>presencial</strong> también aparezca en tu Google Calendar como
+                      evento (sin Meet).
+                      Videoconsultas siempre usan Meet cuando la franja horaria lo permite.
+                    </p>
                   </div>
+                  <div class="flex items-center gap-3 shrink-0">
+                    @if (guardandoPreferenciaSyncCalendario()) {
+                    <span class="text-[10px] text-[var(--c-400)] uppercase tracking-wide font-medium">Guardando…</span>
+                    }
+                    <app-toggle [isChecked]="syncConsultasPresenciales()"
+                      [disabled]="!calendarApiOk() || !googleConectado() || guardandoPreferenciaSyncCalendario()"
+                      (change)="onSyncConsultasPresencialesToggle($event)" />
+                  </div>
+                </div>
+                @if (!googleConectado()) {
+                <p class="text-[10px] text-[var(--c-400)] mt-3 px-1">Conectá Google primero para poder usar esta opción.
+                </p>
                 }
 
-                <button
-                  type="button"
-                  (click)="agregarHonorario()"
-                  class="flex items-center gap-2 px-4 py-2 rounded-lg border border-dashed border-[var(--c-300)] text-xs font-medium text-[var(--c-500)] hover:text-[var(--c-800)] hover:border-[var(--c-800)] transition-all uppercase tracking-wider"
-                >
-                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-                  Agregar honorario
-                </button>
-              </div>
-            </div>
-            }
-
-            <!-- PANEL: SEGURIDAD -->
-            @if (activeTab() === 'seguridad') {
-            <div class="px-10 py-10 flex-1" [formGroup]="passwordForm">
-              <h3 class="text-xl font-light text-[var(--c-800)] leading-tight tracking-tight mb-2 animate-smooth-enter stagger-1">Seguridad y contraseña</h3>
-              <p class="text-xs text-[var(--c-400)] mb-6 animate-smooth-enter stagger-2">Actualizá tu contraseña para mantener tu cuenta segura.</p>
-
-              @if (passwordSuccess()) {
-                <div class="flex items-center gap-3 p-4 mb-6 bg-green-50 border border-green-100 rounded-[12px] animate-smooth-enter">
-                  <div class="w-8 h-8 rounded-full bg-green-100 flex items-center justify-center shrink-0">
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="text-green-600">
-                      <polyline points="20 6 9 17 4 12"/>
-                    </svg>
+                <!-- Botones de Acción -->
+                <div class="mt-6 pt-5 border-t border-[var(--c-200)] flex flex-col gap-3">
+                  <div class="flex flex-wrap gap-3">
+                    @if (googleConectado()) {
+                    <ui-button type="button" label="Desconectar Google" [isLoading]="desconectandoGoogle()"
+                      [disabled]="desconectandoGoogle() || !calendarApiOk()" (click)="desconectarGoogleCalendar()" />
+                    } @else {
+                    <ui-button type="button" label="Conectar con Google"
+                      [disabled]="!calendarApiOk()"
+                      (click)="conectarGoogleCalendar()" />
+                    }
                   </div>
-                  <p class="text-xs text-green-800 font-medium tracking-tight">Contraseña actualizada con éxito.</p>
-                </div>
-              }
-
-              @if (passwordError()) {
-                <div class="flex items-center gap-3 p-4 mb-6 bg-red-50 border border-red-100 rounded-[12px] animate-smooth-enter">
-                  <div class="w-8 h-8 rounded-full bg-red-100 flex items-center justify-center shrink-0">
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="text-red-600">
-                      <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
-                    </svg>
-                  </div>
-                  <p class="text-xs text-red-800 font-medium tracking-tight">{{ passwordError() }}</p>
-                </div>
-              }
-
-              <div class="flex flex-col gap-5 mb-8 max-w-[400px]">
-                <div class="animate-smooth-enter stagger-3">
-                  <ui-input
-                    label="Contraseña actual"
-                    type="password"
-                    [control]="passwordForm.get('currentPassword')"
-                    placeholder="Ingresá tu contraseña de acceso"
-                  />
-                </div>
-                <div class="h-px bg-[var(--c-200)] my-1 animate-smooth-enter stagger-3"></div>
-                <div class="animate-smooth-enter stagger-4">
-                  <ui-input
-                    label="Nueva contraseña"
-                    type="password"
-                    [control]="passwordForm.get('newPassword')"
-                    placeholder="Mínimo 6 caracteres"
-                  />
-                </div>
-                <div class="animate-smooth-enter stagger-5">
-                  <ui-input
-                    label="Confirmar contraseña"
-                    type="password"
-                    [control]="passwordForm.get('confirmPassword')"
-                    placeholder="Repetí la contraseña"
-                  />
+                  @if (!googleConectado()) {
+                  <p class="text-[10px] text-[var(--c-400)] leading-relaxed px-1 m-0">
+                    Se abrirá una pestaña nueva para autorizar Google. Al terminar, volvé acá y actualizá si no ves el estado conectado.
+                  </p>
+                  }
                 </div>
               </div>
 
-              <div class="pt-5 border-t border-[var(--c-200)] flex justify-end animate-smooth-enter stagger-5">
-                <ui-button
-                  type="button"
-                  label="Actualizar contraseña"
-                  (click)="onChangePassword()"
-                  [isLoading]="isSubmitting()"
-                  [disabled]="isSubmitting() || passwordForm.invalid"
-                />
-              </div>
+              <p class="text-[10px] text-[var(--c-400)] leading-relaxed px-1 animate-smooth-enter stagger-4">
+                En «Horarios y agenda» marcá cada franja como presencial, videoconsulta o ambas para que recepción solo
+                ofrezca turnos compatibles en cada horario.
+              </p>
             </div>
-            }
-
           </div>
-        </form>
-      </div>
+          }
+
+          <!-- PANEL: DOCUMENTOS -->
+          @if (activeTab() === 'documentos') {
+          <div class="px-10 py-10 flex-1">
+            <h3
+              class="text-xl font-light text-[var(--c-800)] leading-tight tracking-tight mb-2 animate-smooth-enter stagger-1">
+              Mis documentos</h3>
+            <p class="text-xs text-[var(--c-400)] mb-8 animate-smooth-enter stagger-2">Subí o actualizá tus documentos
+              profesionales. El estado de aprobación lo gestiona el administrador.</p>
+
+            <div class="animate-smooth-enter stagger-3">
+              <ui-professional-docs [documentos]="documentosDetalle()" [editable]="false"
+                (fileSelected)="onDocFileSelected($event)" (imageOpened)="viewingDocImage.set($event)" />
+            </div>
+          </div>
+          }
+
+          <!-- PANEL: HONORARIOS -->
+          @if (activeTab() === 'honorarios') {
+          <div class="px-10 py-10 flex-1">
+            <h3
+              class="text-xl font-light text-[var(--c-800)] leading-tight tracking-tight mb-2 animate-smooth-enter stagger-1">
+              Honorarios por tratamiento</h3>
+            <p class="text-xs text-[var(--c-400)] mb-8 animate-smooth-enter stagger-2">Configurá los precios por
+              especialidad o tratamiento. Se guardan con "Guardar cambios".</p>
+
+            <div class="max-w-[640px] animate-smooth-enter stagger-3">
+
+              @if (honorarios().length > 0) {
+              <div class="border border-[var(--c-200)] rounded-xl overflow-hidden mb-5">
+                <div
+                  class="grid grid-cols-[1fr_140px_36px] gap-3 px-4 py-2.5 bg-[var(--c-100)] border-b border-[var(--c-200)]">
+                  <span class="text-[10px] font-semibold uppercase tracking-widest text-[var(--c-500)]">Tratamiento /
+                    Especialidad</span>
+                  <span
+                    class="text-[10px] font-semibold uppercase tracking-widest text-[var(--c-500)] text-right">Precio
+                    (ARS)</span>
+                  <span></span>
+                </div>
+                @for (honorario of honorarios(); track $index) {
+                <div
+                  class="grid grid-cols-[1fr_140px_36px] gap-3 items-center px-4 py-2.5 border-b border-[var(--c-200)] last:border-b-0 hover:bg-[var(--c-100)]/50 group">
+                  <input type="text" [value]="honorario.nombre"
+                    (input)="actualizarHonorario($index, 'nombre', $any($event.target).value)"
+                    placeholder="Ej: Limpieza facial"
+                    class="w-full bg-transparent text-sm text-[var(--c-700)] placeholder:text-[var(--c-300)] border-b border-transparent focus:border-[var(--c-800)] focus:outline-none py-0.5 transition-colors" />
+                  <input type="number" [value]="honorario.precio"
+                    (input)="actualizarHonorario($index, 'precio', +$any($event.target).value)" placeholder="0" min="0"
+                    class="w-full bg-transparent text-sm text-[var(--c-700)] placeholder:text-[var(--c-300)] border-b border-transparent focus:border-[var(--c-800)] focus:outline-none py-0.5 text-right transition-colors" />
+                  <button type="button" (click)="eliminarHonorario($index)"
+                    class="flex items-center justify-center size-7 rounded-lg opacity-0 group-hover:opacity-100 text-[var(--c-400)] hover:text-[var(--c-800)] hover:bg-[var(--c-200)] transition-all"
+                    title="Eliminar">
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                      stroke-linecap="round">
+                      <line x1="18" y1="6" x2="6" y2="18" />
+                      <line x1="6" y1="6" x2="18" y2="18" />
+                    </svg>
+                  </button>
+                </div>
+                }
+              </div>
+              } @else {
+              <div
+                class="border border-dashed border-[var(--c-200)] rounded-xl py-10 flex flex-col items-center justify-center gap-2 text-[var(--c-400)] mb-5">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1"
+                  stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z" />
+                  <line x1="7" y1="7" x2="7.01" y2="7" />
+                </svg>
+                <span class="text-xs font-medium text-[var(--c-500)]">Sin honorarios configurados</span>
+                <span class="text-[11px] text-[var(--c-400)]">Agregá el primer tratamiento con el botón de abajo</span>
+              </div>
+              }
+
+              <button type="button" (click)="agregarHonorario()"
+                class="flex items-center gap-2 px-4 py-2 rounded-lg border border-dashed border-[var(--c-300)] text-xs font-medium text-[var(--c-500)] hover:text-[var(--c-800)] hover:border-[var(--c-800)] transition-all uppercase tracking-wider">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
+                  stroke-linecap="round">
+                  <line x1="12" y1="5" x2="12" y2="19" />
+                  <line x1="5" y1="12" x2="19" y2="12" />
+                </svg>
+                Agregar honorario
+              </button>
+            </div>
+          </div>
+          }
+
+          <!-- PANEL: SEGURIDAD -->
+          @if (activeTab() === 'seguridad') {
+          <div class="px-10 py-10 flex-1" [formGroup]="passwordForm">
+            <h3
+              class="text-xl font-light text-[var(--c-800)] leading-tight tracking-tight mb-2 animate-smooth-enter stagger-1">
+              Seguridad y contraseña</h3>
+            <p class="text-xs text-[var(--c-400)] mb-6 animate-smooth-enter stagger-2">Actualizá tu contraseña para
+              mantener tu cuenta segura.</p>
+
+            @if (passwordSuccess()) {
+            <div
+              class="flex items-center gap-3 p-4 mb-6 bg-green-50 border border-green-100 rounded-[12px] animate-smooth-enter">
+              <div class="w-8 h-8 rounded-full bg-green-100 flex items-center justify-center shrink-0">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
+                  stroke-linecap="round" stroke-linejoin="round" class="text-green-600">
+                  <polyline points="20 6 9 17 4 12" />
+                </svg>
+              </div>
+              <p class="text-xs text-green-800 font-medium tracking-tight">Contraseña actualizada con éxito.</p>
+            </div>
+            }
+
+            @if (passwordError()) {
+            <div
+              class="flex items-center gap-3 p-4 mb-6 bg-red-50 border border-red-100 rounded-[12px] animate-smooth-enter">
+              <div class="w-8 h-8 rounded-full bg-red-100 flex items-center justify-center shrink-0">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
+                  stroke-linecap="round" stroke-linejoin="round" class="text-red-600">
+                  <line x1="18" y1="6" x2="6" y2="18" />
+                  <line x1="6" y1="6" x2="18" y2="18" />
+                </svg>
+              </div>
+              <p class="text-xs text-red-800 font-medium tracking-tight">{{ passwordError() }}</p>
+            </div>
+            }
+
+            <div class="flex flex-col gap-5 mb-8 max-w-[400px]">
+              <div class="animate-smooth-enter stagger-3">
+                <ui-input label="Contraseña actual" type="password" [control]="passwordForm.get('currentPassword')"
+                  placeholder="Ingresá tu contraseña de acceso" />
+              </div>
+              <div class="h-px bg-[var(--c-200)] my-1 animate-smooth-enter stagger-3"></div>
+              <div class="animate-smooth-enter stagger-4">
+                <ui-input label="Nueva contraseña" type="password" [control]="passwordForm.get('newPassword')"
+                  placeholder="Mínimo 6 caracteres" />
+              </div>
+              <div class="animate-smooth-enter stagger-5">
+                <ui-input label="Confirmar contraseña" type="password" [control]="passwordForm.get('confirmPassword')"
+                  placeholder="Repetí la contraseña" />
+              </div>
+            </div>
+
+            <div class="pt-5 border-t border-[var(--c-200)] flex justify-end animate-smooth-enter stagger-5">
+              <ui-button type="button" label="Actualizar contraseña" (click)="onChangePassword()"
+                [isLoading]="isSubmitting()" [disabled]="isSubmitting() || passwordForm.invalid" />
+            </div>
+          </div>
+          }
+
+        </div>
+      </form>
+    </div>
 
     }
   </div>
 
   <!-- FOOTER FIJO (solo cuando no está en seguridad) -->
   @if (activeTab() !== 'seguridad') {
-    <ui-sticky-footer
-      formId="perfilProfesionalForm"
-      [isSubmitting]="isSubmitting()"
-      [isDirty]="form.dirty"
-      [isSidebarCollapsed]="isSidebarCollapsed()"
-      [showCancel]="false"
-    />
+  <ui-sticky-footer formId="perfilProfesionalForm" [isSubmitting]="isSubmitting()" [isDirty]="form.dirty"
+    [isSidebarCollapsed]="isSidebarCollapsed()" [showCancel]="false" />
   }
 </div>
 
 <!-- ====================================================== LIGHTBOX DOCUMENTOS -->
 @if (viewingDocImage()) {
-  <div class="fixed inset-0 z-[9999] bg-zinc-900/85 backdrop-blur-md flex flex-col items-center justify-center"
-       (click)="viewingDocImage.set(null)">
+<div class="fixed inset-0 z-[9999] bg-[rgba(33,37,41,0.86)] backdrop-blur-md flex flex-col items-center justify-center"
+  (click)="viewingDocImage.set(null)">
 
-    <button type="button" (click)="viewingDocImage.set(null)"
-      class="absolute top-5 right-5 size-9 flex items-center justify-center rounded-full bg-white/15 text-white hover:bg-white/25 transition-all hover:rotate-90 duration-300 z-10">
-      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
-        <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
-      </svg>
-    </button>
+  <button type="button" (click)="viewingDocImage.set(null)"
+    class="absolute top-5 right-5 size-9 flex items-center justify-center rounded-full bg-[rgba(248,249,250,0.15)] text-[var(--c-50)] hover:bg-[rgba(248,249,250,0.25)] transition-all hover:rotate-90 duration-300 z-10">
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
+      stroke-linecap="round">
+      <line x1="18" y1="6" x2="6" y2="18" />
+      <line x1="6" y1="6" x2="18" y2="18" />
+    </svg>
+  </button>
 
-    <div class="w-full max-w-5xl max-h-[80vh] flex items-center justify-center px-6" (click)="$event.stopPropagation()">
-      <img [src]="viewingDocImage()" alt="Documento" class="max-w-full max-h-[80vh] object-contain" />
-    </div>
-
-    <div class="mt-6 flex items-center gap-3" (click)="$event.stopPropagation()">
-      <button type="button" (click)="openDocUrl(viewingDocImage())"
-        class="flex items-center gap-2 px-7 py-2.5 bg-white text-black rounded-full text-[11px] font-semibold uppercase tracking-widest hover:scale-105 active:scale-95 transition-all">
-        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-          <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/>
-        </svg>
-        Descargar
-      </button>
-    </div>
-
+  <div class="w-full max-w-5xl max-h-[80vh] flex items-center justify-center px-6" (click)="$event.stopPropagation()">
+    <img [src]="viewingDocImage()" alt="Documento" class="max-w-full max-h-[80vh] object-contain" />
   </div>
+
+  <div class="mt-6 flex items-center gap-3" (click)="$event.stopPropagation()">
+    <button type="button" (click)="openDocUrl(viewingDocImage())"
+      class="flex items-center gap-2 px-7 py-2.5 bg-[var(--c-50)] text-[var(--c-800)] rounded-full text-[11px] font-semibold uppercase tracking-widest hover:scale-105 active:scale-95 transition-all">
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
+        stroke-linecap="round" stroke-linejoin="round">
+        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+        <polyline points="7 10 12 15 17 10" />
+        <line x1="12" y1="15" x2="12" y2="3" />
+      </svg>
+      Descargar
+    </button>
+  </div>
+
+</div>
 }

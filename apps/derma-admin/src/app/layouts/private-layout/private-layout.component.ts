@@ -5,6 +5,7 @@ import { LayoutStateService } from '../../core/services/layout-state.service';
 import { AdminHeaderComponent } from './header/admin-header.component';
 import { AdminSidebarComponent } from './sidebar/admin-sidebar.component';
 import { LoadingService } from '@derma/ui';
+import { InventarioAlertasSyncService } from '../../core/services/inventario-alertas-sync.service';
 
 @Component({
   selector: 'derm-private-layout',
@@ -20,6 +21,10 @@ export class PrivateLayoutComponent {
   private readonly loadingService = inject(LoadingService);
 
   readonly user = computed(() => this.authService.currentUser());
+
+  constructor() {
+    inject(InventarioAlertasSyncService);
+  }
   readonly sidebarOpen = signal(false);
   readonly isSidebarCollapsed = this.layoutState.isSidebarCollapsed;
 

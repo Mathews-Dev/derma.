@@ -20,13 +20,6 @@ initFirebaseAdmin();
 app.listen(env.PORT, () => {
   console.log(`[Derma WhatsApp] corriendo en http://localhost:${env.PORT}`);
   console.log(`[Derma WhatsApp] simulación: ${env.WHATSAPP_SIMULATION ? 'ON (no llama a Meta)' : 'OFF'}`);
-  console.log('[Derma WhatsApp] idiomas plantilla:', {
-    confirmado: env.META_TEMPLATE_LANG_CONFIRMADO,
-    cancelado: env.META_TEMPLATE_LANG_CANCELADO,
-    recordatorio: env.META_TEMPLATE_LANG_RECORDATORIO,
-    reprogramado: env.META_TEMPLATE_LANG_REPROGRAMADO,
-    noAsistio: env.META_TEMPLATE_LANG_NO_ASISTIO,
-    videoconsulta: env.META_TEMPLATE_LANG_VIDEOCONSULTA,
-  });
+  console.log('[Derma WhatsApp] plantillas Meta idioma código=es_AR (fijo en templates/index)');
   console.log(`[Derma WhatsApp] phone_number_id=${env.META_PHONE_NUMBER_ID}`);
 });

@@ -18,6 +18,11 @@ import {
   MovimientoInsumoInput,
 } from '@derma/models';
 
+/**
+ * CRUD y movimientos de insumos.
+ * Las alertas in-app (stock bajo / vencimiento) las evalúa
+ * `AlertasInsumosService` (ver `InventarioAlertasSyncService` en derma-admin).
+ */
 @Injectable({ providedIn: 'root' })
 export class InsumosService {
   private readonly fs        = inject(FirestoreService);

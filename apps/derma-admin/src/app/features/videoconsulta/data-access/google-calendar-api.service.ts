@@ -30,7 +30,6 @@ export class GoogleCalendarApiService {
   private readonly http = inject(HttpClient);
   private readonly baseUrl = (environment.googleCalendarApiUrl ?? '').replace(/\/$/, '');
 
-  /** Abre en la misma ventana o asigna a `window.location.href`. */
   urlConectarGoogle(profesionalUid: string): string {
     return `${this.baseUrl}/auth/google/${encodeURIComponent(profesionalUid)}`;
   }
@@ -39,6 +38,12 @@ export class GoogleCalendarApiService {
     return this.http.post<CrearEventoCalendarResponse>(
       `${this.baseUrl}/calendario/eventos`,
       body,
+    );
+  }
+
+  desconectarGoogle(profesionalUid: string) {
+    return this.http.delete<{ ok: boolean; mensaje: string }>(
+      `${this.baseUrl}/auth/google/${encodeURIComponent(profesionalUid)}`,
     );
   }
 

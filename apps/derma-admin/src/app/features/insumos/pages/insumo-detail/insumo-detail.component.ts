@@ -26,6 +26,7 @@ import { UiPageHeaderComponent, UiDropdownSelectComponent, DatepickerComponent, 
 import { MovimientoItemComponent } from '../../ui/movimiento-item/movimiento-item.component';
 import { StockIndicatorComponent } from '../../ui/stock-indicator/stock-indicator.component';
 import { Timestamp } from 'firebase/firestore';
+import { InventarioAlertasSyncService } from '../../../../core/services/inventario-alertas-sync.service';
 
 type TipoMovimiento = 'entrada' | 'salida' | 'ajuste';
 
@@ -43,6 +44,7 @@ export class InsumoDetailComponent {
   private readonly toastService      = inject(ToastService);
   private readonly router            = inject(Router);
   private readonly route             = inject(ActivatedRoute);
+  private readonly inventarioAlertas = inject(InventarioAlertasSyncService);
 
   readonly MOTIVO_SALIDA_LABELS  = MOTIVO_SALIDA_LABELS;
   readonly MOTIVO_ENTRADA_LABELS = MOTIVO_ENTRADA_LABELS;
@@ -194,6 +196,7 @@ export class InsumoDetailComponent {
       this.insumo.set({ ...insumo, stockActual: stockNuevo });
       this.showMovModal.set(false);
       this.toastService.success('Movimiento registrado.');
+      this.inventarioAlertas.solicitarVerificacion('movimiento-stock');
     } catch (error) {
       console.error(error);
       this.toastService.error('Error al registrar el movimiento.');

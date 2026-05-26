@@ -1,6 +1,7 @@
 import { Route } from '@angular/router';
 import { authGuard, noAuthGuard, roleGuard } from '@derma/guards';
 import { RolUsuario } from '@derma/models';
+import { InventarioAlertasSyncService } from './core/services/inventario-alertas-sync.service';
 import { NotificacionesStateService } from './core/services/notificaciones-state.service';
 
 export const appRoutes: Route[] = [
@@ -27,7 +28,7 @@ export const appRoutes: Route[] = [
   {
     path: 'admin',
     canActivate: [authGuard, roleGuard([RolUsuario.ADMIN, RolUsuario.DERMATOLOGO, RolUsuario.RECEPCIONISTA, RolUsuario.EMPLEADO])],
-    providers: [NotificacionesStateService],
+    providers: [NotificacionesStateService, InventarioAlertasSyncService],
     loadComponent: () => import('./layouts/private-layout/private-layout.component').then(m => m.PrivateLayoutComponent),
     children: [
       {

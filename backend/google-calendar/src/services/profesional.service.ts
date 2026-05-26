@@ -44,3 +44,21 @@ export async function obtenerRefreshTokenDelDoctor(
 
   return descifrarToken(datosDoctor.googleCalendar.refreshTokenCifrado);
 }
+
+export async function desconectarGoogleCalendar(profesionalUid: string): Promise<void> {
+  await db()
+    .collection(COLECCION_PROFESIONALES)
+    .doc(profesionalUid)
+    .set(
+      {
+        googleCalendar: {
+          conectado: false,
+          refreshTokenCifrado: null,
+          emailGoogle: null,
+          calendarId: null,
+          fechaConexion: null,
+        },
+      },
+      { merge: true },
+    );
+}

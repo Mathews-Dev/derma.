@@ -30,6 +30,7 @@ import {
 import { CloudinaryService } from '../../../../core/services/cloudinary.service';
 import { LayoutStateService } from '../../../../core/services/layout-state.service';
 import { Timestamp } from 'firebase/firestore';
+import { InventarioAlertasSyncService } from '../../../../core/services/inventario-alertas-sync.service';
 
 @Component({
   selector: 'app-insumos-form',
@@ -57,6 +58,7 @@ export class InsumosFormComponent {
   private readonly route           = inject(ActivatedRoute);
   private readonly fb              = inject(FormBuilder);
   private readonly layoutState     = inject(LayoutStateService);
+  private readonly inventarioAlertas = inject(InventarioAlertasSyncService);
 
   readonly isSidebarCollapsed = this.layoutState.isSidebarCollapsed;
 
@@ -216,10 +218,12 @@ export class InsumosFormComponent {
       if (id) {
         await this.insumosService.actualizar(id, data);
         this.toastService.success('Insumo actualizado.');
+        this.inventarioAlertas.solicitarVerificacion('insumo-guardado');
         await this.router.navigate(['/admin/insumos', id]);
       } else {
         const newId = await this.insumosService.crear(data);
         this.toastService.success('Insumo creado.');
+        this.inventarioAlertas.solicitarVerificacion('insumo-creado');
         await this.router.navigate(['/admin/insumos', newId]);
       }
     } catch {

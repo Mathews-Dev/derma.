@@ -25,10 +25,13 @@ export interface Usuario {
     correoVerificado: boolean;
 }
 
+/** Modalidad de atención configurada en una franja del calendario del profesional. */
+export type ModalidadFranjaHoraria = 'presencial' | 'videoconsulta' | 'ambas';
+
 export interface FranjaHoraria {
     horaInicio: string;
     horaFin: string;
-    modalidad?: 'presencial' | 'videoconsulta' | 'ambas';
+    modalidad?: ModalidadFranjaHoraria;
 }
 
 export interface HorariosLaborales {

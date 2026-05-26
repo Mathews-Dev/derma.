@@ -1,7 +1,7 @@
 @keyframes slide-in {
   from {
     opacity: 0;
-    transform: translateX(384px);
+    transform: translateX(100%);
   }
   to {
     opacity: 1;
@@ -9,6 +9,67 @@
   }
 }
 
+@keyframes slide-out {
+  from {
+    opacity: 1;
+    transform: translateX(0);
+  }
+  to {
+    opacity: 0;
+    transform: translateX(100%);
+  }
+}
+
 .animate-slide-in {
-  animation: slide-in 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  animation: slide-in 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.animate-slide-out {
+  animation: slide-out 0.15s cubic-bezier(0.4, 0, 1, 1) forwards;
+}
+
+.toast-progress {
+  position: relative;
+  overflow: hidden;
+}
+
+.toast-progress::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0;
+  height: 100%;
+  width: 100%;
+  transform-origin: left;
+  animation: toast-progress-shrink linear forwards;
+  animation-duration: var(--toast-duration-ms, 120000ms);
+}
+
+.toast-progress--success::after {
+  background-color: #2d6a4f;
+}
+
+.toast-progress--error::after {
+  background-color: #c0392b;
+}
+
+.toast-progress--warning::after {
+  background-color: #b5830a;
+}
+
+.toast-progress--default::after {
+  background-color: var(--c-600);
+}
+
+.toast-card:hover .toast-progress::after {
+  animation-play-state: paused;
+}
+
+@keyframes toast-progress-shrink {
+  from {
+    transform: scaleX(1);
+  }
+  to {
+    transform: scaleX(0);
+  }
 }
