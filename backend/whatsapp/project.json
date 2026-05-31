@@ -14,10 +14,11 @@
         "outputPath": "dist/backend/whatsapp",
         "format": ["cjs"],
         "bundle": false,
-        "main": "backend/whatsapp/src/firebase/index.ts",
+        "main": "backend/whatsapp/src/providers/firebase/index.ts",
         "tsConfig": "backend/whatsapp/tsconfig.app.json",
         "assets": ["backend/whatsapp/src/assets"],
         "generatePackageJson": true,
+        "skipPackageManager": true,
         "esbuildOptions": {
           "sourcemap": true,
           "outExtension": {
@@ -36,7 +37,7 @@
           }
         },
         "production": {
-          "main": "backend/whatsapp/src/firebase/index.ts",
+          "main": "backend/whatsapp/src/providers/firebase/index.ts",
           "esbuildOptions": {
             "sourcemap": false,
             "outExtension": {
@@ -49,13 +50,7 @@
     "test": {
       "executor": "nx:run-commands",
       "options": {
-        "command": "npx -y tsx --test \"backend/whatsapp/src/**/*.test.ts\""
-      }
-    },
-    "recordatorios": {
-      "executor": "nx:run-commands",
-      "options": {
-        "command": "npx -y tsx backend/whatsapp/src/scripts/disparar-recordatorios.ts"
+        "command": "pnpm exec tsx --test \"backend/whatsapp/src/**/*.test.ts\""
       }
     },
     "serve": {

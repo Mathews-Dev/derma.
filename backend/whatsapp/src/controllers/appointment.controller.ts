@@ -1,17 +1,11 @@
-import { Request, Response, NextFunction } from 'express';
+import { Request, Response } from 'express';
 import {
   cancelarTurnoPorAccessToken,
   getTurnoByAccessToken,
-} from '../services/turno-portal.service';
+} from '../services/appointment-portal.service';
+import { asyncHandler } from '../utils/async-handler.util';
 
-function asyncHandler(
-  fn: (req: Request, res: Response) => Promise<void>
-) {
-  return (req: Request, res: Response, next: NextFunction) =>
-    fn(req, res).catch(next);
-}
-
-export const publicTurnoController = {
+export const appointmentController = {
   obtener: asyncHandler(async (req, res) => {
     const accessToken = String(req.params['accessToken'] ?? '').trim();
     if (!accessToken) {

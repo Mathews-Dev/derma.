@@ -1,15 +1,42 @@
-/** Zona horaria para textos de WhatsApp (turnos / videoconsultas). */
-const WHATSAPP_TZ = 'America/Argentina/Buenos_Aires';
+export const WHATSAPP_TZ = 'America/Argentina/Buenos_Aires';
+
+function ymdCalendarioEnTz(date: Date, timeZone: string): string {
+  return new Intl.DateTimeFormat('en-CA', {
+    timeZone,
+    year:  'numeric',
+    month: '2-digit',
+    day:   '2-digit',
+  }).format(date);
+}
+
+function parseYmd(ymd: string): { y: number; m: number; d: number } {
+  const [y, m, d] = ymd.split('-').map(Number);
+  return { y, m, d };
+}
+
+function addDaysYmd(ymd: string, days: number): string {
+  const { y, m, d } = parseYmd(ymd);
+  return new Date(Date.UTC(y, m - 1, d + days)).toISOString().slice(0, 10);
+}
+
+function boundsDiaEnArgentina(ymd: string): { inicio: Date; fin: Date } {
+  const { y, m, d } = parseYmd(ymd);
+  return {
+    inicio: new Date(Date.UTC(y, m - 1, d, 3, 0, 0, 0)),
+    fin:    new Date(Date.UTC(y, m - 1, d + 1, 2, 59, 59, 999)),
+  };
+}
+
+export function rangoFechaMananaArgentina(ahora = new Date()): { inicio: Date; fin: Date } {
+  const mananaYmd = addDaysYmd(ymdCalendarioEnTz(ahora, WHATSAPP_TZ), 1);
+  return boundsDiaEnArgentina(mananaYmd);
+}
 
 function capitalizePalabra(s: string): string {
   if (!s) return s;
   return s.charAt(0).toUpperCase() + s.slice(1);
 }
 
-/**
- * Fecha y hora legible para notificaciones WhatsApp:
- * "Miércoles 20 de mayo a las 10:00 hs"
- */
 export function formatFechaHoraHumanaWhatsApp(date: Date): string {
   const dtf = new Intl.DateTimeFormat('es-AR', {
     timeZone:     WHATSAPP_TZ,
@@ -35,9 +62,6 @@ export function formatFechaHoraHumanaWhatsApp(date: Date): string {
   return `${weekday} ${day} de ${month} a las ${hour}:${minute} hs`;
 }
 
-/**
- * Solo fecha: "Miércoles 20 de mayo" (para plantillas que separan fecha y hora).
- */
 export function formatSoloFechaHumanaWhatsApp(date: Date): string {
   const dtf = new Intl.DateTimeFormat('es-AR', {
     timeZone: WHATSAPP_TZ,
@@ -56,9 +80,6 @@ export function formatSoloFechaHumanaWhatsApp(date: Date): string {
   return `${weekday} ${day} de ${month}`;
 }
 
-/**
- * Solo hora: "10:00 hs" (para plantillas que envían fecha y hora por separado).
- */
 export function formatSoloHoraWhatsApp(date: Date): string {
   const dtf = new Intl.DateTimeFormat('es-AR', {
     timeZone: WHATSAPP_TZ,
@@ -74,10 +95,6 @@ export function formatSoloHoraWhatsApp(date: Date): string {
   return `${hour}:${minute} hs`;
 }
 
-/**
- * Día del turno (Timestamp Firestore) + hora "HH:mm" →
- * "Miércoles 20 de mayo a las 10:00 hs"
- */
 export function formatDesdeFechaTurnoYHora(fecha: Date, horaInicio: string): string {
   const fechaHumana = formatSoloFechaHumanaWhatsApp(fecha);
   const horaHumana  = formatSoloHoraDesdeString(horaInicio);
@@ -93,7 +110,6 @@ export function formatSoloHoraDesdeString(horaInicio: string): string {
   return `${hh}:${mm} hs`;
 }
 
-/** Normaliza `fecha` del body (ISO, Timestamp serializado o ya legible) para plantillas. */
 export function coerceFechaWhatsAppBody(fecha: unknown, fallback: Date): string {
   if (fecha == null || fecha === '') return formatSoloFechaHumanaWhatsApp(fallback);
   if (fecha instanceof Date) return formatSoloFechaHumanaWhatsApp(fecha);
@@ -105,17 +121,11 @@ export function coerceFechaWhatsAppBody(fecha: unknown, fallback: Date): string 
   return formatSoloFechaHumanaWhatsApp(fallback);
 }
 
-/** Normaliza hora del body "H:mm" o "HH:mm" → "HH:mm hs". Si no coincide, devuelve el string. */
 export function coerceHoraWhatsAppBody(hora: unknown): string {
   if (hora == null || hora === '') return '';
   const s = String(hora).trim();
   if (/^\d{1,2}:\d{2}/.test(s)) return formatSoloHoraDesdeString(s);
   return s;
-}
-
-/** @deprecated Usar formatSoloFechaHumanaWhatsApp */
-export function formatFecha(date: Date): string {
-  return formatSoloFechaHumanaWhatsApp(date);
 }
 
 export function formatFechaCorta(date: Date): string {

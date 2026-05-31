@@ -3,7 +3,7 @@
 ## Desarrollo local
 
 ```bash
-npx nx serve google-calendar
+pnpm nx serve google-calendar
 ```
 
 Puerto: `GOOGLE_CALENDAR_PORT` o **3002** por defecto.

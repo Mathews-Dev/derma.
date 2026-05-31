@@ -1,18 +1,12 @@
-import { Request, Response, NextFunction } from 'express';
-import { sendTemplate } from '../services/whatsapp.service';
-import { templates }    from '../templates';
+import { Request, Response } from 'express';
+import { sendTemplate } from '../providers/whatsapp/whatsapp.service';
+import { templates } from '../templates';
 import { formatPhoneAR } from '../utils/phone.utils';
 import {
   coerceFechaWhatsAppBody,
   coerceHoraWhatsAppBody,
 } from '../utils/date.utils';
-
-function asyncHandler(
-  fn: (req: Request, res: Response) => Promise<void>
-) {
-  return (req: Request, res: Response, next: NextFunction) =>
-    fn(req, res).catch(next);
-}
+import { asyncHandler } from '../utils/async-handler.util';
 
 function requireAccessToken(body: Record<string, unknown>): string {
   const token = body['accessToken'];
@@ -106,7 +100,7 @@ export const messageController = {
         meetCode,
       ),
     );
-    res.json({ ok: true, mensaje: 'Videoconsulta confirmada (envío simulado o real)' });
+    res.json({ ok: true, mensaje: 'Videoconsulta confirmada' });
   }),
 
 };

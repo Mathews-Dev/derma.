@@ -10,6 +10,7 @@ export const mercadopago = onRequest(
     secrets: [
       'MERCADO_PAGO_TOKEN',
       'FRONTEND_URL',
+      'NOTIFICATION_URL',
     ],
   },
   app,

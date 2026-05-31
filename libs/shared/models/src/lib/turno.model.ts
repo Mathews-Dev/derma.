@@ -102,6 +102,10 @@ export interface Turno {
     // Notificaciones
     notificacionesWhatsApp: boolean;
     telefonoNotificaciones?: string | null;
+    /** Marca de envío del recordatorio WhatsApp; evita reenvíos. */
+    recordatorioWhatsAppEnviadoAt?: Timestamp | null;
+    /** Instante programado (Luxon al confirmar); el cron envía cuando `<= now`. */
+    recordatorioProgramadoPara?: Timestamp | null;
 
     // Reprogramación
     turnoOriginalId?: string | null;

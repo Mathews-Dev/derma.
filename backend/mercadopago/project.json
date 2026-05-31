@@ -18,6 +18,7 @@
         "tsConfig": "backend/mercadopago/tsconfig.app.json",
         "assets": ["backend/mercadopago/src/assets"],
         "generatePackageJson": true,
+        "skipPackageManager": true,
         "esbuildOptions": {
           "sourcemap": true,
           "outExtension": {
@@ -45,31 +46,6 @@
           }
         }
       }
-    },
-    "prune-lockfile": {
-      "dependsOn": ["build"],
-      "cache": true,
-      "executor": "@nx/js:prune-lockfile",
-      "outputs": [
-        "{workspaceRoot}/dist/backend/mercadopago/package.json",
-        "{workspaceRoot}/dist/backend/mercadopago/package-lock.json"
-      ],
-      "options": {
-        "buildTarget": "build"
-      }
-    },
-    "copy-workspace-modules": {
-      "dependsOn": ["build"],
-      "cache": true,
-      "outputs": ["{workspaceRoot}/dist/backend/mercadopago/workspace_modules"],
-      "executor": "@nx/js:copy-workspace-modules",
-      "options": {
-        "buildTarget": "build"
-      }
-    },
-    "prune": {
-      "dependsOn": ["prune-lockfile", "copy-workspace-modules"],
-      "executor": "nx:noop"
     },
     "serve": {
       "continuous": true,

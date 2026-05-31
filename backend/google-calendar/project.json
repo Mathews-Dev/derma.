@@ -18,6 +18,7 @@
         "tsConfig": "backend/google-calendar/tsconfig.app.json",
         "assets": ["backend/google-calendar/src/assets"],
         "generatePackageJson": true,
+        "skipPackageManager": true,
         "esbuildOptions": {
           "sourcemap": true,
           "outExtension": {

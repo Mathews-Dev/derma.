@@ -34,11 +34,11 @@
         ".git",
         "firebase-debug.log",
         "firebase-debug.*.log",
-        "*.local"
+        "*.local",
+        "pnpm-lock.yaml",
+        "pnpm-workspace.yaml"
       ],
-      "predeploy": [
-        "nx build whatsapp --prod"
-      ]
+      "predeploy": ["pnpm nx build whatsapp --prod"]
     },
     {
       "source": "dist/backend/mercadopago",
@@ -50,11 +50,11 @@
         ".git",
         "firebase-debug.log",
         "firebase-debug.*.log",
-        "*.local"
+        "*.local",
+        "pnpm-lock.yaml",
+        "pnpm-workspace.yaml"
       ],
-      "predeploy": [
-        "nx build mercadopago --prod"
-      ]
+      "predeploy": ["pnpm nx build mercadopago --prod"]
     },
     {
       "source": "dist/backend/google-calendar",
@@ -66,11 +66,11 @@
         ".git",
         "firebase-debug.log",
         "firebase-debug.*.log",
-        "*.local"
+        "*.local",
+        "pnpm-lock.yaml",
+        "pnpm-workspace.yaml"
       ],
-      "predeploy": [
-        "nx build google-calendar --prod"
-      ]
+      "predeploy": ["pnpm nx build google-calendar --prod"]
     }
   ]
 }

@@ -6,8 +6,6 @@ export const env = {
   /** Puerto del API WhatsApp (no usar el mismo que mercadopago). */
   PORT: process.env['WHATSAPP_PORT'] ?? process.env['PORT'] ?? '3003',
   WHATSAPP_SIMULATION: process.env['WHATSAPP_SIMULATION'] === 'true',
-  /** Si `true`, expone POST /dev/recordatorios (solo desarrollo local). */
-  WHATSAPP_DEV_TOOLS: process.env['WHATSAPP_DEV_TOOLS'] === 'true',
 } as const;
 
 function requireEnv(key: string): string {

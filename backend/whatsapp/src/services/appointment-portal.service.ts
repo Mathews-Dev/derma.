@@ -1,23 +1,8 @@
 import { getFirestore, Timestamp } from 'firebase-admin/firestore';
-import { EstadoTurno } from '../types/turno.types';
+import { EstadoTurno } from '../models/appointment.types';
+import type { TurnoPortalPublico } from '../models/appointment.model';
 
 const HORAS_MINIMAS_CAMBIO = 24;
-
-export interface TurnoPortalPublico {
-  id: string;
-  pacienteId: string;
-  pacienteNombre: string;
-  profesionalNombre: string;
-  fecha: string;
-  horaInicio: string;
-  horaFin: string;
-  estado: string;
-  estadoPago: string;
-  monto: number;
-  puedeModificar: boolean;
-  horasRestantes: number;
-  mensajePolitica: string;
-}
 
 function turnoInicio(fecha: Timestamp, horaInicio: string): Date {
   const d = fecha.toDate();
@@ -132,6 +117,6 @@ export async function cancelarTurnoPorAccessToken(
       await slotRef.update({ estado: 'cancelado' });
     }
   } catch {
-    /* slot opcional */
+    // Slot is optional
   }
 }

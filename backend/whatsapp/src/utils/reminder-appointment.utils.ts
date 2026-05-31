@@ -1,11 +1,11 @@
-import type { TemplateMessage } from '../templates/types';
 import { templates } from '../templates';
 import { extractMeetCode } from '../utils/meet.utils';
 import {
   formatSoloFechaHumanaWhatsApp,
   formatSoloHoraDesdeString,
 } from '../utils/date.utils';
-import type { TurnoParaNotificar } from './turno.service';
+import type { TemplateMessage } from '../models/template.model';
+import type { TurnoParaNotificar } from '../models/appointment.model';
 
 export function esVideoconsulta(turno: TurnoParaNotificar): boolean {
   return turno.modalidadConsulta === 'videoconsulta';
@@ -17,7 +17,9 @@ export function linkMeetDelTurno(turno: TurnoParaNotificar): string | null {
   return turno.linkMeet?.trim() || null;
 }
 
-/** Arma la plantilla de recordatorio según modalidad y datos del turno. */
+/**
+ * Builds the appropriate WhatsApp reminder template based on appointment modality and data
+ */
 export function plantillaRecordatorioParaTurno(
   turno: TurnoParaNotificar,
 ): { template: TemplateMessage; tipo: 'videoconsulta' | 'turno' } | { error: string } {

@@ -1,13 +1,18 @@
 import { initializeApp } from 'firebase-admin/app';
 import { onRequest }  from 'firebase-functions/v2/https';
 import { onSchedule } from 'firebase-functions/v2/scheduler';
-import { app }        from '../app';
+import { app }        from '../../app';
 import { runRecordatorios } from './scheduler';
+import { onTurnoConfirmado } from './appointment-reminder';
 
-// En Cloud Functions initializeApp() sin parámetros es suficiente
+export { onTurnoConfirmado };
+
 initializeApp();
 
-export const whatsapp = onRequest(
+/**
+ * HTTP endpoint for the WhatsApp webhook (receives and sends messages)
+ */
+export const whatsappWebhook = onRequest(
   {
     region:  'southamerica-east1',
     secrets: [
@@ -20,9 +25,12 @@ export const whatsapp = onRequest(
   app,
 );
 
-export const recordatorios = onSchedule(
+/**
+ * Scheduled function: processes and sends pending appointment reminders every 10 minutes
+ */
+export const enviarRecordatoriosProgramados = onSchedule(
   {
-    schedule:  'every 60 minutes',
+    schedule:  '*/10 * * * *',
     region:    'southamerica-east1',
     timeZone:  'America/Argentina/Buenos_Aires',
     secrets: [
