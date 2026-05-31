@@ -1,5 +1,8 @@
 import { initializeApp, getApps } from 'firebase-admin/app';
 
+/**
+ * Initializes Firebase Admin SDK with environment credentials or default credentials (for Cloud Functions)
+ */
 export function initFirebaseAdmin(): void {
   if (getApps().length > 0) return;
   
@@ -13,6 +16,6 @@ export function initFirebaseAdmin(): void {
       }),
     });
   } else {
-    initializeApp(); // Cloud Functions — credenciales automáticas
+    initializeApp();
   }
 }

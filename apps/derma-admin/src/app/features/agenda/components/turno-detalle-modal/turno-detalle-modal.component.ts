@@ -82,11 +82,17 @@ export class TurnoDetalleModalComponent {
       actions.push({ accion: AccionTurno.REPROGRAMAR, label: 'Reprogramar', icon: 'calendar', variant: 'ghost' });
       actions.push({ accion: AccionTurno.CANCELAR, label: 'Cancelar turno', icon: 'trash', variant: 'danger' });
     }
-    if (this.turno().estadoPago !== EstadoPago.PAGADO) {
+    if (this.turnoMayRegistrarPago()) {
       actions.push({ accion: AccionTurno.REGISTRAR_PAGO, label: 'Registrar pago', icon: 'credit-card', variant: 'success' });
     }
 
     return actions;
+  }
+
+  private turnoMayRegistrarPago(): boolean {
+    if (this.turno().estadoPago === EstadoPago.PAGADO) return false;
+    const e = this.turno().estado;
+    return e === EstadoTurno.PENDIENTE || e === EstadoTurno.CONFIRMADO;
   }
 
   getEstadoLabel(): string {

@@ -1,14 +1,16 @@
 import {
     ChangeDetectionStrategy,
+    ChangeDetectorRef,
     Component,
     computed,
+    effect,
+    inject,
     input,
-    linkedSignal,
     output,
     signal,
 } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { HorariosLaborales, FranjaHoraria } from '@derma/models';
+import { HorariosLaborales, FranjaHoraria, ModalidadFranjaHoraria } from '@derma/models';
 import { ToggleComponent } from '../../toggle/toggle.component';
 import { UiTimePickerComponent } from '../ui-time-picker/ui-time-picker.component';
 
@@ -45,9 +47,22 @@ const DEFAULT_DAYS: DaySchedule[] = [
     styleUrl: './schedule-selector.component.css',
 })
 export class ScheduleSelectorComponent {
+    private readonly cdr = inject(ChangeDetectorRef);
+
+    /** Evita pisar estado local cuando el objeto del padre no cambió realmente. */
+    private lastScheduleFingerprint = '';
+
     initialSchedule = input<HorariosLaborales | null>(null);
     profesionalInfo = input<ProfesionalInfo | null>(null);
+    /** Muestra selector de modalidad (presencial / videoconsulta / ambas) por franja. */
+    showModalidad = input(true);
     scheduleChange  = output<HorariosLaborales>();
+
+    readonly modalidadOptions: { id: ModalidadFranjaHoraria; label: string }[] = [
+        { id: 'presencial', label: 'Presencial' },
+        { id: 'videoconsulta', label: 'Videoconsulta' },
+        { id: 'ambas', label: 'Ambas' },
+    ];
 
     // Modo edición
     editMode = signal(false);
@@ -73,19 +88,52 @@ export class ScheduleSelectorComponent {
         return this.days().find(d => d.key === dayKey) || this.days()[0];
     });
 
-    // Horarios (vista principal)
-    days = linkedSignal<HorariosLaborales | null, DaySchedule[]>({
-        source: () => this.initialSchedule(),
-        computation: (schedule) => {
-            if (!schedule) return DEFAULT_DAYS.map(d => ({ ...d, franjas: [] }));
-            return DEFAULT_DAYS.map(d => {
-                const franjas: FranjaHoraria[] = schedule[d.key]
-                    ? JSON.parse(JSON.stringify(schedule[d.key]))
-                    : [];
-                return { ...d, isActive: franjas.length > 0, franjas };
-            });
-        },
-    });
+    /**
+     * Importante: no usar linkedSignal aquí.
+     * Con mutaciones in-place + recomputaciones del fuente hubo inconsistencias OnPush al cambiar modalidad por franja.
+     * Sincronizamos desde el input con efecto profundo clone estructural.
+     */
+    days = signal<DaySchedule[]>(this.buildDaysFromSchedule(null));
+
+    constructor() {
+        effect(() => {
+            const inp = this.initialSchedule();
+            if (this.editMode()) return;
+            const fp = JSON.stringify(inp ?? {});
+            if (fp === this.lastScheduleFingerprint) return;
+            this.lastScheduleFingerprint = fp;
+            this.days.set(this.buildDaysFromSchedule(inp));
+        });
+    }
+
+    /** Clave estable para `@for` de franjas (solo índices y props permitidas en `track`). */
+    franjaTrackKey(index: number, franja: FranjaHoraria): string {
+        const dayKey = this.selectedDay();
+        return `${String(dayKey)}:${index}:${franja.horaInicio}:${franja.horaFin}:${franja.modalidad ?? 'ambas'}`;
+    }
+
+    private buildDaysFromSchedule(schedule: HorariosLaborales | null): DaySchedule[] {
+        if (!schedule) {
+            return DEFAULT_DAYS.map(d => ({ ...d, franjas: [] }));
+        }
+        return DEFAULT_DAYS.map(d => {
+            const raw = schedule[d.key];
+            const franjas: FranjaHoraria[] = Array.isArray(raw)
+                ? raw.map(fr => ({ ...fr }))
+                : [];
+            return { ...d, isActive: franjas.length > 0, franjas };
+        });
+    }
+
+    /** Clona un día solo si hace falta (inmutable). */
+    private mapDays(
+        dayKey: keyof HorariosLaborales,
+        replacer: (day: DaySchedule) => DaySchedule,
+    ): void {
+        this.days.update(list =>
+            list.map(d => (d.key === dayKey ? replacer(d) : d)),
+        );
+    }
 
     // Computed: horas totales semanales
     totalHoras = computed<number>(() => {
@@ -135,11 +183,49 @@ export class ScheduleSelectorComponent {
         return Math.max(0, finH - inicioH);
     }
 
+    modalidadFranja(franja: FranjaHoraria): ModalidadFranjaHoraria {
+        return franja.modalidad ?? 'ambas';
+    }
+
+    etiquetaModalidad(modalidad: ModalidadFranjaHoraria): string {
+        return this.modalidadOptions.find(o => o.id === modalidad)?.label ?? 'Ambas';
+    }
+
+    setModalidadFranja(dayKey: keyof HorariosLaborales, index: number, modalidad: ModalidadFranjaHoraria): void {
+        if (this.editMode()) {
+            this.editSchedule.update(list =>
+                list.map(d =>
+                    d.key !== dayKey
+                        ? d
+                        : {
+                              ...d,
+                              franjas: d.franjas.map((fr, i) =>
+                                  i === index ? { ...fr, modalidad } : fr,
+                              ),
+                          },
+                ),
+            );
+        } else {
+            this.mapDays(dayKey, d => ({
+                ...d,
+                franjas: d.franjas.map((fr, i) =>
+                    i === index ? { ...fr, modalidad } : fr,
+                ),
+            }));
+        }
+        this.emitChanges();
+        this.cdr.markForCheck();
+    }
+
+    private franjaNueva(): FranjaHoraria {
+        return { horaInicio: '09:00', horaFin: '17:00', modalidad: 'ambas' };
+    }
+
     // Entrar/salir de modo edición via toggle
     toggleEditMode(isEnabled: boolean): void {
         if (isEnabled) {
             // Entrando en modo edición - crear copia editable
-            this.editSchedule.set(JSON.parse(JSON.stringify(this.days())));
+            this.editSchedule.set(structuredClone(this.days()));
             this.editMode.set(true);
         } else {
             // Saliendo de modo edición - validar y guardar si es necesario
@@ -155,7 +241,7 @@ export class ScheduleSelectorComponent {
 
             if (allValid) {
                 // Guardar cambios
-                this.days.set(JSON.parse(JSON.stringify(this.editSchedule())));
+                this.days.set(structuredClone(this.editSchedule()));
                 this.emitChanges();
             } else {
                 // Volver a edición si hay errores
@@ -194,52 +280,90 @@ export class ScheduleSelectorComponent {
         }
 
         // Copiar cambios editados a los días principales
-        this.days.set(JSON.parse(JSON.stringify(this.editSchedule())));
+        this.days.set(structuredClone(this.editSchedule()));
         this.editMode.set(false);
         this.emitChanges();
     }
 
     // Toggle día activo/inactivo
     toggleDayActive(day: DaySchedule): void {
-        const target = this.editMode() ? this.editSchedule : this.days;
-        target.update(currentDays => {
-            const d = currentDays.find(x => x.key === day.key);
-            if (d) {
-                d.isActive = !d.isActive;
-                if (d.isActive && d.franjas.length === 0) {
-                    d.franjas.push({ horaInicio: '09:00', horaFin: '17:00' });
-                }
-            }
-            return [...currentDays];
-        });
+        const key = day.key;
+        if (this.editMode()) {
+            this.editSchedule.update(list =>
+                list.map(d =>
+                    d.key !== key
+                        ? d
+                        : (() => {
+                              const active = !d.isActive;
+                              const franjas =
+                                  active && d.franjas.length === 0
+                                      ? [this.franjaNueva()]
+                                      : [...d.franjas];
+                              return { ...d, isActive: active, franjas };
+                          })(),
+                ),
+            );
+        } else {
+            this.mapDays(key, d => {
+                const active = !d.isActive;
+                const franjas =
+                    active && d.franjas.length === 0
+                        ? [this.franjaNueva()]
+                        : [...d.franjas];
+                return { ...d, isActive: active, franjas };
+            });
+        }
+        this.emitChanges();
     }
 
     // Agregar franja a un día
-    addFranjaToDay(dayKey: string): void {
-        const target = this.editMode() ? this.editSchedule : this.days;
-        target.update(currentDays => {
-            const d = currentDays.find(x => x.key === dayKey);
-            if (d && d.isActive) {
-                d.franjas.push({ horaInicio: '09:00', horaFin: '17:00' });
-            }
-            return [...currentDays];
-        });
+    addFranjaToDay(dayKey: keyof HorariosLaborales): void {
+        if (this.editMode()) {
+            this.editSchedule.update(list =>
+                list.map(d =>
+                    d.key === dayKey && d.isActive
+                        ? {
+                              ...d,
+                              franjas: [...d.franjas, this.franjaNueva()],
+                          }
+                        : d,
+                ),
+            );
+        } else {
+            this.mapDays(dayKey, d =>
+                !d.isActive
+                    ? d
+                    : { ...d, franjas: [...d.franjas, this.franjaNueva()] },
+            );
+        }
+        this.emitChanges();
     }
 
     // Eliminar franja específica
-    removeFranja(dayKey: string, index: number): void {
-        const target = this.editMode() ? this.editSchedule : this.days;
-        target.update(currentDays => {
-            const d = currentDays.find(x => x.key === dayKey);
-            if (d) {
-                d.franjas.splice(index, 1);
-                // Si no quedan franjas, marcar día como inactivo
-                if (d.franjas.length === 0) {
-                    d.isActive = false;
-                }
-            }
-            return [...currentDays];
-        });
+    removeFranja(dayKey: keyof HorariosLaborales, index: number): void {
+        if (this.editMode()) {
+            this.editSchedule.update(list =>
+                list.map(d => {
+                    if (d.key !== dayKey) return d;
+                    const franjas = d.franjas.filter((_, i) => i !== index);
+                    return {
+                        ...d,
+                        franjas,
+                        isActive: franjas.length > 0 ? d.isActive : false,
+                    };
+                }),
+            );
+        } else {
+            this.mapDays(dayKey, d => {
+                const franjas = d.franjas.filter((_, i) => i !== index);
+                return {
+                    ...d,
+                    franjas,
+                    isActive: franjas.length > 0 ? d.isActive : false,
+                };
+            });
+        }
+        this.emitChanges();
     }
 
     // Emitir cambios al componente padre

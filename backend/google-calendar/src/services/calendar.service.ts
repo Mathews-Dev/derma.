@@ -17,31 +17,56 @@ function crearClienteCalendar(refreshTokenDelDoctor: string) {
   return google.calendar({ version: 'v3', auth: clienteOAuth });
 }
 
+function emailValidoParaCalendar(email: string | undefined | null): boolean {
+  const e = email?.trim() ?? '';
+  return e.length > 0 && e.includes('@') && e.includes('.');
+}
+
 export async function crearEvento(
   parametros: CrearEventoParams,
 ): Promise<ResultadoEvento> {
   const refreshToken = await obtenerRefreshTokenDelDoctor(parametros.profesionalUid);
   const clienteCalendar = crearClienteCalendar(refreshToken);
 
+  const incluirAsistente = emailValidoParaCalendar(parametros.pacienteEmail);
+
+  const reminderEmailMin = env.calendarReminderEmailMinutes;
+  const reminderPopupMin = env.calendarReminderPopupMinutes;
+
+  console.log('[calendar] crearEvento inicio', {
+    turnoId: parametros.turnoId,
+    profesionalUid: parametros.profesionalUid,
+    esVideoconsulta: parametros.esVideoconsulta,
+    fechaInicio: parametros.fechaInicio,
+    fechaFin: parametros.fechaFin,
+    incluirAsistente,
+    pacienteEmail: incluirAsistente ? parametros.pacienteEmail?.trim() : '(omitido — sin email válido)',
+    reminderEmailMinutos: reminderEmailMin,
+    reminderPopupMinutos: reminderPopupMin,
+  });
+
   const datosDelEvento: Record<string, unknown> = {
     summary: parametros.tituloEvento,
     description: parametros.descripcion,
     start: { dateTime: parametros.fechaInicio, timeZone: TIME_ZONE },
     end: { dateTime: parametros.fechaFin, timeZone: TIME_ZONE },
-    attendees: [
-      {
-        email: parametros.pacienteEmail,
-        displayName: parametros.pacienteNombre,
-      },
-    ],
     reminders: {
       useDefault: false,
       overrides: [
-        { method: 'email', minutes: 60 },
-        { method: 'popup', minutes: 15 },
+        { method: 'email', minutes: reminderEmailMin },
+        { method: 'popup', minutes: reminderPopupMin },
       ],
     },
   };
+
+  if (incluirAsistente) {
+    datosDelEvento['attendees'] = [
+      {
+        email: parametros.pacienteEmail!.trim(),
+        displayName: parametros.pacienteNombre,
+      },
+    ];
+  }
 
   if (parametros.esVideoconsulta) {
     datosDelEvento['conferenceData'] = {
@@ -61,6 +86,14 @@ export async function crearEvento(
 
   const eventoCreado = respuesta.data;
   const meetLink = eventoCreado.conferenceData?.entryPoints?.[0]?.uri ?? null;
+
+  console.log('[calendar] crearEvento ok', {
+    turnoId: parametros.turnoId,
+    googleEventId: eventoCreado.id,
+    meetLink,
+    htmlLink: eventoCreado.htmlLink ?? null,
+    conferenceStatus: eventoCreado.conferenceData?.conferenceId ?? null,
+  });
 
   return {
     googleEventId: eventoCreado.id!,

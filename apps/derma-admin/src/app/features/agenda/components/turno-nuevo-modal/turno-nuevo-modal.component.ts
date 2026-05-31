@@ -13,6 +13,7 @@ import {
   signal,
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { HttpErrorResponse } from '@angular/common/http';
 import { FormsModule } from '@angular/forms';
 import {
   Profesional,
@@ -23,6 +24,7 @@ import {
   MetodoPago,
   Usuario,
   ModalidadConsulta,
+  ModalidadFranjaHoraria,
   Turno,
 } from '@derma/models';
 import { FirestoreService, TurnosService, SlotOcupadoError } from '@derma/firebase';
@@ -30,10 +32,20 @@ import { filter, firstValueFrom, Subscription, take } from 'rxjs';
 import { Timestamp } from 'firebase/firestore';
 import {
   franjasDelDia,
+  franjasDelDiaParaModalidad,
   generarSlotsEnFranja,
   textoFranjasDelDia,
   turnoDentroDeDisponibilidadProfesional,
+  franjaParaHorario,
+  modalidadesPermitidasFranja,
+  modalidadPermitidaParaTurno,
+  etiquetaModalidadFranja,
+  modalidadFranja,
+  profesionalOfreceModalidadEnFecha,
+  profesionalOfreceModalidadEnHorarios,
 } from '../../disponibilidad/disponibilidad-agenda.utils';
+import { GoogleCalendarApiService } from '../../../videoconsulta/data-access/google-calendar-api.service';
+import { buildCrearEventoPayload, buildCrearEventoPayloadPresencial } from '../../../videoconsulta/utils/videoconsulta-calendar.utils';
 import { PagoExitoPigComponent } from '../pago-exito-pig/pago-exito-pig.component';
 import {
   UiPhoneInputComponent,
@@ -77,6 +89,8 @@ interface FranjaSlotsVm {
   label: string;
   horaInicio: string;
   horaFin: string;
+  modalidad: ModalidadFranjaHoraria;
+  modalidadLabel: string;
   slots: { hora: string; ocupado: boolean }[];
   disponibles: number;
 }
@@ -105,6 +119,7 @@ export class TurnoNuevoModalComponent implements OnDestroy {
   private readonly mpPayment     = inject(MercadoPagoPaymentService);
   private readonly whatsappNotif = inject(WhatsappNotificacionesService);
   private readonly toast         = inject(ToastService);
+  private readonly googleCalendarApi = inject(GoogleCalendarApiService);
   private readonly zone          = inject(NgZone);
   private readonly cdr           = inject(ChangeDetectorRef);
 
@@ -193,6 +208,17 @@ export class TurnoNuevoModalComponent implements OnDestroy {
     return arr;
   });
 
+  /**
+   * Profesionales con horarios del perfil que admiten la modalidad (cualquier día de la semana).
+   * La fecha concreta se valida al elegir día y slot.
+   */
+  profesionalesFiltrados = computed(() => {
+    const modalidad = this.modalidadConsulta();
+    return this.profesionales().filter(p =>
+      profesionalOfreceModalidadEnHorarios(p, modalidad),
+    );
+  });
+
   profesionalSel = computed(() =>
     this.profesionales().find(x => x.uid === this.profesionalId()),
   );
@@ -200,6 +226,28 @@ export class TurnoNuevoModalComponent implements OnDestroy {
   profesionalNombreSel = computed(() => {
     const p = this.profesionalSel();
     return p ? `${p.nombre} ${p.apellido}`.trim() : '';
+  });
+
+  googleCalendarConectado = computed(() =>
+    this.profesionalSel()?.googleCalendar?.conectado === true,
+  );
+
+  /** Backend Google Calendar configurado en el admin. */
+  readonly tieneApiGoogleCalendario = computed(() =>
+    this.googleCalendarApi.tieneBaseUrlConfigurada(),
+  );
+
+  /**
+   * El profesional aún puede tomar videoconsultas (franja permite) pero falta cuenta Google —
+   * aviso informativo (el error de modalidad igual bloquea hasta conectar).
+   */
+  readonly mostrarAvisoVideoconRecomiendaGoogle = computed(() => {
+    if (this.modalidadConsulta() !== 'videoconsulta') return false;
+    if (!this.profesionalId()) return false;
+    if (!this.puedeElegirVideoconsulta()) return false;
+    if (this.errorDisponibilidad()) return false;
+    if (!this.tieneApiGoogleCalendario()) return false;
+    return !this.googleCalendarConectado();
   });
 
   duracionSel = computed(() => this.profesionalSel()?.duracionConsulta ?? 30);
@@ -222,20 +270,71 @@ export class TurnoNuevoModalComponent implements OnDestroy {
   franjasSlots = computed((): FranjaSlotsVm[] => {
     const prof  = this.profesionalSel();
     const fecha = this.fechaTurno();
+    const modalidad = this.modalidadConsulta();
     if (!prof) return [];
-    const franjas  = franjasDelDia(prof.horariosLaborales, fecha);
+    const franjas  = franjasDelDiaParaModalidad(prof.horariosLaborales, fecha, modalidad);
     const dur      = prof.duracionConsulta ?? 30;
     const ocupadas = this.horasOcupadas();
     return franjas.map(fr => {
+      const mod = modalidadFranja(fr);
       const slots = generarSlotsEnFranja(fr.horaInicio, fr.horaFin, dur).map(hora => ({ hora, ocupado: ocupadas.has(hora) }));
       return {
         label:       fr.horaInicio < '12:00' ? 'Mañana' : 'Tarde',
         horaInicio:  fr.horaInicio,
         horaFin:     fr.horaFin,
+        modalidad:   mod,
+        modalidadLabel: etiquetaModalidadFranja(mod),
         slots,
         disponibles: slots.filter(s => !s.ocupado).length,
       };
     });
+  });
+
+  franjaActiva = computed(() => {
+    const hi = this.horaInicio();
+    const hf = this.horaFinSel();
+    if (!hi || !hf) return null;
+    return franjaParaHorario(this.profesionalSel()?.horariosLaborales, this.fechaTurno(), hi, hf);
+  });
+
+  modalidadesPermitidas = computed(() => modalidadesPermitidasFranja(this.franjaActiva()));
+
+  sincronizarConsultasPresenciales = computed(
+    () => this.profesionalSel()?.googleCalendar?.syncConsultasPresenciales === true,
+  );
+
+  puedeElegirPresencial = computed(() => {
+    const prof = this.profesionalSel();
+    if (prof) {
+      return profesionalOfreceModalidadEnHorarios(prof, 'presencial');
+    }
+    return this.profesionales().some(p => profesionalOfreceModalidadEnHorarios(p, 'presencial'));
+  });
+
+  puedeElegirVideoconsulta = computed(() => {
+    const prof = this.profesionalSel();
+    if (prof) {
+      return profesionalOfreceModalidadEnHorarios(prof, 'videoconsulta');
+    }
+    return this.profesionales().some(p => profesionalOfreceModalidadEnHorarios(p, 'videoconsulta'));
+  });
+
+  errorModalidad = computed(() => {
+    const hi = this.horaInicio();
+    if (!hi || !this.profesionalId()) return null;
+    const hf = this.horaFinSel();
+    const r = modalidadPermitidaParaTurno(
+      this.profesionalSel()?.horariosLaborales,
+      this.fechaTurno(),
+      hi,
+      hf,
+      this.modalidadConsulta(),
+    );
+    if (!r.ok) return r.mensaje;
+    if (this.modalidadConsulta() === 'videoconsulta' && !this.googleCalendarConectado()) {
+      return 'Por ahora no se puede sacar una videoconsulta: el profesional todavía no conectó Google Calendar.';
+    }
+    return null;
   });
 
   hintFranjasDia = computed(() =>
@@ -306,7 +405,7 @@ export class TurnoNuevoModalComponent implements OnDestroy {
   });
 
   puedePaso2 = computed(() =>
-    !!this.profesionalId() && !!this.horaInicio() && !this.errorDisponibilidad(),
+    !!this.profesionalId() && !!this.horaInicio() && !this.errorDisponibilidad() && !this.errorModalidad(),
   );
 
   puedeConfirmar = computed(() => {
@@ -354,8 +453,12 @@ export class TurnoNuevoModalComponent implements OnDestroy {
       return;
     }
 
+    const pasoActual = this.step();
     this.stepAnimRev.set(false);
     this.step.update(s => s + 1);
+    if (pasoActual === 1) {
+      this.asegurarFechaConFranjas();
+    }
   }
 
   retroceder(): void {
@@ -403,6 +506,7 @@ export class TurnoNuevoModalComponent implements OnDestroy {
       telefonoNotificaciones: telefonoNotif?.trim() ?? null,
       tipo:                  'consulta',
       modalidadConsulta:     this.modalidadConsulta(),
+      origenCreacion:       'recepcion',
       colorProfesional:      '#4a6fa5',
     };
 
@@ -519,11 +623,60 @@ export class TurnoNuevoModalComponent implements OnDestroy {
 
   /** Pantalla de éxito con cerdito; el modal se cierra cuando el usuario confirma. */
   private async enviarWhatsappConfirmacionSiCorresponde(turnoId: string): Promise<void> {
+    const profesionalActual = this.profesionalSel();
+
+    if (
+      this.modalidadConsulta() === 'presencial' &&
+      profesionalActual?.googleCalendar?.syncConsultasPresenciales === true &&
+      profesionalActual.googleCalendar?.conectado &&
+      this.googleCalendarApi.tieneBaseUrlConfigurada()
+    ) {
+      try {
+        const turno = await firstValueFrom(this.turnosService.watchById(turnoId).pipe(take(1)));
+        if (turno) {
+          const payload = buildCrearEventoPayloadPresencial(turno);
+          console.debug('[turno-nuevo] crearEvento presencial', payload);
+          await firstValueFrom(this.googleCalendarApi.crearEvento(payload));
+        }
+      } catch (e) {
+        console.error('[turno-nuevo] crearEvento presencial falló', e);
+        this.toast.show(this.mensajeErrorCalendar(e), 'warning');
+      }
+    }
+
     const telefono = this.telefonoNotificacionesEfectivo();
     if (!telefono) {
       this.whatsappExitoEnvio.set(null);
       return;
     }
+
+    if (
+      this.modalidadConsulta() === 'videoconsulta' &&
+      this.googleCalendarConectado() &&
+      this.googleCalendarApi.tieneBaseUrlConfigurada()
+    ) {
+      try {
+        const turno = await firstValueFrom(this.turnosService.watchById(turnoId).pipe(take(1)));
+        if (!turno) throw new Error('Turno no encontrado');
+        const payload = buildCrearEventoPayload(turno);
+        console.debug('[turno-nuevo] crearEvento videoconsulta', payload);
+        const res = await firstValueFrom(this.googleCalendarApi.crearEvento(payload));
+        console.debug('[turno-nuevo] crearEvento videoconsulta ok', res);
+        this.whatsappExitoEnvio.set(res.whatsapp?.enviado === true);
+        if (!res.meetLink) {
+          this.toast.show('Turno creado pero Google no devolvió link de Meet. Revisá la consola del backend.', 'warning');
+        } else if (!res.whatsapp?.enviado) {
+          this.toast.show('Meet creado; no se pudo enviar el WhatsApp con el enlace', 'warning');
+        }
+        return;
+      } catch (e) {
+        console.error('[turno-nuevo] crearEvento videoconsulta falló', e);
+        this.whatsappExitoEnvio.set(false);
+        this.toast.show(this.mensajeErrorCalendar(e), 'warning');
+        return;
+      }
+    }
+
     try {
       await this.turnosService.update(turnoId, {
         telefonoNotificaciones: telefono,
@@ -644,16 +797,75 @@ export class TurnoNuevoModalComponent implements OnDestroy {
 
   // ─── Selección de profesional / fecha / slot ───────────────────────────────
 
-  seleccionarProfesional(uid: string): void { this.profesionalId.set(uid); this.horaInicio.set(''); }
+  seleccionarProfesional(uid: string): void {
+    this.profesionalId.set(uid);
+    this.horaInicio.set('');
+    this.ajustarModalidadSegunHorario();
+    this.asegurarFechaConFranjas();
+  }
 
   seleccionarFecha(fecha: Date): void {
     if (!this.fechaTieneFranjas(fecha)) return;
     this.fechaTurno.set(new Date(fecha.getFullYear(), fecha.getMonth(), fecha.getDate()));
     this.horaInicio.set('');
+    this.limpiarProfesionalSiNoCompatible();
   }
 
   seleccionarSlot(hora: string, ocupado: boolean): void {
-    if (!ocupado) this.horaInicio.set(hora);
+    if (!ocupado) {
+      this.horaInicio.set(hora);
+      this.ajustarModalidadSegunHorario();
+    }
+  }
+
+  elegirModalidad(modalidad: ModalidadConsulta): void {
+    if (modalidad === 'presencial' && !this.puedeElegirPresencial()) return;
+    if (modalidad === 'videoconsulta' && !this.puedeElegirVideoconsulta()) return;
+    this.modalidadConsulta.set(modalidad);
+    this.limpiarProfesionalSiNoCompatible();
+    this.asegurarFechaConFranjas();
+  }
+
+  private limpiarProfesionalSiNoCompatible(): void {
+    const pid = this.profesionalId();
+    if (!pid) return;
+    const sigueEnLista = this.profesionalesFiltrados().some(p => p.uid === pid);
+    if (!sigueEnLista) {
+      this.profesionalId.set('');
+      this.horaInicio.set('');
+    } else {
+      this.ajustarModalidadSegunHorario();
+    }
+  }
+
+  /** Si el día elegido no tiene franjas para la modalidad/profesional, salta al primer día del carrusel que sí. */
+  private asegurarFechaConFranjas(): void {
+    const modalidad = this.modalidadConsulta();
+    const pid = this.profesionalId();
+    const cumple = (fecha: Date): boolean => {
+      if (pid) {
+        const p = this.profesionales().find(x => x.uid === pid);
+        return p ? profesionalOfreceModalidadEnFecha(p, fecha, modalidad) : false;
+      }
+      return this.profesionales().some(prof =>
+        profesionalOfreceModalidadEnFecha(prof, fecha, modalidad),
+      );
+    };
+    if (cumple(this.fechaTurno())) return;
+    const primera = this.fechasCarousel().find(cumple);
+    if (primera) {
+      this.fechaTurno.set(
+        new Date(primera.getFullYear(), primera.getMonth(), primera.getDate()),
+      );
+    }
+  }
+
+  private ajustarModalidadSegunHorario(): void {
+    const permitidas = this.modalidadesPermitidas();
+    if (!permitidas.length) return;
+    if (!permitidas.includes(this.modalidadConsulta())) {
+      this.modalidadConsulta.set(permitidas[0]);
+    }
   }
 
   // ─── Helpers de formato ────────────────────────────────────────────────────
@@ -679,7 +891,13 @@ export class TurnoNuevoModalComponent implements OnDestroy {
 
   fechaTieneFranjas(fecha: Date): boolean {
     const p = this.profesionalSel();
-    return !p || franjasDelDia(p.horariosLaborales, fecha).length > 0;
+    const modalidad = this.modalidadConsulta();
+    if (p) {
+      return franjasDelDiaParaModalidad(p.horariosLaborales, fecha, modalidad).length > 0;
+    }
+    return this.profesionales().some(prof =>
+      profesionalOfreceModalidadEnFecha(prof, fecha, modalidad),
+    );
   }
 
   mismaFecha(a: Date, b: Date): boolean { return a.toDateString() === b.toDateString(); }
@@ -744,6 +962,23 @@ export class TurnoNuevoModalComponent implements OnDestroy {
     } catch {
       // El turno puede crearse igual con datos denormalizados
     }
+  }
+
+  openDocUrl(url: string | null): void {
+    if (url) window.open(url, '_blank');
+  }
+
+  private mensajeErrorCalendar(error: unknown): string {
+    if (error instanceof HttpErrorResponse) {
+      const body = error.error as { error?: string } | string | null;
+      if (typeof body === 'string' && body.trim()) return body;
+      if (body && typeof body === 'object' && typeof body.error === 'string') {
+        return body.error;
+      }
+      return error.message || 'No se pudo crear el evento en Google Calendar';
+    }
+    if (error instanceof Error) return error.message;
+    return 'No se pudo crear el evento en Google Calendar';
   }
 }
 

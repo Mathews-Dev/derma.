@@ -416,6 +416,61 @@
   min-width: 0;
 }
 
+.s2-notices {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  margin-bottom: 0.75rem;
+}
+
+.s2-notice {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.5rem;
+  padding: 0.62rem 0.7rem;
+  border-radius: 10px;
+  font-size: 0.66rem;
+  line-height: 1.42;
+}
+
+.s2-notice__icon {
+  flex-shrink: 0;
+  margin-top: 0.08rem;
+}
+
+.s2-notice__title {
+  margin: 0 0 0.12rem;
+  font-size: 0.68rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.s2-notice__text {
+  margin: 0;
+}
+
+.s2-notice--neutral {
+  border: 1px solid var(--c-200);
+  background: color-mix(in srgb, var(--c-100) 60%, var(--c-50));
+  color: var(--c-600);
+}
+
+.s2-notice--neutral .s2-notice__icon {
+  color: var(--c-400);
+}
+
+.s2-notice--warning {
+  border: 1px solid color-mix(in srgb, var(--st-pend) 35%, var(--c-200));
+  background: color-mix(in srgb, var(--st-pend-bg) 78%, var(--c-50));
+  color: var(--c-700);
+}
+
+.s2-notice--warning .s2-notice__icon,
+.s2-notice--warning .s2-notice__title {
+  color: var(--st-pend);
+}
+
 /* Lista de profesionales: scroll interno, no crece el modal */
 .s2-prof-list {
   display: flex;

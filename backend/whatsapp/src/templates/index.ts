@@ -1,8 +1,8 @@
-import {
+import type {
   TemplateButtonComponent,
   TemplateComponent,
   TemplateMessage,
-} from './types';
+} from '../models/template.model';
 
 const TEMPLATE_LANG = { code: 'es_AR' } as const;
 

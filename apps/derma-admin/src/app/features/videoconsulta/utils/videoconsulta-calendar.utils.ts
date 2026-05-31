@@ -13,21 +13,39 @@ export function turnoARangoIsoUtc(turno: Turno): { fechaInicio: string; fechaFin
 }
 
 export function buildCrearEventoPayload(turno: Turno): CrearEventoCalendarPayload {
+  return buildCalendarEventPayloadParaTurno(turno, true);
+}
+
+export function buildCrearEventoPayloadPresencial(turno: Turno): CrearEventoCalendarPayload {
+  return buildCalendarEventPayloadParaTurno(turno, false);
+}
+
+function buildCalendarEventPayloadParaTurno(
+  turno: Turno,
+  esVideoconsulta: boolean,
+): CrearEventoCalendarPayload {
   const { fechaInicio, fechaFin } = turnoARangoIsoUtc(turno);
   const descripcion = [turno.notasPaciente, turno.tratamientoNombre]
     .filter(Boolean)
     .join('\n')
     .trim();
+
+  const tituloEvento = esVideoconsulta
+    ? `Videoconsulta — ${turno.pacienteNombre}`
+    : `Consulta presencial — ${turno.pacienteNombre}`;
+
+  const descBase = esVideoconsulta ? 'Videoconsulta' : 'Consulta presencial · Turno desde la clínica';
+
   return {
     turnoId: turno.id,
     profesionalUid: turno.profesionalId,
-    tituloEvento: `Videoconsulta — ${turno.pacienteNombre}`,
-    descripcion: descripcion || 'Videoconsulta',
+    tituloEvento,
+    descripcion: descripcion || descBase,
     fechaInicio,
     fechaFin,
     pacienteEmail: turno.pacienteEmail ?? '',
     pacienteNombre: turno.pacienteNombre,
-    esVideoconsulta: true,
+    esVideoconsulta,
     telefonoNotificaciones: turno.telefonoNotificaciones ?? turno.pacienteTelefono ?? null,
     profesionalNombre: turno.profesionalNombre,
   };

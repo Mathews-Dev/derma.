@@ -53,33 +53,53 @@
           </div>
 
           <div class="ac-actions">
-            <ui-tooltip text="Confirmar" placement="top">
-              <button type="button" class="ac-act-btn"
-                      (click)="onQuickAction($event, turn.id, AccionTurno.CONFIRMAR)">
-                <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>
-              </button>
-            </ui-tooltip>
-            <ui-tooltip text="Registrar pago" placement="top">
-              <button type="button" class="ac-act-btn"
-                      (click)="onQuickAction($event, turn.id, AccionTurno.REGISTRAR_PAGO)">
-                <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="20" height="14" x="2" y="5" rx="2"/><line x1="2" x2="22" y1="10" y2="10"/></svg>
-              </button>
-            </ui-tooltip>
-            <ui-tooltip text="Marcar como atendido" placement="top">
-              <button type="button" class="ac-act-btn"
-                      (click)="onQuickAction($event, turn.id, AccionTurno.ATENDER)">
-                <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"/></svg>
-              </button>
-            </ui-tooltip>
-            <ui-tooltip
-              text="Cancelar turno"
-              placement="top"
-              [allowPushWithinViewport]="false">
-              <button type="button" class="ac-act-btn ac-act-cancel"
-                      (click)="onQuickAction($event, turn.id, AccionTurno.CANCELAR)">
-                <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
-              </button>
-            </ui-tooltip>
+
+            @if (puedeQuickConfirmar(turn)) {
+              <ui-tooltip text="Confirmar turno" placement="top">
+                <button type="button" class="ac-act-btn"
+                        (click)="onQuickAction($event, turn.id, AccionTurno.CONFIRMAR)">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>
+                </button>
+              </ui-tooltip>
+            }
+
+            @if (puedeQuickRegistrarPago(turn)) {
+              <ui-tooltip text="Registrar pago" placement="top">
+                <button type="button" class="ac-act-btn"
+                        (click)="onQuickAction($event, turn.id, AccionTurno.REGISTRAR_PAGO)">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="20" height="14" x="2" y="5" rx="2"/><line x1="2" x2="22" y1="10" y2="10"/></svg>
+                </button>
+              </ui-tooltip>
+            }
+
+            @if (puedeQuickAtender(turn)) {
+              <ui-tooltip text="Marcar como atendido" placement="top">
+                <button type="button" class="ac-act-btn"
+                        (click)="onQuickAction($event, turn.id, AccionTurno.ATENDER)">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"/></svg>
+                </button>
+              </ui-tooltip>
+            }
+
+            @if (puedeQuickNoAsistio(turn)) {
+              <ui-tooltip text="No asistió" placement="top">
+                <button type="button" class="ac-act-btn ac-act-warning"
+                        (click)="onQuickAction($event, turn.id, AccionTurno.MARCAR_NO_ASISTIO)">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="m15 9-6 6M9 9l6 6"/></svg>
+                </button>
+              </ui-tooltip>
+            }
+
+            @if (puedeQuickCancelar(turn)) {
+              <ui-tooltip text="Cancelar turno" placement="top"
+                          [allowPushWithinViewport]="false">
+                <button type="button" class="ac-act-btn ac-act-cancel"
+                        (click)="onQuickAction($event, turn.id, AccionTurno.CANCELAR)">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
+                </button>
+              </ui-tooltip>
+            }
+
           </div>
         </div>
       }

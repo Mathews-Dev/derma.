@@ -5,6 +5,8 @@ export interface GoogleCalendarIntegracion {
     emailGoogle?: string;
     calendarId?: string;
     fechaConexion?: string;
+    /** Si está conectado: también crear evento en Calendar para consultas presenciales (sin Meet). */
+    syncConsultasPresenciales?: boolean;
 }
 
 export interface Profesional extends Usuario {

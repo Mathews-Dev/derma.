@@ -1,9 +1,9 @@
 import express from 'express';
-import cors    from 'cors';
+import cors from 'cors';
 import { webhookRoutes } from './routes/webhook.routes';
 import { messageRoutes } from './routes/message.routes';
-import { publicTurnoRoutes } from './routes/public-turno.routes';
-import { errorHandler }  from './middlewares/error.middleware';
+import { appointmentRoutes } from './routes/appointment.routes';
+import { errorHandler } from './middlewares/error.middleware';
 
 export const app = express();
 
@@ -14,6 +14,6 @@ app.get('/health', (_req, res) => res.json({ status: 'ok', service: 'derma-whats
 
 app.use('/webhook',  webhookRoutes);
 app.use('/messages', messageRoutes);
-app.use('/public', publicTurnoRoutes);
+app.use('/public', appointmentRoutes);
 
 app.use(errorHandler);

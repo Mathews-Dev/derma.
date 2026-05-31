@@ -5,5 +5,6 @@ export * from './lib/tratamientos.service';
 export * from './lib/tareas.service';
 export * from './lib/notificacion-admin.service';
 export * from './lib/insumos.service';
+export * from './lib/alertas-insumos.service';
 export * from './lib/movimientos-insumo.service';
 export * from './lib/turnos.service';

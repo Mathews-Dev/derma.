@@ -19,7 +19,7 @@ import {
   defaultAgendaFilters,
   ProfesionalSidebar,
 } from '@derma/ui';
-import { TurnosService, FirestoreService } from '@derma/firebase';
+import { TurnosService, FirestoreService, isSlotOcupadoError } from '@derma/firebase';
 import {
   Turno,
   AccionTurno,
@@ -91,7 +91,9 @@ export class AgendaComponent {
   turnoSeleccionado = signal<Turno | null>(null);
   modalDetalle = signal(false);
   modalCancelar = signal(false);
+  cancelando = signal(false);
   modalReprogramar = signal(false);
+  reprogramando = signal(false);
   modalPago = signal(false);
   modalNuevo = signal(false);
 
@@ -175,6 +177,7 @@ export class AgendaComponent {
         continue;
       }
       if (f.status !== 'todos' && t.estado !== f.status) continue;
+      if (f.status === 'todos' && t.estado === EstadoTurno.REPROGRAMADO) continue;
       if (f.type !== 'todos' && t.tipo !== f.type) continue;
       keys.add(toLocalDateKey(t.fecha.toDate()));
     }
@@ -190,6 +193,7 @@ export class AgendaComponent {
     return turns.filter((t: Turno) => {
       if (f.profesionalesIds.length > 0 && !f.profesionalesIds.includes(t.profesionalId))
         return false;
+      if (f.status === 'todos' && t.estado === EstadoTurno.REPROGRAMADO) return false;
       if (f.status !== 'todos' && t.estado !== f.status) return false;
       if (f.type !== 'todos' && t.tipo !== f.type) return false;
       if (q) {
@@ -372,11 +376,12 @@ export class AgendaComponent {
     this.turnoSeleccionado.set(null);
   }
 
-  async onCancelarConfirm(e: { motivo: string; conReembolso: boolean }) {
+  async onCancelarConfirm(e: { motivo: string }) {
     const t = this.turnoSeleccionado();
     if (!t) return;
+    this.cancelando.set(true);
     try {
-      await this.turnosService.cancelar(t.id, e.motivo, e.conReembolso);
+      await this.turnosService.cancelar(t.id, e.motivo);
       const telefono = this.telefonoWhatsappDesdeTurno(t);
       if (telefono) {
         try {
@@ -394,15 +399,19 @@ export class AgendaComponent {
       } else {
         this.toast.show('Turno cancelado', 'success');
       }
-    } catch {
+    } catch (err) {
+      console.error('[Agenda] cancelar falló', err);
       this.toast.show('Error al cancelar el turno', 'error');
+      return;
     } finally {
-      this.modalCancelar.set(false);
-      this.turnoSeleccionado.set(null);
+      this.cancelando.set(false);
     }
+    this.modalCancelar.set(false);
+    this.turnoSeleccionado.set(null);
   }
 
   onCancelarClose() {
+    if (this.cancelando()) return;
     this.modalCancelar.set(false);
   }
 
@@ -424,6 +433,7 @@ export class AgendaComponent {
       this.toast.show('Ese horario ya está ocupado para el profesional elegido', 'error');
       return;
     }
+    this.reprogramando.set(true);
     try {
       const nuevoId = await this.turnosService.reprogramar(
         t,
@@ -451,16 +461,24 @@ export class AgendaComponent {
       } else {
         this.toast.show(`Turno reprogramado (nuevo ID: ${nuevoId})`, 'success');
       }
-    } catch {
-      this.toast.show('Error al reprogramar el turno', 'error');
+    } catch (err) {
+      console.error('[Agenda] reprogramar falló', err);
+      this.toast.show(mensajeErrorReprogramar(err), 'error');
+      return;
     } finally {
-      this.modalReprogramar.set(false);
-      this.turnoSeleccionado.set(null);
+      this.reprogramando.set(false);
     }
+    this.modalReprogramar.set(false);
+    this.turnoSeleccionado.set(null);
   }
 
   onReprogramarClose() {
+    if (this.reprogramando()) return;
     this.modalReprogramar.set(false);
+  }
+
+  profesionalDelTurno(turno: Turno): Profesional | undefined {
+    return (this.profesionales() ?? []).find(p => p.uid === turno.profesionalId);
   }
 
   async onPagoConfirm(e: TurnoPagoConfirmPayload) {
@@ -723,4 +741,21 @@ function toLocalDateKey(d: Date): string {
   const m = String(d.getMonth() + 1).padStart(2, '0');
   const day = String(d.getDate()).padStart(2, '0');
   return `${y}-${m}-${day}`;
+}
+
+function mensajeErrorReprogramar(err: unknown): string {
+  if (isSlotOcupadoError(err)) {
+    return 'Ese horario acaba de ser tomado. Elegí otro.';
+  }
+  if (err && typeof err === 'object' && 'code' in err) {
+    const fb = err as { code?: string; message?: string };
+    if (fb.code === 'permission-denied') {
+      return 'No tenés permisos para reprogramar este turno.';
+    }
+    if (fb.message) return fb.message;
+  }
+  if (err instanceof Error && err.message && err.message !== 'SLOT_OCUPADO') {
+    return err.message;
+  }
+  return 'Error al reprogramar el turno';
 }

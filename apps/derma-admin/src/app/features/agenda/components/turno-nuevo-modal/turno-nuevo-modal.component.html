@@ -375,7 +375,8 @@
                   type="button"
                   class="mod-pill font-[inherit]"
                   [class.active]="modalidadConsulta() === 'presencial'"
-                  (click)="modalidadConsulta.set('presencial')">
+                  [disabled]="!puedeElegirPresencial()"
+                  (click)="elegirModalidad('presencial')">
                   <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
                     <path d="M20 7H4a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2z"/>
                     <path d="M9 21h6M12 17v4"/>
@@ -386,7 +387,8 @@
                   type="button"
                   class="mod-pill font-[inherit]"
                   [class.active]="modalidadConsulta() === 'videoconsulta'"
-                  (click)="modalidadConsulta.set('videoconsulta')">
+                  [disabled]="!puedeElegirVideoconsulta()"
+                  (click)="elegirModalidad('videoconsulta')">
                   <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
                     <path d="m22 8-6 4 6 4V8z"/>
                     <rect width="14" height="12" x="2" y="6" rx="2"/>
@@ -394,7 +396,14 @@
                   Video
                 </button>
               </div>
-              @if (modalidadConsulta() === 'videoconsulta') {
+              @if (errorModalidad(); as errMod) {
+                <div class="flex items-start gap-1.5 mt-2 p-2.5 bg-[var(--st-canc-bg)] border border-[rgba(140,68,68,0.15)] rounded-lg text-[0.66rem] text-[var(--st-canc)] leading-relaxed">
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="shrink-0 mt-px" aria-hidden="true">
+                    <circle cx="12" cy="12" r="10"/><path d="M12 8v4M12 16h.01"/>
+                  </svg>
+                  <span>{{ errMod }}</span>
+                </div>
+              } @else if (modalidadConsulta() === 'videoconsulta') {
                 <div class="flex items-start gap-1.5 mt-2 p-2.5 bg-[var(--c-100)] border border-[var(--c-200)] rounded-lg text-[0.66rem] text-[var(--c-500)] leading-relaxed animate-smooth-enter">
                   <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="text-[var(--c-400)] shrink-0 mt-px" aria-hidden="true">
                     <circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/>
@@ -408,7 +417,14 @@
             <div class="flex flex-col min-h-0 flex-1">
               <p class="section-label">Profesional</p>
               <div class="s2-prof-list">
-                @for (p of profesionales(); track p.uid) {
+                @if (profesionalesFiltrados().length === 0) {
+                  <p class="text-[0.68rem] text-[var(--c-500)] px-1 py-2 leading-relaxed">
+                    Ningún profesional tiene franjas de
+                    {{ modalidadConsulta() === 'videoconsulta' ? 'videoconsulta' : 'consulta presencial' }}
+                    en su perfil (días con modalidad «Videoconsulta» o «Ambas»). Revisá horarios en el perfil del profesional.
+                  </p>
+                }
+                @for (p of profesionalesFiltrados(); track p.uid) {
                   <button
                     type="button"
                     class="prof-card w-full flex items-center gap-2.5 px-3 py-2.5 border-[1.5px] rounded-xl bg-[var(--c-50)] cursor-pointer font-[inherit] text-left transition-all duration-200"
@@ -452,6 +468,37 @@
                 <p class="text-[0.7rem] text-[var(--c-400)] mt-1.5 m-0">para ver su disponibilidad</p>
               </div>
             } @else {
+
+              @if (
+                (modalidadConsulta() === 'presencial' && sincronizarConsultasPresenciales() && googleCalendarConectado())
+                || mostrarAvisoVideoconRecomiendaGoogle()
+              ) {
+                <div class="s2-notices">
+                  @if (modalidadConsulta() === 'presencial' && sincronizarConsultasPresenciales() && googleCalendarConectado()) {
+                    <div class="s2-notice s2-notice--neutral">
+                      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="s2-notice__icon" aria-hidden="true">
+                        <rect x="3" y="4" width="18" height="18" rx="2"/><path d="M8 2v4M16 2v4M3 10h18"/>
+                      </svg>
+                      <span>
+                        Al cobrar, este turno se copiará al <strong>Google Calendar del profesional</strong> (consulta presencial, sin Meet).
+                      </span>
+                    </div>
+                  }
+                  @if (mostrarAvisoVideoconRecomiendaGoogle()) {
+                    <div class="s2-notice s2-notice--warning">
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="s2-notice__icon" aria-hidden="true">
+                        <circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/>
+                      </svg>
+                      <div>
+                        <p class="s2-notice__title">Videoconsulta no disponible</p>
+                        <p class="s2-notice__text">
+                          Este profesional todavía no conectó Google Calendar. Por ahora no se puede crear el Meet para este turno.
+                        </p>
+                      </div>
+                    </div>
+                  }
+                </div>
+              }
 
               <p class="section-label">Disponibilidad</p>
 
@@ -513,7 +560,7 @@
                         <div class="flex items-center gap-1.5 mb-2">
                           <div class="w-1.5 h-1.5 rounded-full bg-[var(--c-300)] shrink-0"></div>
                           <span class="text-[0.58rem] font-bold uppercase tracking-[0.14em] text-[var(--c-500)]">
-                            {{ franja.label }} · {{ franja.horaInicio }}–{{ franja.horaFin }}
+                            {{ franja.label }} · {{ franja.horaInicio }}–{{ franja.horaFin }} · {{ franja.modalidadLabel }}
                           </span>
                           <span class="text-[0.58rem] text-[var(--c-400)] ml-auto">{{ franja.disponibles }} disp.</span>
                         </div>

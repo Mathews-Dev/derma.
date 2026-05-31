@@ -1,24 +1,30 @@
+<!-- Backdrop (mismo tratamiento que turno-nuevo-modal) -->
 <div
-  class="tp-backdrop fixed inset-0 z-[300] flex items-end sm:items-center justify-center sm:p-4 animate-backdrop-in"
+  class="fixed inset-0 z-[300] flex items-end sm:items-center justify-center sm:p-4 animate-backdrop-in tn-backdrop"
   (click)="$event.target === $event.currentTarget && mpPhase() !== 'creating' && close.emit()">
 
   <div
-    class="tp-modal relative w-full bg-[var(--c-50)] border border-[var(--c-200)] rounded-t-[22px] sm:rounded-[22px] flex flex-col overflow-hidden animate-modal-in"
+    class="relative w-full bg-[var(--c-50)] border border-[var(--c-200)] rounded-t-[22px] sm:rounded-[22px] flex flex-col overflow-hidden animate-modal-in"
     style="max-width: 640px; max-height: 92vh; box-shadow: var(--shadow-lg);"
     (click)="$event.stopPropagation()">
 
     <div class="absolute inset-0 pointer-events-none overflow-hidden z-0" aria-hidden="true">
-      <div class="absolute w-[220px] h-[220px] rounded-full border border-[var(--c-200)] opacity-40 -top-[90px] -right-[60px]"></div>
+      <div class="absolute w-[280px] h-[280px] rounded-full border border-[var(--c-200)] opacity-40 -top-[120px] -right-[80px]"></div>
+      <div class="absolute w-[160px] h-[160px] rounded-full border border-[var(--c-100)] -top-[40px] right-[10px]"></div>
     </div>
 
     <!-- Header -->
-    <div class="relative z-10 px-6 pt-5 pb-4 shrink-0 border-b border-[var(--c-200)]">
-      <div class="flex items-start justify-between gap-3">
+    <div class="relative z-10 px-6 pt-5 pb-0 shrink-0">
+      <div class="flex items-start justify-between mb-4">
         <div class="flex flex-col gap-1.5 min-w-0">
           <h2 class="m-0 text-[0.95rem] font-semibold text-[var(--c-800)] tracking-tight leading-none">
             Registrar pago
           </h2>
           <span class="inline-flex items-center gap-1.5 px-2.5 py-[3px] bg-[var(--c-100)] border border-[var(--c-200)] rounded-full text-[0.62rem] font-medium text-[var(--c-500)] tracking-wide w-fit max-w-full truncate">
+            <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true" class="shrink-0">
+              <path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/>
+              <circle cx="12" cy="7" r="4"/>
+            </svg>
             {{ turno().pacienteNombre }}
           </span>
         </div>
@@ -35,7 +41,7 @@
       </div>
 
       @if (mpPhase() !== 'pagado') {
-        <div class="mt-3 flex flex-wrap gap-x-4 gap-y-1 text-[0.68rem] text-[var(--c-500)]">
+        <div class="flex flex-wrap gap-x-4 gap-y-1 text-[0.68rem] text-[var(--c-500)] pb-5">
           <span>{{ fmtFechaTurno() }}</span>
           <span>{{ turno().horaInicio }} – {{ turno().horaFin }}</span>
           <span>{{ turno().profesionalNombre }}</span>
@@ -43,8 +49,10 @@
       }
     </div>
 
-    <!-- Body -->
-    <div class="relative z-10 px-6 py-5 overflow-y-auto modal-scroll flex-1">
+    <div class="relative z-10 h-px bg-[var(--c-200)] shrink-0"></div>
+
+    <!-- Body (min-h-0: el footer queda visible; scroll solo aquí) -->
+    <div class="relative z-10 flex-1 min-h-0 overflow-y-auto overflow-x-hidden px-6 py-5 modal-scroll">
 
       @if (mpPhase() === 'pagado') {
         <div class="pago-exito" role="status" aria-live="polite">
@@ -62,9 +70,6 @@
           </div>
           <p class="pago-exito__title">¡Pago confirmado!</p>
           <p class="pago-exito__subtitle">{{ subtituloExito() }}</p>
-          <button type="button" class="pago-exito__btn" (click)="listo.emit()">
-            Listo, volver a la agenda
-          </button>
         </div>
       } @else {
 
@@ -103,17 +108,26 @@
           </button>
         </div>
 
-        <p class="section-label">Monto a cobrar</p>
-        <div class="monto-card mb-5">
-          <span class="monto-card__prefix">$</span>
-          <input
-            class="monto-card__input"
-            type="number"
-            min="0"
-            step="100"
-            [disabled]="mpBloqueado()"
-            [ngModel]="monto()"
-            (ngModelChange)="monto.set(+$event)" />
+        <!-- Monto (misma lógica que paso Pago en turno-nuevo-modal) -->
+        <div class="flex items-center justify-between gap-4 px-4 py-3 bg-[var(--c-100)] border border-[var(--c-200)] rounded-xl mb-5">
+          <div class="min-w-0">
+            <label class="block text-[0.72rem] font-semibold text-[var(--c-500)] uppercase tracking-wide m-0" for="tp-monto">
+              Monto a cobrar
+            </label>
+            <p class="text-[0.63rem] text-[var(--c-400)] m-0 mt-0.5">Pesos argentinos · {{ fmtMonto(monto()) }}</p>
+          </div>
+          <div class="relative shrink-0">
+            <span class="absolute left-2.5 top-1/2 -translate-y-1/2 text-[0.78rem] text-[var(--c-500)] pointer-events-none select-none">$</span>
+            <input
+              id="tp-monto"
+              type="number"
+              min="0"
+              step="100"
+              class="w-[118px] h-10 pl-6 pr-2.5 text-right bg-[var(--c-50)] border-[1.5px] border-[var(--c-300)] rounded-xl text-[0.88rem] font-semibold text-[var(--c-800)] outline-none transition-all duration-200 focus:border-[var(--c-800)] focus:shadow-[0_0_0_3px_rgba(33,37,41,0.06)] focus:bg-[var(--c-50)] disabled:opacity-55"
+              [disabled]="mpBloqueado()"
+              [ngModel]="monto()"
+              (ngModelChange)="monto.set(+$event)" />
+          </div>
         </div>
 
         @if (mpPhase() !== 'ready') {
@@ -128,60 +142,98 @@
             </label>
 
             @if (notificarPorWhatsapp()) {
-              <div class="wa-block__body animate-smooth-enter">
-                <p class="wa-block__hint">
-                  Confirmá con el paciente si este es el número para avisos del turno.
-                </p>
-                <ui-phone-input
-                  [showLabel]="false"
-                  placeholder="9 1234 5678"
-                  [(countryIso)]="waCountryIso"
-                  [(localNumber)]="waLocal"
-                  countryWidthClass="w-[42%] min-w-[110px] shrink-0"
-                  (valueChange)="onWaInputChange()" />
+              <div class="tp-wa-body animate-smooth-enter">
+                <div class="wa-card">
+                  <div class="wa-card__inner">
+                    <div class="wa-card__head">
+                      <div class="wa-card__icon" aria-hidden="true">
+                        <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.65" stroke-linecap="round" stroke-linejoin="round">
+                          <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.8 19.8 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3-10.87A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.12 1 .35 2 .7 3a2 2 0 0 1-.47 2.07L9 10.91a16 16 0 0 0 7 7l1.91-1.36a2 2 0 0 1 2.06-.51c1 .37 2 .61 3 .71a2 2 0 0 1 1.72 2.07Z"/>
+                        </svg>
+                      </div>
+                      <div class="wa-card__head-copy">
+                        <p class="wa-card__title">Notificaciones por WhatsApp</p>
+                        <p class="wa-card__subtitle">Confirmación de pago al paciente.</p>
+                      </div>
+                    </div>
 
-                <ui-accordion class="wa-accordion block mt-3 border border-[var(--c-200)] rounded-xl overflow-hidden bg-[var(--c-50)]">
-                  <ui-accordion-item
-                    title="¿Enviar la confirmación a otro número?"
-                    [(isOpen)]="waAltAbierto"
-                    (opened)="onWaAltAccordionOpened($event)">
-                    <p class="text-[0.68rem] text-[var(--c-500)] mt-2 mb-3 leading-relaxed m-0">
-                      Usá esta opción si el paciente prefiere otro WhatsApp.
-                    </p>
-                    <ui-phone-input
-                      [showLabel]="false"
-                      placeholder="9 1234 5678"
-                      [(countryIso)]="waCountryIsoAlt"
-                      [(localNumber)]="waLocalAlt"
-                      countryWidthClass="w-[42%] min-w-[110px] shrink-0"
-                      (valueChange)="onWaInputChange()" />
-                  </ui-accordion-item>
-                </ui-accordion>
+                    <div class="wa-seg" role="group" aria-label="¿A qué número enviamos?">
+                      <button
+                        type="button"
+                        class="wa-seg__btn"
+                        [class.wa-seg__btn--on]="!personalizarTelNotifs()"
+                        [attr.aria-pressed]="!personalizarTelNotifs() ? 'true' : 'false'"
+                        [disabled]="mpBloqueado()"
+                        (click)="onPersonalizarTelPago(false)">
+                        <span class="wa-seg__ico" aria-hidden="true">
+                          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                        </span>
+                        <span class="wa-seg__txt">
+                          <span class="wa-seg__label">Ficha</span>
+                          <span class="wa-seg__hint">Contacto guardado del paciente</span>
+                        </span>
+                        @if (!personalizarTelNotifs()) {
+                          <span class="wa-seg__check" aria-hidden="true">
+                            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.75"><path stroke-linecap="round" stroke-linejoin="round" d="m5 13 4 4L19 7"/></svg>
+                          </span>
+                        }
+                      </button>
+                      <button
+                        type="button"
+                        class="wa-seg__btn"
+                        [class.wa-seg__btn--on]="personalizarTelNotifs()"
+                        [attr.aria-pressed]="personalizarTelNotifs() ? 'true' : 'false'"
+                        [disabled]="mpBloqueado()"
+                        (click)="onPersonalizarTelPago(true)">
+                        <span class="wa-seg__ico" aria-hidden="true">
+                          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect width="14" height="20" x="5" y="2" rx="2" ry="2"/><path d="M12 18h.01"/></svg>
+                        </span>
+                        <span class="wa-seg__txt">
+                          <span class="wa-seg__label">Otro número</span>
+                          <span class="wa-seg__hint">Otro celular o WhatsApp</span>
+                        </span>
+                        @if (personalizarTelNotifs()) {
+                          <span class="wa-seg__check" aria-hidden="true">
+                            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.75"><path stroke-linecap="round" stroke-linejoin="round" d="m5 13 4 4L19 7"/></svg>
+                          </span>
+                        }
+                      </button>
+                    </div>
 
-                @if (waError()) {
-                  <p class="wa-block__err">Ingresá un número válido para enviar WhatsApp.</p>
-                }
+                    <p class="wa-footnote">Sin celular válido en ficha: usá <strong>Otro número</strong>.</p>
+
+                    @if (!personalizarTelNotifs() && telefonoWhatsappPacienteValido()) {
+                      <div class="wa-display" role="status">
+                        <span class="wa-display__row">
+                          <span class="wa-display__muted">Destino</span>
+                          <span class="wa-display__num">{{ telefonoNotificacionesEfectivoDisplay() }}</span>
+                        </span>
+                        <span class="wa-display__pill">Ficha</span>
+                      </div>
+                    } @else {
+                      <div class="wa-field">
+                        <span class="wa-field__lbl">Número</span>
+                        <ui-phone-input
+                          [showLabel]="false"
+                          [placeholder]="waNotifPlaceholderTurno()"
+                          [disabled]="mpBloqueado() || (!personalizarTelNotifs() && telefonoWhatsappPacienteValido())"
+                          [(countryIso)]="waCountryIso"
+                          [(localNumber)]="waLocal"
+                          countryWidthClass="w-[42%] min-w-[110px] shrink-0"
+                          (valueChange)="onWaInputChange()" />
+                      </div>
+                    }
+
+                    @if (waError()) {
+                      <p class="wa-err-msg">
+                        Necesitamos al menos 6 dígitos de un número móvil para WhatsApp.
+                      </p>
+                    }
+                  </div>
+                </div>
               </div>
             }
           </div>
-        }
-
-        @if (tipoPago() === 'efectivo') {
-          <button
-            type="button"
-            class="tp-btn-primary w-full"
-            [disabled]="!puedeRegistrarEfectivo()"
-            (click)="onConfirmEfectivo()">
-            @if (mpPhase() === 'creating') {
-              <span class="spinner show" aria-hidden="true"></span>
-              Registrando…
-            } @else {
-              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
-                <rect width="20" height="12" x="2" y="6" rx="2"/><circle cx="12" cy="12" r="2"/>
-              </svg>
-              Registrar pago en efectivo
-            }
-          </button>
         }
 
         @if (tipoPago() === 'mercado_pago') {
@@ -209,27 +261,7 @@
             </div>
           }
 
-          @if (mpPhase() === 'idle' || mpPhase() === 'error') {
-            <button
-              type="button"
-              class="tp-btn-primary w-full"
-              [disabled]="!puedeIniciarPagoMP()"
-              (click)="onConfirmMp()">
-              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
-                <rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/>
-                <rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="3" height="3" rx="0.5"/>
-                <rect x="18" y="14" width="3" height="3" rx="0.5"/><rect x="14" y="18" width="3" height="3" rx="0.5"/>
-              </svg>
-              Generar QR de cobro
-            </button>
-          }
 
-          @if (mpPhase() === 'creating') {
-            <div class="flex items-center justify-center gap-3 py-6 text-[var(--c-500)] text-[0.8rem]">
-              <span class="spinner show" aria-hidden="true"></span>
-              Generando cobro en Mercado Pago…
-            </div>
-          }
 
           @if (mpPhase() === 'ready' && mpCheckout(); as chk) {
             <div class="flex flex-col items-center gap-3 animate-smooth-enter">
@@ -259,16 +291,75 @@
       }
     </div>
 
-    @if (mpPhase() !== 'pagado') {
+    <!-- Footer siempre pegado abajo -->
+
+    @if (mpPhase() === 'pagado') {
       <div class="relative z-10 h-px bg-[var(--c-200)] shrink-0"></div>
-      <div class="relative z-10 flex items-center px-6 py-4 bg-[var(--c-50)] shrink-0">
+      <div class="relative z-10 flex justify-end px-6 py-3 bg-[var(--c-50)] shrink-0">
         <button
           type="button"
-          class="inline-flex items-center gap-1.5 px-4 py-2.5 text-[0.78rem] font-semibold text-[var(--c-600)] bg-[var(--c-100)] border border-[var(--c-200)] rounded-xl cursor-pointer transition-all duration-200 hover:bg-[var(--c-200)] hover:text-[var(--c-800)] disabled:opacity-40"
+          class="inline-flex items-center justify-center gap-2 px-5 py-2.5 text-[0.8rem] font-semibold text-[var(--c-50)] bg-[var(--c-800)] rounded-xl border-none cursor-pointer transition-all duration-200 hover:bg-[var(--c-700)] hover:-translate-y-px hover:shadow-md"
+          (click)="listo.emit()">
+          Listo, volver a la agenda
+        </button>
+      </div>
+    } @else {
+      <div class="relative z-10 h-px bg-[var(--c-200)] shrink-0"></div>
+      <div class="relative z-10 flex items-center justify-between gap-4 px-6 py-3 bg-[var(--c-50)] shrink-0">
+        <button
+          type="button"
+          class="inline-flex items-center gap-1.5 px-3 py-2 text-[0.72rem] font-semibold text-[var(--c-600)] bg-[var(--c-100)] border border-[var(--c-200)] rounded-lg cursor-pointer transition-all duration-200 hover:bg-[var(--c-200)] hover:text-[var(--c-800)] disabled:opacity-40 shrink-0"
           [disabled]="mpPhase() === 'creating'"
           (click)="close.emit()">
           {{ mpPhase() === 'ready' ? 'Cerrar (el cobro sigue activo)' : 'Cancelar' }}
         </button>
+
+        <div class="flex justify-end shrink-0 min-w-0">
+          @if (tipoPago() === 'efectivo') {
+            <button
+              type="button"
+              class="inline-flex items-center justify-center gap-2 min-w-[10rem] sm:min-w-[12rem] max-w-[100%] h-10 px-4 text-[0.8rem] font-semibold text-[var(--c-50)] bg-[var(--c-800)] rounded-xl border-none cursor-pointer transition-all duration-200 hover:bg-[var(--c-700)] hover:-translate-y-px hover:shadow-md disabled:opacity-40 disabled:cursor-not-allowed disabled:translate-y-0 disabled:shadow-none"
+              [disabled]="!puedeRegistrarEfectivo() || mpPhase() === 'creating'"
+              (click)="onConfirmEfectivo()">
+              @if (mpPhase() === 'creating') {
+                <span class="spinner show" aria-hidden="true"></span>
+                Registrando…
+              } @else {
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true" class="shrink-0">
+                  <rect width="20" height="12" x="2" y="6" rx="2"/><circle cx="12" cy="12" r="2"/>
+                </svg>
+                <span class="text-center leading-tight sm:text-left">Registrar pago en efectivo</span>
+              }
+            </button>
+          }
+
+          @if (tipoPago() === 'mercado_pago') {
+            @if (mpPhase() === 'idle' || mpPhase() === 'error') {
+              <button
+                type="button"
+                class="inline-flex items-center justify-center gap-2 min-w-[10rem] sm:min-w-[12rem] max-w-[100%] h-10 px-4 text-[0.8rem] font-semibold text-[var(--c-50)] bg-[var(--c-800)] rounded-xl border-none cursor-pointer transition-all duration-200 hover:bg-[var(--c-700)] hover:-translate-y-px hover:shadow-md disabled:opacity-40 disabled:cursor-not-allowed disabled:translate-y-0 disabled:shadow-none"
+                [disabled]="!puedeIniciarPagoMP()"
+                (click)="onConfirmMp()">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true" class="shrink-0">
+                  <rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/>
+                  <rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="3" height="3" rx="0.5"/>
+                  <rect x="18" y="14" width="3" height="3" rx="0.5"/><rect x="14" y="18" width="3" height="3" rx="0.5"/>
+                </svg>
+                <span class="text-center leading-tight sm:text-left">Generar QR de cobro</span>
+              </button>
+            }
+
+            @if (mpPhase() === 'creating') {
+              <button
+                type="button"
+                class="inline-flex items-center justify-center gap-2 min-w-[10rem] sm:min-w-[12rem] max-w-[100%] h-10 px-4 text-[0.78rem] font-semibold text-[var(--c-50)] bg-[var(--c-800)] rounded-xl border-none opacity-90 cursor-not-allowed"
+                disabled>
+                <span class="spinner show" aria-hidden="true"></span>
+                Generando cobro…
+              </button>
+            }
+          }
+        </div>
       </div>
     }
   </div>

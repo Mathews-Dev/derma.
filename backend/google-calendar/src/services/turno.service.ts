@@ -2,6 +2,23 @@ import { FieldValue, getFirestore } from 'firebase-admin/firestore';
 
 const db = () => getFirestore();
 
+export async function actualizarTurnoGoogleCalendarSyncExterno(
+  turnoId: string,
+  eventId: string,
+  htmlLink: string | null,
+): Promise<void> {
+  await db()
+    .collection('turnos')
+    .doc(turnoId)
+    .update({
+      googleCalendarSync: {
+        eventId,
+        htmlLink,
+      },
+      fechaModificacion: new Date(),
+    });
+}
+
 export async function actualizarTurnoConVideoconsulta(
   turnoId: string,
   datos: {

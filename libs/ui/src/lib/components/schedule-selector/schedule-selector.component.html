@@ -102,11 +102,12 @@
         <!-- LISTA DE FRANJAS EN DOS COLUMNAS -->
         @if (day.franjas.length > 0) {
           <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
-            @for (franja of day.franjas; track $index) {
-              <div class="flex items-center gap-3 group bg-[var(--c-100)]/30 border border-[var(--c-200)] 
+            @for (franja of day.franjas; track franjaTrackKey($index, franja); let franjaIndex = $index) {
+              <div class="flex flex-col gap-3 group bg-[var(--c-100)]/30 border border-[var(--c-200)] 
                           rounded-xl px-4 py-3 focus-within:border-[var(--c-800)]
                           transition-all duration-300 hover:border-[var(--c-300)] relative">
 
+                <div class="flex items-center gap-3 pr-8">
                 <div class="flex flex-col items-start gap-1 min-w-0">
                   <label class="text-[10px] uppercase font-bold text-[var(--c-500)] tracking-[0.1em] pl-0.5">Inicio</label>
                   <ui-time-picker [(value)]="franja.horaInicio" (valueChange)="emitChanges()" />
@@ -118,6 +119,27 @@
                   <label class="text-[10px] uppercase font-bold text-[var(--c-500)] tracking-[0.1em] pl-0.5">Fin</label>
                   <ui-time-picker [(value)]="franja.horaFin" (valueChange)="emitChanges()" />
                 </div>
+                </div>
+
+                @if (showModalidad()) {
+                  <div class="flex flex-col gap-1.5">
+                    <span class="text-[10px] uppercase font-bold text-[var(--c-500)] tracking-[0.1em] pl-0.5">Modalidad de turno</span>
+                    <div class="inline-flex flex-wrap gap-1 bg-[var(--c-100)] rounded-full p-[3px] w-fit">
+                      @for (opt of modalidadOptions; track opt.id) {
+                        <button
+                          type="button"
+                          class="px-2.5 py-1 rounded-full text-[10px] font-semibold uppercase tracking-wide transition-all"
+                          [class.bg-[var(--c-800)]]="modalidadFranja(franja) === opt.id"
+                          [class.text-[var(--c-50)]]="modalidadFranja(franja) === opt.id"
+                          [class.text-[var(--c-500)]]="modalidadFranja(franja) !== opt.id"
+                          [class.hover:text-[var(--c-800)]]="modalidadFranja(franja) !== opt.id"
+                          (click)="setModalidadFranja(day.key, franjaIndex, opt.id)">
+                          {{ opt.label }}
+                        </button>
+                      }
+                    </div>
+                  </div>
+                }
 
                 <button type="button"
                   (click)="removeFranja(day.key, $index)"

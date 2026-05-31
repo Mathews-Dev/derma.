@@ -1,5 +1,4 @@
 import { Route } from '@angular/router';
-import { AlertasInsumosService } from './data-access/alertas-insumos.service';
 import { roleGuard } from '@derma/guards';
 import { RolUsuario } from '@derma/models';
 
@@ -8,7 +7,6 @@ const { ADMIN, DERMATOLOGO, RECEPCIONISTA, EMPLEADO } = RolUsuario;
 export const insumosRoutes: Route[] = [
   {
     path: '',
-    providers: [AlertasInsumosService],
     children: [
       {
         path: '',

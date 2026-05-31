@@ -12,7 +12,7 @@ Copiá `.env.example` a `.env` en esta carpeta (o en la raíz del monorepo si ya
 En otra terminal (además de `nx serve derma-admin`):
 
 ```bash
-npx nx serve mercadopago
+pnpm nx serve mercadopago
 ```
 
 Por defecto escucha en **http://localhost:3000**.

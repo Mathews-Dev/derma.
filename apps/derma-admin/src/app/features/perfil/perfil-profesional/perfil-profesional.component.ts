@@ -7,7 +7,7 @@ import {
   signal,
 } from '@angular/core';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
-import { RouterModule } from '@angular/router';
+import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { AuthService, FirestoreService } from '@derma/firebase';
 import {
   DocKey,
@@ -15,6 +15,7 @@ import {
   EstadoDocumento,
   HonorariosPorTratamiento,
   HorariosLaborales,
+  GoogleCalendarIntegracion,
   Profesional,
 } from '@derma/models';
 import {
@@ -30,9 +31,12 @@ import {
   UiProfileAvatarComponent,
   ProfessionalDocsComponent,
   UiButtonComponent,
+  ToggleComponent,
 } from '@derma/ui';
 import { CloudinaryService } from '../../../core/services/cloudinary.service';
+import { GoogleCalendarApiService } from '../../videoconsulta/data-access/google-calendar-api.service';
 import { Storage, ref, uploadBytes, getDownloadURL } from '@angular/fire/storage';
+import { firstValueFrom } from 'rxjs';
 import { LayoutStateService } from '../../../core/services/layout-state.service';
 
 interface Country {
@@ -56,6 +60,7 @@ interface Country {
     UiProfileAvatarComponent,
     ProfessionalDocsComponent,
     UiButtonComponent,
+    ToggleComponent,
   ],
   providers: [CloudinaryService],
   templateUrl: './perfil-profesional.component.html',
@@ -70,6 +75,9 @@ export class PerfilProfesionalComponent {
   private readonly cloudinary = inject(CloudinaryService);
   private readonly fb = inject(FormBuilder);
   private readonly layoutState = inject(LayoutStateService);
+  private readonly route = inject(ActivatedRoute);
+  private readonly router = inject(Router);
+  private readonly googleCalendarApi = inject(GoogleCalendarApiService);
 
   readonly isSidebarCollapsed = this.layoutState.isSidebarCollapsed;
 
@@ -108,6 +116,7 @@ export class PerfilProfesionalComponent {
     { id: 'contacto',    label: 'Contacto',             icon: 'phone'     },
     { id: 'profesional', label: 'Datos profesionales',  icon: 'briefcase' },
     { id: 'horarios',    label: 'Horarios y agenda',    icon: 'calendar'  },
+    { id: 'integraciones', label: 'Google Calendar',    icon: 'globe'     },
     { id: 'documentos',  label: 'Documentos',           icon: 'file'      },
     { id: 'honorarios',  label: 'Honorarios',           icon: 'tag'       },
     { id: 'seguridad',   label: 'Seguridad',            icon: 'lock'      },
@@ -121,6 +130,9 @@ export class PerfilProfesionalComponent {
   selectedDuracion = signal<number>(30);
 
   horariosLaborales = signal<HorariosLaborales | null>(null);
+  googleCalendar = signal<GoogleCalendarIntegracion | null>(null);
+  desconectandoGoogle = signal(false);
+  guardandoPreferenciaSyncCalendario = signal(false);
   documentosDetalle = signal<DocumentosDetallados>({});
   honorarios        = signal<HonorariosPorTratamiento[]>([]);
   viewingDocImage   = signal<string | null>(null);
@@ -130,6 +142,12 @@ export class PerfilProfesionalComponent {
 
   // ── UID desde auth ────────────────────────────────────────────────────────────
   readonly uid = computed(() => this.authService.currentUser()?.uid ?? '');
+
+  readonly calendarApiOk = computed(() => this.googleCalendarApi.tieneBaseUrlConfigurada());
+
+  readonly googleConectado = computed(() => this.googleCalendar()?.conectado === true);
+
+  readonly syncConsultasPresenciales = computed(() => this.googleCalendar()?.syncConsultasPresenciales === true);
 
   // ── Forms ─────────────────────────────────────────────────────────────────────
   readonly form: FormGroup = this.fb.group({
@@ -163,6 +181,33 @@ export class PerfilProfesionalComponent {
       const uid = this.uid();
       if (uid) this.loadProfesional(uid);
     });
+
+    effect(() => {
+      const params = this.route.snapshot.queryParamMap;
+      const google = params.get('google');
+      const tab = params.get('tab');
+      if (tab === 'integraciones') this.activeTab.set('integraciones');
+      if (google === 'conectado') {
+        this.toastService.success('Google Calendar conectado correctamente');
+        void this.router.navigate([], {
+          relativeTo: this.route,
+          queryParams: { google: null, tab: null, message: null },
+          queryParamsHandling: 'merge',
+          replaceUrl: true,
+        });
+        const uid = this.uid();
+        if (uid) void this.loadProfesional(uid);
+      } else if (google === 'error') {
+        const message = params.get('message');
+        this.toastService.error(message ?? 'No se pudo conectar Google Calendar');
+        void this.router.navigate([], {
+          relativeTo: this.route,
+          queryParams: { google: null, tab: null, message: null },
+          queryParamsHandling: 'merge',
+          replaceUrl: true,
+        });
+      }
+    });
   }
 
   // ── Load ──────────────────────────────────────────────────────────────────────
@@ -186,6 +231,7 @@ export class PerfilProfesionalComponent {
       this.selectedDuracion.set(data.duracionConsulta ?? 30);
 
       if (data.horariosLaborales) this.horariosLaborales.set(data.horariosLaborales);
+      this.googleCalendar.set(data.googleCalendar ?? null);
       if (data.documentosDetalle) this.documentosDetalle.set(data.documentosDetalle);
       this.honorarios.set(data.honorarios ?? []);
 
@@ -294,6 +340,70 @@ export class PerfilProfesionalComponent {
   onScheduleChange(horarios: HorariosLaborales): void {
     this.horariosLaborales.set(horarios);
     this.form.markAsDirty();
+  }
+
+  conectarGoogleCalendar(): void {
+    const uid = this.uid();
+    if (!uid) return;
+    if (!this.calendarApiOk()) {
+      this.toastService.warning('Falta configurar googleCalendarApiUrl en el entorno');
+      return;
+    }
+
+    const url = this.googleCalendarApi.urlConectarGoogle(uid);
+    // Sin noopener en features: con noopener/noreferrer muchos navegadores devuelven null
+    // aunque la pestaña sí abrió, y el fallback disparaba OAuth también en esta ventana.
+    const opened = window.open(url, '_blank');
+    if (!opened) {
+      this.toastService.warning(
+        'No se pudo abrir la pestaña nueva. Permití ventanas emergentes para este sitio e intentá de nuevo.',
+      );
+    }
+  }
+
+  async desconectarGoogleCalendar(): Promise<void> {
+    const uid = this.uid();
+    if (!uid || !this.calendarApiOk()) return;
+    this.desconectandoGoogle.set(true);
+    try {
+      await firstValueFrom(this.googleCalendarApi.desconectarGoogle(uid));
+      this.googleCalendar.set({ conectado: false });
+      this.toastService.success('Google Calendar desconectado');
+    } catch {
+      this.toastService.error('No se pudo desconectar Google Calendar');
+    } finally {
+      this.desconectandoGoogle.set(false);
+    }
+  }
+
+  async onSyncConsultasPresencialesToggle(checked: boolean): Promise<void> {
+    const uid = this.uid();
+    if (!uid || !this.calendarApiOk() || !this.googleConectado()) return;
+
+    const previo = this.googleCalendar();
+    this.googleCalendar.update(b => ({
+      ...(b ?? { conectado: true }),
+      syncConsultasPresenciales: checked,
+    }));
+    this.guardandoPreferenciaSyncCalendario.set(true);
+    try {
+      await this.firestoreService.updateDocument('usuarios', uid, {
+        'googleCalendar.syncConsultasPresenciales': checked,
+      } as Record<string, unknown>);
+      this.toastService.success(checked ? 'Las consultas presenciales también se copiarán a tu Calendar.' : 'Solo videoconsultas se crearán en Calendar.');
+    } catch {
+      this.googleCalendar.set(previo);
+      this.toastService.error('No se pudo guardar la preferencia');
+    } finally {
+      this.guardandoPreferenciaSyncCalendario.set(false);
+    }
+  }
+
+  formatearFechaConexion(iso?: string): string | null {
+    if (!iso) return null;
+    const d = new Date(iso);
+    if (Number.isNaN(d.getTime())) return null;
+    return d.toLocaleString('es-AR', { dateStyle: 'medium', timeStyle: 'short' });
   }
 
   // ── Documentos ────────────────────────────────────────────────────────────────
