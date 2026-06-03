@@ -15,6 +15,35 @@
 </section>
 
 <div class="mb-6 flex flex-col sm:flex-row gap-3 sm:items-center animate-smooth-enter stagger-1">
+  <div class="vc-tabs" role="tablist">
+    <button
+      type="button"
+      role="tab"
+      class="vc-tab"
+      [class.vc-tab-active]="listFiltro() === 'proximas'"
+      (click)="setListFiltro('proximas')"
+    >
+      Próximas
+    </button>
+    <button
+      type="button"
+      role="tab"
+      class="vc-tab"
+      [class.vc-tab-active]="listFiltro() === 'realizadas'"
+      (click)="setListFiltro('realizadas')"
+    >
+      Realizadas
+    </button>
+    <button
+      type="button"
+      role="tab"
+      class="vc-tab"
+      [class.vc-tab-active]="listFiltro() === 'todas'"
+      (click)="setListFiltro('todas')"
+    >
+      Todas
+    </button>
+  </div>
   <div class="relative flex-1 max-w-md">
     <input
       type="text"
@@ -92,12 +121,9 @@
                 {{ row.notificacionResumen }}
               </td>
               <td class="text-right">
-                <a
-                  [routerLink]="['/admin/videoconsultas', row.id]"
-                  class="vc-link"
-                >
+                <button type="button" class="vc-link" (click)="abrirDetalle(row.id)">
                   Ver detalle
-                </a>
+                </button>
               </td>
             </tr>
           }
@@ -106,3 +132,11 @@
     </div>
   }
 </div>
+
+@if (detalleAbierto(); as id) {
+  <derm-videoconsulta-detalle
+    [turnoId]="id"
+    [turnoInicial]="turnoDetalle()"
+    (close)="cerrarDetalle()"
+  />
+}

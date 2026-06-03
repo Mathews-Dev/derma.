@@ -1,3 +1,33 @@
+.vc-tabs {
+  display: flex;
+  gap: 4px;
+  padding: 4px;
+  background: var(--c-100);
+  border-radius: 9999px;
+  border: 1px solid var(--c-200);
+}
+.vc-tab {
+  padding: 8px 16px;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--c-600);
+  border-radius: 9999px;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s;
+}
+.vc-tab:hover {
+  color: var(--c-800);
+}
+.vc-tab-active {
+  background: var(--c-50);
+  color: var(--c-900);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.06);
+}
+
 .vc-input {
   width: 100%;
   padding: 0.625rem 1rem 0.625rem 2.5rem;
@@ -59,6 +89,10 @@
   color: var(--c-800);
   text-decoration: underline;
   text-underline-offset: 3px;
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
 }
 .vc-link:hover {
   color: var(--c-600);

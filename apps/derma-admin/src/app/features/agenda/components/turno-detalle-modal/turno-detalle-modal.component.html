@@ -13,11 +13,8 @@
         <span class="drawer-title-text">Detalle del turno</span>
 
         <span class="estado-badge"
-
               [style.background]="getEstadoBg()"
-
               [style.color]="getEstadoColor()">
-
           {{ getEstadoLabel() }}
 
         </span>
@@ -56,31 +53,31 @@
 
             <span class="detail-label">Nombre</span>
 
-            <span class="detail-value">{{ turno().pacienteNombre }}</span>
+            <span class="detail-value">{{ t().pacienteNombre }}</span>
 
           </div>
 
-          @if (turno().pacienteDNI) {
+          @if (t().pacienteDNI) {
 
             <div class="detail-row">
 
               <span class="detail-label">DNI</span>
 
-              <span class="detail-value">{{ turno().pacienteDNI }}</span>
+              <span class="detail-value">{{ t().pacienteDNI }}</span>
 
             </div>
 
           }
 
-          @if (turno().pacienteTelefono) {
+          @if (t().pacienteTelefono) {
 
             <div class="detail-row">
 
               <span class="detail-label">Teléfono</span>
 
-              <a class="detail-value detail-link" [href]="'tel:' + turno().pacienteTelefono">
+              <a class="detail-value detail-link" [href]="'tel:' + t().pacienteTelefono">
 
-                {{ turno().pacienteTelefono }}
+                {{ t().pacienteTelefono }}
 
               </a>
 
@@ -88,15 +85,15 @@
 
           }
 
-          @if (turno().pacienteEmail) {
+          @if (t().pacienteEmail) {
 
             <div class="detail-row">
 
               <span class="detail-label">Email</span>
 
-              <a class="detail-value detail-link" [href]="'mailto:' + turno().pacienteEmail">
+              <a class="detail-value detail-link" [href]="'mailto:' + t().pacienteEmail">
 
-                {{ turno().pacienteEmail }}
+                {{ t().pacienteEmail }}
 
               </a>
 
@@ -128,7 +125,7 @@
 
             <span class="detail-label">Fecha</span>
 
-            <span class="detail-value">{{ fmtFecha(turno().fecha) }}</span>
+            <span class="detail-value">{{ fmtFecha(t().fecha) }}</span>
 
           </div>
 
@@ -136,7 +133,7 @@
 
             <span class="detail-label">Horario</span>
 
-            <span class="detail-value">{{ turno().horaInicio }} – {{ turno().horaFin }} <span class="detail-meta">({{ turno().duracion }} min)</span></span>
+            <span class="detail-value">{{ t().horaInicio }} – {{ t().horaFin }} <span class="detail-meta">({{ t().duracion }} min)</span></span>
 
           </div>
 
@@ -144,7 +141,15 @@
 
             <span class="detail-label">Profesional</span>
 
-            <span class="detail-value">{{ turno().profesionalNombre }}</span>
+            <span class="detail-value">{{ t().profesionalNombre }}</span>
+
+          </div>
+
+          <div class="detail-row">
+
+            <span class="detail-label">Modalidad</span>
+
+            <span class="detail-value capitalize">{{ esVc() ? 'Videoconsulta' : (t().modalidadConsulta ?? 'Presencial') }}</span>
 
           </div>
 
@@ -152,29 +157,29 @@
 
             <span class="detail-label">Tipo</span>
 
-            <span class="detail-value capitalize">{{ turno().tipo }}</span>
+            <span class="detail-value capitalize">{{ t().tipo }}</span>
 
           </div>
 
-          @if (turno().tratamientoNombre) {
+          @if (t().tratamientoNombre) {
 
             <div class="detail-row">
 
               <span class="detail-label">Tratamiento</span>
 
-              <span class="detail-value">{{ turno().tratamientoNombre }}</span>
+              <span class="detail-value">{{ t().tratamientoNombre }}</span>
 
             </div>
 
           }
 
-          @if (turno().turnoOriginalId) {
+          @if (t().turnoOriginalId) {
 
             <div class="detail-row">
 
               <span class="detail-label">Reprogramado de</span>
 
-              <span class="detail-value detail-mono">{{ turno().turnoOriginalId }}</span>
+              <span class="detail-value detail-mono">{{ t().turnoOriginalId }}</span>
 
             </div>
 
@@ -184,7 +189,33 @@
 
       </section>
 
-
+      @if (esVc()) {
+        <section class="detail-section">
+          <h3 class="section-title">
+            <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 10l4.553-2.276A1 1 0 0 1 21 8.618v6.764a1 1 0 0 1-1.447.894L15 14M5 18h8a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2z"/></svg>
+            Videoconsulta
+          </h3>
+          <derm-videoconsulta-meet-panel
+            [linkMeet]="linkMeet()"
+            [linkEstado]="linkEstado()"
+            [generating]="generandoMeet()"
+            [calendarBaseOk]="calendarBaseOk()"
+            [googleConectado]="googleConectado()"
+            (copiar)="copiarLinkMeet()"
+            (abrirMeet)="abrirMeet()"
+            (generarMeet)="generarMeet($event)"
+            (conectarGoogle)="conectarGoogleProfesional()"
+          />
+          @if (recordatorioEtiqueta(); as rec) {
+            <p class="detail-reminder-note">{{ rec }}</p>
+          }
+          <a
+            [routerLink]="['/admin/videoconsultas']"
+            [queryParams]="{ detalle: t().id }"
+            class="detail-vc-link"
+          >Ver en módulo videoconsultas</a>
+        </section>
+      }
 
       <!-- Pago -->
 
@@ -220,41 +251,41 @@
 
             <span class="detail-label">Monto</span>
 
-            <span class="detail-value detail-amount">{{ fmtMonto(turno().monto) }}</span>
+            <span class="detail-value detail-amount">{{ fmtMonto(t().monto) }}</span>
 
           </div>
 
-          @if (turno().metodoPago) {
+          @if (t().metodoPago) {
 
             <div class="detail-row">
 
               <span class="detail-label">Método</span>
 
-              <span class="detail-value capitalize">{{ turno().metodoPago }}</span>
+              <span class="detail-value capitalize">{{ t().metodoPago }}</span>
 
             </div>
 
           }
 
-          @if (turno().fechaPago) {
+          @if (t().fechaPago) {
 
             <div class="detail-row">
 
               <span class="detail-label">Pagado el</span>
 
-              <span class="detail-value">{{ fmtFecha(turno().fechaPago) }}</span>
+              <span class="detail-value">{{ fmtFecha(t().fechaPago) }}</span>
 
             </div>
 
           }
 
-          @if (turno().mpPaymentId) {
+          @if (t().mpPaymentId) {
 
             <div class="detail-row">
 
               <span class="detail-label">ID pago MP</span>
 
-              <span class="detail-value detail-mono">{{ turno().mpPaymentId }}</span>
+              <span class="detail-value detail-mono">{{ t().mpPaymentId }}</span>
 
             </div>
 
@@ -268,7 +299,7 @@
 
       <!-- Notas -->
 
-      @if (turno().motivo || turno().notasPaciente || turno().notasProfesional) {
+      @if (t().motivo || t().notasPaciente || t().notasProfesional) {
 
         <section class="detail-section stagger-5">
 
@@ -282,37 +313,37 @@
 
           <div class="detail-card">
 
-            @if (turno().motivo) {
+            @if (t().motivo) {
 
               <div class="notes-block">
 
                 <span class="notes-label">Motivo</span>
 
-                <p class="notes-text">{{ turno().motivo }}</p>
+                <p class="notes-text">{{ t().motivo }}</p>
 
               </div>
 
             }
 
-            @if (turno().notasPaciente) {
+            @if (t().notasPaciente) {
 
               <div class="notes-block">
 
                 <span class="notes-label">Notas del paciente</span>
 
-                <p class="notes-text">{{ turno().notasPaciente }}</p>
+                <p class="notes-text">{{ t().notasPaciente }}</p>
 
               </div>
 
             }
 
-            @if (turno().notasProfesional) {
+            @if (t().notasProfesional) {
 
               <div class="notes-block">
 
                 <span class="notes-label">Notas del profesional</span>
 
-                <p class="notes-text">{{ turno().notasProfesional }}</p>
+                <p class="notes-text">{{ t().notasProfesional }}</p>
 
               </div>
 

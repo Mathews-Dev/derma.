@@ -1,5 +1,19 @@
 # Backend Google Calendar
 
+## Notificaciones (videoconsulta y turnos con Meet)
+
+| Actor | Canal | Qué recibe |
+|--------|--------|------------|
+| **Paciente** | WhatsApp (backend `whatsapp`) | Confirmación con enlace Meet al crear el evento; recordatorio **1 h antes** (`derma_videoconsulta_recordatorio`) |
+| **Profesional** | Google Calendar (`primary`) + admin (agenda / videoconsultas) | Evento en su calendario con Meet; alertas nativas de la app de Google Calendar |
+| **Clínica / recepción** | Agenda admin | Mismo turno que el flujo de cobro y confirmación |
+
+No hay envío de email transaccional propio en esta fase: el paciente no depende del correo del evento de Calendar.
+
+Callable Functions (requieren sesión Firebase): `crearEventoCalendario`, `cancelarEventoCalendario`, `desconectarGoogleCalendario`. HTTP público solo para OAuth (`/auth/google/:profesionalUid`).
+
+Para que WhatsApp se dispare al crear Meet, el deploy de `crearEventoCalendario` debe incluir el secret `WHATSAPP_BACKEND_URL`.
+
 ## Desarrollo local
 
 ```bash

@@ -1,6 +1,6 @@
-import { HttpClient } from '@angular/common/http';
 import { inject, Injectable } from '@angular/core';
-import { Observable } from 'rxjs';
+import { Observable, from } from 'rxjs';
+import { Functions, httpsCallable } from '@angular/fire/functions';
 import { environment } from '../../../../environments/environment';
 
 export interface CrearEventoCalendarPayload {
@@ -27,7 +27,7 @@ export interface CrearEventoCalendarResponse {
 
 @Injectable({ providedIn: 'root' })
 export class GoogleCalendarApiService {
-  private readonly http = inject(HttpClient);
+  private readonly functions = inject(Functions);
   private readonly baseUrl = (environment.googleCalendarApiUrl ?? '').replace(/\/$/, '');
 
   urlConectarGoogle(profesionalUid: string): string {
@@ -35,16 +35,33 @@ export class GoogleCalendarApiService {
   }
 
   crearEvento(body: CrearEventoCalendarPayload): Observable<CrearEventoCalendarResponse> {
-    return this.http.post<CrearEventoCalendarResponse>(
-      `${this.baseUrl}/calendario/eventos`,
-      body,
-    );
+    const callable = httpsCallable<
+      CrearEventoCalendarPayload,
+      CrearEventoCalendarResponse
+    >(this.functions, 'crearEventoCalendario');
+
+    return from(callable(body).then(result => result.data));
   }
 
-  desconectarGoogle(profesionalUid: string) {
-    return this.http.delete<{ ok: boolean; mensaje: string }>(
-      `${this.baseUrl}/auth/google/${encodeURIComponent(profesionalUid)}`,
-    );
+  cancelarEvento(
+    profesionalUid: string,
+    googleEventId: string,
+  ): Observable<{ ok: boolean; mensaje: string }> {
+    const callable = httpsCallable<
+      { profesionalUid: string; googleEventId: string },
+      { ok: boolean; mensaje: string }
+    >(this.functions, 'cancelarEventoCalendario');
+
+    return from(callable({ profesionalUid, googleEventId }).then(result => result.data));
+  }
+
+  desconectarGoogle(profesionalUid: string): Observable<{ ok: boolean; mensaje: string }> {
+    const callable = httpsCallable<
+      { profesionalUid: string },
+      { ok: boolean; mensaje: string }
+    >(this.functions, 'desconectarGoogleCalendario');
+
+    return from(callable({ profesionalUid }).then(result => result.data));
   }
 
   tieneBaseUrlConfigurada(): boolean {

@@ -3,7 +3,6 @@ import {
   generarUrlDeAutorizacion,
   procesarCallbackDeGoogle,
 } from '../services/auth.service';
-import { desconectarGoogleCalendar } from '../services/profesional.service';
 import {
   parseProfesionalUidFromState,
   redirectUrlPerfilGoogle,
@@ -50,14 +49,4 @@ export async function recibirCallbackDeGoogle(req: Request, res: Response): Prom
     const message = error instanceof Error ? error.message : 'unknown';
     res.redirect(redirectUrlPerfilGoogle('error', message));
   }
-}
-
-export async function desconectarGoogle(req: Request, res: Response): Promise<void> {
-  const { profesionalUid } = req.params;
-  if (!profesionalUid) {
-    res.status(400).json({ error: 'Falta profesionalUid' });
-    return;
-  }
-  await desconectarGoogleCalendar(profesionalUid);
-  res.json({ ok: true, mensaje: 'Google Calendar desconectado' });
 }

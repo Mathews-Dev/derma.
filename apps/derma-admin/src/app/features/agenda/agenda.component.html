@@ -56,6 +56,15 @@
   </derm-turno-detalle-modal>
 }
 
+@if (modalAtender() && turnoSeleccionado()) {
+  <derm-turno-atender-modal
+    [turno]="turnoSeleccionado()!"
+    [guardando]="atendiendo()"
+    (confirm)="onAtenderConfirm($event)"
+    (close)="onAtenderClose()">
+  </derm-turno-atender-modal>
+}
+
 @if (modalCancelar() && turnoSeleccionado()) {
   <derm-turno-cancelar-modal
     [turno]="turnoSeleccionado()!"

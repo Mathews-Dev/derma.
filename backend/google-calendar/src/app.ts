@@ -1,9 +1,9 @@
 import express from 'express';
 import cors from 'cors';
 import { authRoutes } from './routes/auth.routes';
-import { calendarRoutes } from './routes/calendar.routes';
 import { errorHandler } from './middlewares/error.middleware';
 
+/** Local dev: OAuth HTTP. Crear eventos / desconectar → Callable Functions (deploy o emulator). */
 export const app = express();
 
 app.use(cors());
@@ -14,6 +14,5 @@ app.get('/health', (_req, res) =>
 );
 
 app.use('/auth', authRoutes);
-app.use('/calendario', calendarRoutes);
 
 app.use(errorHandler);

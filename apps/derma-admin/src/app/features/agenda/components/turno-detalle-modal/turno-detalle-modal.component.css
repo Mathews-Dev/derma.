@@ -1,3 +1,24 @@
+.detail-reminder-note {
+  margin: 12px 0 0;
+  font-size: 12px;
+  color: var(--c-600);
+  line-height: 1.45;
+}
+
+.detail-vc-link {
+  display: inline-block;
+  margin-top: 12px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--c-800);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.detail-vc-link:hover {
+  color: var(--c-600);
+}
+
 /* Entrada: clases stagger-1 … stagger-6 → libs/ui/src/styles/animations.css */
 
 /* ─── Backdrop (alineado con invitation-modal / turno-pago) ───────────────── */

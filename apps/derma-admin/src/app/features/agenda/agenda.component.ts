@@ -39,7 +39,13 @@ import {
   type TurnoPagoConfirmPayload,
 } from './components/turno-pago-modal/turno-pago-modal.component';
 import { TurnoNuevoModalComponent } from './components/turno-nuevo-modal/turno-nuevo-modal.component';
+import {
+  TurnoAtenderModalComponent,
+  type TurnoAtenderConfirmPayload,
+} from './components/turno-atender-modal/turno-atender-modal.component';
 import { ToastService } from '@derma/ui';
+import { GoogleCalendarApiService } from '../videoconsulta/data-access/google-calendar-api.service';
+import { googleEventIdFromTurno } from '../videoconsulta/utils/videoconsulta-turno.utils';
 import { MercadoPagoPaymentService, createIdempotencyKey } from '@derma/mercadopago';
 import {
   formatFechaPlantillaWhatsapp,
@@ -63,6 +69,7 @@ const CLINICA_ID = 'clinica_default';
     TurnoReprogramarModalComponent,
     TurnoPagoModalComponent,
     TurnoNuevoModalComponent,
+    TurnoAtenderModalComponent,
   ],
   templateUrl: './agenda.component.html',
   styleUrl: './agenda.component.css',
@@ -74,6 +81,7 @@ export class AgendaComponent {
   private readonly toast = inject(ToastService);
   private readonly mpPayment = inject(MercadoPagoPaymentService);
   private readonly whatsappNotificaciones = inject(WhatsappNotificacionesService);
+  private readonly googleCalendarApi = inject(GoogleCalendarApiService);
 
   private mpPollSub: Subscription | undefined;
   /** Si el cobro MP se aprueba, enviamos la plantilla de confirmación a este número. */
@@ -96,6 +104,8 @@ export class AgendaComponent {
   reprogramando = signal(false);
   modalPago = signal(false);
   modalNuevo = signal(false);
+  modalAtender = signal(false);
+  atendiendo = signal(false);
 
   pagoMpPhase = signal<TurnoPagoMpPhase>('idle');
   pagoMpCheckout = signal<TurnoPagoMpCheckout | null>(null);
@@ -307,9 +317,9 @@ export class AgendaComponent {
           break;
 
         case AccionTurno.ATENDER:
-          await this.turnosService.marcarAtendido(e.id);
-          this.toast.show('Turno marcado como atendido', 'success');
-          break;
+          this.turnoSeleccionado.set(turno);
+          this.modalAtender.set(true);
+          return;
 
         case AccionTurno.CANCELAR:
           this.turnoSeleccionado.set(turno);
@@ -367,8 +377,35 @@ export class AgendaComponent {
 
   /** Modal de detalle: despacha una acción seleccionada dentro del detalle. */
   onDetalleAccion(e: { accion: AccionTurno; turno: Turno }) {
+    this.turnoSeleccionado.set(e.turno);
+    if (e.accion === AccionTurno.ATENDER) {
+      this.modalDetalle.set(false);
+      this.modalAtender.set(true);
+      return;
+    }
     this.modalDetalle.set(false);
     this.onQuickAction({ id: e.turno.id, accion: e.accion });
+  }
+
+  async onAtenderConfirm(payload: TurnoAtenderConfirmPayload) {
+    const t = this.turnoSeleccionado();
+    if (!t) return;
+    this.atendiendo.set(true);
+    try {
+      await this.turnosService.marcarAtendido(t.id, payload.notasProfesional);
+      this.toast.show('Turno marcado como atendido', 'success');
+      this.modalAtender.set(false);
+      this.turnoSeleccionado.set(null);
+    } catch {
+      this.toast.show('Error al marcar como atendido', 'error');
+    } finally {
+      this.atendiendo.set(false);
+    }
+  }
+
+  onAtenderClose() {
+    if (this.atendiendo()) return;
+    this.modalAtender.set(false);
   }
 
   onDetalleClose() {
@@ -382,6 +419,7 @@ export class AgendaComponent {
     this.cancelando.set(true);
     try {
       await this.turnosService.cancelar(t.id, e.motivo);
+      await this.cancelarEventoGoogleSiCorresponde(t);
       const telefono = this.telefonoWhatsappDesdeTurno(t);
       if (telefono) {
         try {
@@ -709,6 +747,20 @@ export class AgendaComponent {
     this.pagoMetodoExito.set(null);
     this.pagoWaExitoOk.set(null);
     this.turnoSeleccionado.set(null);
+  }
+
+  private async cancelarEventoGoogleSiCorresponde(turno: Turno): Promise<void> {
+    const eventId = googleEventIdFromTurno(turno);
+    if (!eventId || !this.googleCalendarApi.tieneBaseUrlConfigurada()) {
+      return;
+    }
+    try {
+      await firstValueFrom(
+        this.googleCalendarApi.cancelarEvento(turno.profesionalId, eventId),
+      );
+    } catch (err) {
+      console.warn('[Agenda] No se pudo cancelar evento en Google Calendar', err);
+    }
   }
 }
 

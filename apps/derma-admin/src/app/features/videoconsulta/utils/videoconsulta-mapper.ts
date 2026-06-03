@@ -1,11 +1,15 @@
 import { Timestamp } from 'firebase/firestore';
-import { EstadoTurno, Profesional, Turno, Usuario, ModalidadConsulta } from '@derma/models';
+import { EstadoTurno, Profesional, Turno, Usuario } from '@derma/models';
 import type {
   VideoconsultaDetalle,
-  VideoconsultaLinkEstado,
   VideoconsultaListRow,
   VideoconsultaNotificacionItem,
 } from '../models/videoconsulta.view-model';
+import {
+  buildRecordatorioEtiqueta,
+  inferModalidadConsulta,
+  linkEstadoFromTurno,
+} from './videoconsulta-turno.utils';
 
 const ESTADO_ETIQUETA: Record<EstadoTurno, string> = {
   [EstadoTurno.PENDIENTE]: 'Pendiente',
@@ -46,21 +50,6 @@ function formatFechaHora(ts: Timestamp | Date | undefined | null): string {
   });
 }
 
-function inferModalidad(turno: Turno): ModalidadConsulta {
-  return turno.modalidadConsulta ?? (turno.videoconsulta ? 'videoconsulta' : 'presencial');
-}
-
-function linkEstado(turno: Turno): VideoconsultaLinkEstado {
-  if (!turno.videoconsulta) {
-    return 'sin_crear';
-  }
-  const link = turno.videoconsulta.linkMeet?.trim();
-  if (link) {
-    return 'listo';
-  }
-  return 'pendiente';
-}
-
 function estadoBadge(turno: Turno): 'success' | 'warning' | 'neutral' {
   switch (turno.estado) {
     case EstadoTurno.CONFIRMADO:
@@ -75,15 +64,21 @@ function estadoBadge(turno: Turno): 'success' | 'warning' | 'neutral' {
 }
 
 function notificacionResumen(turno: Turno): string {
-  const le = linkEstado(turno);
+  const le = linkEstadoFromTurno(turno);
   if (le === 'listo') {
     return 'Meet disponible';
   }
   if (le === 'pendiente') {
     return 'Enlace pendiente';
   }
-  if (le === 'sin_crear' && inferModalidad(turno) === 'videoconsulta') {
+  if (le === 'sin_crear' && inferModalidadConsulta(turno) === 'videoconsulta') {
     return 'Pendiente: generar Meet';
+  }
+  if (turno.recordatorioWhatsAppEnviadoAt) {
+    return 'Recordatorio enviado';
+  }
+  if (turno.recordatorioProgramadoPara) {
+    return 'Recordatorio programado';
   }
   return '—';
 }
@@ -101,8 +96,8 @@ export function mapTurnoToListRow(turno: Turno): VideoconsultaListRow {
     estadoEtiqueta: ESTADO_ETIQUETA[turno.estado] ?? turno.estado,
     estadoBadge: estadoBadge(turno),
     linkMeet: turno.videoconsulta?.linkMeet?.trim() ?? '',
-    linkEstado: linkEstado(turno),
-    modalidadConsulta: inferModalidad(turno),
+    linkEstado: linkEstadoFromTurno(turno),
+    modalidadConsulta: inferModalidadConsulta(turno),
     notificacionResumen: notificacionResumen(turno),
   };
 }
@@ -113,7 +108,7 @@ export function buildNotificacionesTimeline(turno: Turno): VideoconsultaNotifica
   const cre = formatFechaHora(turno.fechaCreacion);
 
   if (!turno.videoconsulta) {
-    if (inferModalidad(turno) === 'presencial') {
+    if (inferModalidadConsulta(turno) === 'presencial') {
       items.push({
         texto: 'Turno registrado como consulta presencial',
         fecha: cre,
@@ -137,7 +132,7 @@ export function buildNotificacionesTimeline(turno: Turno): VideoconsultaNotifica
     });
   } else {
     items.push({
-      texto: 'Evento creado en Calendar sin enlace Meet visible',
+      texto: 'Evento en Calendar sin enlace Meet visible',
       fecha: mod || cre,
       tipo: 'error',
       detalleFallo: 'Revisar integración',
@@ -146,8 +141,24 @@ export function buildNotificacionesTimeline(turno: Turno): VideoconsultaNotifica
 
   if (turno.notificacionesWhatsApp) {
     items.push({
-      texto: 'Avisos por WhatsApp habilitados para este turno',
+      texto: 'Confirmación y recordatorio por WhatsApp habilitados',
       fecha: cre,
+      tipo: 'ok',
+    });
+  }
+
+  if (turno.recordatorioProgramadoPara) {
+    items.push({
+      texto: `Recordatorio programado para ${formatFechaHora(turno.recordatorioProgramadoPara)}`,
+      fecha: formatFechaHora(turno.recordatorioProgramadoPara),
+      tipo: 'ok',
+    });
+  }
+
+  if (turno.recordatorioWhatsAppEnviadoAt) {
+    items.push({
+      texto: 'Recordatorio WhatsApp enviado al paciente',
+      fecha: formatFechaHora(turno.recordatorioWhatsAppEnviadoAt),
       tipo: 'ok',
     });
   }
@@ -167,10 +178,6 @@ function matriculaProfesional(prof: Usuario | undefined): string {
 
 export function mapTurnoToDetalle(turno: Turno, prof: Usuario | undefined): VideoconsultaDetalle {
   const fd = turno.fecha.toDate();
-  const le = linkEstado(turno);
-  const recordatorio = turno.notificacionesWhatsApp
-    ? 'WhatsApp: avisos activados'
-    : null;
 
   return {
     id: turno.id,
@@ -185,12 +192,12 @@ export function mapTurnoToDetalle(turno: Turno, prof: Usuario | undefined): Vide
     estadoEtiqueta: ESTADO_ETIQUETA[turno.estado] ?? turno.estado,
     estadoBadge: estadoBadge(turno),
     linkMeet: turno.videoconsulta?.linkMeet?.trim() ?? '',
-    linkEstado: le,
-    recordatorioEtiqueta: recordatorio,
+    linkEstado: linkEstadoFromTurno(turno),
+    recordatorioEtiqueta: buildRecordatorioEtiqueta(turno),
     telefonoPaciente: turno.pacienteTelefono?.trim() || '—',
     telefonoProfesional: prof?.telefono?.trim() ?? '—',
     notificaciones: buildNotificacionesTimeline(turno),
     profesionalUid: turno.profesionalId,
-    modalidadConsulta: inferModalidad(turno),
+    modalidadConsulta: inferModalidadConsulta(turno),
   };
 }

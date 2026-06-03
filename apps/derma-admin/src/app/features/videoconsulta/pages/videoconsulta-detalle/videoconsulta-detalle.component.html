@@ -1,129 +1,137 @@
-@if (item(); as vc) {
-  <aside class="vc-drawer">
-    <div class="vc-drawer-header">
-      <div class="vc-drawer-header-left">
-        <button type="button" class="vc-icon-btn" (click)="volver()" aria-label="Cerrar">
-          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5">
-            <path stroke-linecap="round" stroke-linejoin="round" d="M6 18 18 6M6 6l12 12" />
-          </svg>
+<div class="fixed inset-0 z-[200] flex items-stretch justify-end modal-backdrop" (click)="onBackdropClick($event)">
+  @if (item(); as vc) {
+    <aside class="w-[min(440px,100vw)] max-w-full h-full max-h-[100dvh] bg-[var(--c-50)] border-l border-[var(--c-200)] flex flex-col overflow-hidden shadow-[-12px_0_48px_rgba(33,37,41,0.1)] animate-slide-in" (click)="$event.stopPropagation()">
+
+      <div class="shrink-0 flex items-center justify-between gap-3 px-[18px] py-4 border-b border-[var(--c-200)] bg-[var(--c-50)]">
+        <div class="flex items-center flex-wrap gap-2 min-w-0">
+          <span class="text-[15px] font-bold text-[var(--c-800)] tracking-[-0.02em]">Detalle de videoconsulta</span>
+          <div class="flex flex-wrap gap-1">
+            <ui-badge [status]="vc.modalidadConsulta === 'videoconsulta' ? 'success' : 'neutral'">
+              {{ vc.modalidadConsulta === 'videoconsulta' ? 'Videoconsulta' : 'Presencial' }}
+            </ui-badge>
+            @switch (vc.estadoBadge) {
+              @case ('success') {
+                <ui-badge status="success">{{ vc.estadoEtiqueta }}</ui-badge>
+              }
+              @case ('warning') {
+                <ui-badge status="warning">{{ vc.estadoEtiqueta }}</ui-badge>
+              }
+              @default {
+                <ui-badge status="neutral">{{ vc.estadoEtiqueta }}</ui-badge>
+              }
+            }
+          </div>
+        </div>
+        <button type="button" class="shrink-0 flex items-center justify-center w-8 h-8 border-none rounded-lg bg-transparent text-[var(--c-500)] cursor-pointer transition-colors duration-150 hover:bg-[var(--c-100)] hover:text-[var(--c-700)]" (click)="close.emit()" title="Cerrar" aria-label="Cerrar panel">
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
         </button>
-        <h2 class="vc-title">Detalle de Videoconsulta</h2>
       </div>
-      <div class="vc-drawer-header-right">
-        <span class="vc-mono-id">{{ vc.codigo }}</span>
-        <ui-badge [status]="vc.modalidadConsulta === 'videoconsulta' ? 'success' : 'neutral'">
-          {{ vc.modalidadConsulta === 'videoconsulta' ? 'Videoconsulta' : 'Presencial' }}
-        </ui-badge>
-        @switch (vc.estadoBadge) {
-          @case ('success') {
-            <ui-badge status="success">{{ vc.estadoEtiqueta }}</ui-badge>
-          }
-          @case ('warning') {
-            <ui-badge status="warning">{{ vc.estadoEtiqueta }}</ui-badge>
-          }
-          @default {
-            <ui-badge status="neutral">{{ vc.estadoEtiqueta }}</ui-badge>
-          }
+
+      <div class="flex-1 overflow-y-auto px-5 pt-4 pb-6 flex flex-col gap-4 thin-scrollbar drawer-body-scroll">
+        <p class="m-0 text-[11px] font-mono text-[var(--c-400)]">{{ vc.codigo }}</p>
+
+        <div class="grid grid-cols-2 gap-4 max-[560px]:grid-cols-1">
+          <div class="bg-white border border-[var(--c-200)] rounded-xl p-4">
+            <span class="text-[11px] font-semibold uppercase tracking-[0.06em] text-[var(--c-500)]">Paciente</span>
+            <p class="mt-1 mb-0 text-sm font-semibold text-[var(--c-800)]">{{ vc.pacienteNombre }}</p>
+            <p class="mt-0.5 mb-0 text-xs text-[var(--c-500)]">DNI: {{ vc.pacienteDni }}</p>
+          </div>
+          <div class="bg-white border border-[var(--c-200)] rounded-xl p-4">
+            <span class="text-[11px] font-semibold uppercase tracking-[0.06em] text-[var(--c-500)]">Profesional</span>
+            <p class="mt-1 mb-0 text-sm font-semibold text-[var(--c-800)]">{{ vc.profesionalNombre }}</p>
+            <p class="mt-0.5 mb-0 text-xs text-[var(--c-500)]">{{ vc.profesionalMatricula }}</p>
+          </div>
+        </div>
+
+        @if (vc.modalidadConsulta === 'videoconsulta') {
+          <derm-videoconsulta-meet-panel
+            [linkMeet]="vc.linkMeet"
+            [linkEstado]="vc.linkEstado"
+            [generating]="generandoMeet()"
+            [calendarBaseOk]="calendarBaseOk()"
+            [googleConectado]="googleConectado()"
+            (copiar)="copiarLink()"
+            (abrirMeet)="abrirMeet()"
+            (generarMeet)="generarMeet($event)"
+            (conectarGoogle)="conectarGoogleProfesional()"
+          />
+        } @else {
+          <div class="bg-white border border-[var(--c-200)] rounded-xl p-4">
+            <span class="text-[11px] font-semibold uppercase tracking-[0.06em] text-[var(--c-500)]">Modalidad</span>
+            <p class="mt-1 mb-0 text-sm font-semibold text-[var(--c-800)]">Consulta presencial</p>
+            <p class="mt-0.5 mb-0 text-xs text-[var(--c-500)]">Este turno no usa enlace de Meet.</p>
+          </div>
         }
-      </div>
-    </div>
 
-    <div class="vc-drawer-body">
-      <div class="vc-grid-2">
-        <div class="vc-card-block">
-          <span class="vc-label-upper">Paciente</span>
-          <p class="vc-strong">{{ vc.pacienteNombre }}</p>
-          <p class="vc-muted">DNI: {{ vc.pacienteDni }}</p>
+        @if (vc.recordatorioEtiqueta) {
+          <div class="flex items-center gap-2">
+            <ui-badge status="success">{{ vc.recordatorioEtiqueta }}</ui-badge>
+          </div>
+        }
+
+        <derm-videoconsulta-timeline [items]="vc.notificaciones" />
+
+        <div class="bg-white border border-[var(--c-200)] rounded-xl p-4">
+          <span class="block text-[11px] font-semibold uppercase tracking-[0.06em] text-[var(--c-500)] mb-2">Contacto paciente</span>
+          <p class="mt-0.5 mb-0 text-xs text-[var(--c-500)]">WhatsApp: {{ vc.telefonoPaciente }}</p>
         </div>
-        <div class="vc-card-block">
-          <span class="vc-label-upper">Profesional</span>
-          <p class="vc-strong">{{ vc.profesionalNombre }}</p>
-          <p class="vc-muted">{{ vc.profesionalMatricula }}</p>
-        </div>
-      </div>
 
-      @if (vc.modalidadConsulta === 'videoconsulta') {
-        <derm-videoconsulta-meet-panel
-          [linkMeet]="vc.linkMeet"
-          [linkEstado]="vc.linkEstado"
-          [generating]="generandoMeet()"
-          [calendarBaseOk]="calendarBaseOk()"
-          (copiar)="copiarLink()"
-          (abrirMeet)="abrirMeet()"
-          (generarMeet)="generarMeet()"
-          (conectarGoogle)="conectarGoogleProfesional()"
-        />
-      } @else {
-        <div class="vc-card-block">
-          <span class="vc-label-upper">Modalidad</span>
-          <p class="vc-strong mt-1">Consulta presencial</p>
-          <p class="vc-muted">Este turno no usa enlace de Meet. Si debía ser videoconsulta, creá el turno de nuevo eligiendo esa modalidad en la agenda.</p>
-        </div>
-      }
-
-      @if (vc.recordatorioEtiqueta) {
-        <div class="vc-reminder-row">
-          <ui-badge status="success">{{ vc.recordatorioEtiqueta }}</ui-badge>
-        </div>
-      }
-
-      <derm-videoconsulta-timeline [items]="vc.notificaciones" />
-
-      <div class="vc-card-block">
-        <span class="vc-label-upper block mb-4">Confirmar teléfono para avisos</span>
-        <div class="vc-grid-2 vc-grid-phones">
+        <div class="grid grid-cols-3 gap-4 text-center p-4 bg-[var(--c-50)] border border-[var(--c-200)] rounded-xl">
           <div>
-            <label class="vc-field-label">Paciente</label>
-            <input type="text" class="vc-input-disabled" [value]="vc.telefonoPaciente" readonly />
-            <app-checkbox
-              class="mt-2 block"
-              [checked]="otroNumPaciente()"
-              (checkedChange)="otroNumPaciente.set($event)"
-              label="Usar otro número"
-            />
+            <span class="text-[11px] font-semibold uppercase tracking-[0.06em] text-[var(--c-500)]">Fecha</span>
+            <span class="block mt-1 text-sm font-semibold text-[var(--c-800)]">{{ vc.fechaCorta }}</span>
           </div>
           <div>
-            <label class="vc-field-label">Profesional</label>
-            <input type="text" class="vc-input-disabled" [value]="vc.telefonoProfesional" readonly />
-            <app-checkbox
-              class="mt-2 block"
-              [checked]="otroNumProfesional()"
-              (checkedChange)="otroNumProfesional.set($event)"
-              label="Usar otro número"
-            />
+            <span class="text-[11px] font-semibold uppercase tracking-[0.06em] text-[var(--c-500)]">Hora</span>
+            <span class="block mt-1 text-sm font-semibold text-[var(--c-800)]">{{ vc.hora }}</span>
+          </div>
+          <div>
+            <span class="text-[11px] font-semibold uppercase tracking-[0.06em] text-[var(--c-500)]">Duración</span>
+            <span class="block mt-1 text-sm font-semibold text-[var(--c-800)]">{{ vc.duracionMin }} min</span>
           </div>
         </div>
       </div>
 
-      <div class="vc-time-summary">
-        <div class="vc-time-cell">
-          <span class="vc-label-upper">Fecha</span>
-          <span class="vc-strong block mt-1">{{ vc.fechaCorta }}</span>
-        </div>
-        <div class="vc-time-cell">
-          <span class="vc-label-upper">Hora</span>
-          <span class="vc-strong block mt-1">{{ vc.hora }}</span>
-        </div>
-        <div class="vc-time-cell">
-          <span class="vc-label-upper">Duración</span>
-          <span class="vc-strong block mt-1">{{ vc.duracionMin }} min</span>
-        </div>
+      <div class="shrink-0 flex justify-end gap-3 px-5 py-4 border-t border-[var(--c-200)] bg-[var(--c-50)]">
+        <button
+          type="button"
+          class="inline-flex items-center justify-center px-4 py-2.5 text-[13px] font-semibold text-[var(--c-700)] bg-white border border-[var(--c-200)] rounded-xl cursor-pointer transition-colors duration-150 hover:bg-[var(--c-100)] disabled:opacity-45 disabled:cursor-not-allowed"
+          [disabled]="!puedeCancelar() || cancelando()"
+          (click)="abrirCancelar()"
+        >
+          Cancelar turno
+        </button>
+        <button
+          type="button"
+          class="inline-flex items-center justify-center px-4 py-2.5 text-[13px] font-semibold text-[var(--c-50)] bg-[var(--c-800)] border border-[var(--c-800)] rounded-xl cursor-pointer transition-colors duration-150 hover:bg-[var(--c-700)] disabled:opacity-45 disabled:cursor-not-allowed"
+          [disabled]="!puedeFinalizar() || atendiendo()"
+          (click)="abrirFinalizar()"
+        >
+          Finalizar videoconsulta
+        </button>
       </div>
-    </div>
+    </aside>
+  } @else {
+    <aside class="w-[min(440px,100vw)] max-w-full h-full max-h-[100dvh] bg-[var(--c-50)] border-l border-[var(--c-200)] flex flex-col overflow-hidden animate-slide-in" (click)="$event.stopPropagation()">
+      <p class="p-6 m-0 text-sm text-[var(--c-400)]">Cargando videoconsulta…</p>
+    </aside>
+  }
+</div>
 
-    <div class="vc-drawer-footer">
-      <button type="button" class="vc-btn-ghost" disabled title="Próximamente">Cancelar turno</button>
-      <button type="button" class="vc-btn-primary px-5" disabled title="Próximamente">Finalizar videoconsulta</button>
-    </div>
-  </aside>
-} @else if (turnoRouteId()) {
-  <div class="vc-not-found">
-    <p class="text-[var(--c-600)] mb-4">No se encontró el turno o todavía se está cargando.</p>
-    <a routerLink="/admin/videoconsultas" class="vc-back-link">Volver al listado</a>
-  </div>
-} @else {
-  <div class="vc-not-found">
-    <p class="text-[var(--c-600)] mb-4">No se encontró esta videoconsulta.</p>
-    <a routerLink="/admin/videoconsultas" class="vc-back-link">Volver al listado</a>
-  </div>
+@if (modalAtender() && turnoActual(); as tAt) {
+  <derm-turno-atender-modal
+    [turno]="tAt"
+    [guardando]="atendiendo()"
+    (confirm)="onAtenderConfirm($event)"
+    (close)="onAtenderClose()"
+  />
+}
+
+@if (modalCancelar() && turnoActual(); as tCan) {
+  <derm-turno-cancelar-modal
+    [turno]="tCan"
+    [guardando]="cancelando()"
+    (confirm)="onCancelarConfirm($event)"
+    (close)="onCancelarClose()"
+  />
 }

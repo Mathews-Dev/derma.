@@ -12,8 +12,15 @@ export function turnoARangoIsoUtc(turno: Turno): { fechaInicio: string; fechaFin
   return { fechaInicio: inicio.toISOString(), fechaFin: fin.toISOString() };
 }
 
-export function buildCrearEventoPayload(turno: Turno): CrearEventoCalendarPayload {
-  return buildCalendarEventPayloadParaTurno(turno, true);
+export function buildCrearEventoPayload(
+  turno: Turno,
+  options?: { enviarWhatsapp?: boolean },
+): CrearEventoCalendarPayload {
+  const payload = buildCalendarEventPayloadParaTurno(turno, true);
+  if (options?.enviarWhatsapp === false) {
+    payload.telefonoNotificaciones = null;
+  }
+  return payload;
 }
 
 export function buildCrearEventoPayloadPresencial(turno: Turno): CrearEventoCalendarPayload {

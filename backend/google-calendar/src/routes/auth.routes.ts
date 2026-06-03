@@ -2,12 +2,10 @@ import { Router } from 'express';
 import {
   iniciarConexionConGoogle,
   recibirCallbackDeGoogle,
-  desconectarGoogle,
 } from '../controllers/auth.controller';
 
 export const authRoutes = Router();
 
 // La ruta fija debe ir ANTES que /:profesionalUid; si no, "callback" se toma como UID.
 authRoutes.get('/google/callback', recibirCallbackDeGoogle);
-authRoutes.delete('/google/:profesionalUid', desconectarGoogle);
 authRoutes.get('/google/:profesionalUid', iniciarConexionConGoogle);

@@ -20,12 +20,23 @@
     </p>
   }
 
+  <div class="vc-wa-toggle">
+    <div class="vc-wa-toggle-copy">
+      <span class="vc-wa-toggle-label">Enviar enlace por WhatsApp</span>
+      <span class="vc-wa-toggle-hint">Al generar Meet, avisa al paciente con el link de la reunión.</span>
+    </div>
+    <app-toggle
+      [isChecked]="enviarWhatsapp()"
+      (change)="enviarWhatsapp.set($event)"
+    />
+  </div>
+
   <div class="vc-meet-actions flex flex-wrap gap-2 items-center">
     <ui-button
       label="Generar Meet"
       [disabled]="!puedeGenerar()"
       [isLoading]="generating()"
-      (click)="generarMeet.emit()"
+      (click)="onGenerarMeet()"
     />
     <button type="button" class="vc-btn-primary" [disabled]="!linkMeet().trim()" (click)="abrirMeet.emit()">
       Abrir en navegador
@@ -34,9 +45,11 @@
       </svg>
     </button>
     <button type="button" class="vc-btn-ghost" (click)="copiar.emit()">Copiar</button>
-    <button type="button" class="vc-btn-ghost" (click)="conectarGoogle.emit()">
-      Conectar Google del profesional
-    </button>
+    @if (!googleConectado()) {
+      <button type="button" class="vc-btn-ghost" (click)="conectarGoogle.emit()">
+        Conectar Google del profesional
+      </button>
+    }
   </div>
   <p class="vc-privacy-note">Por privacidad, no compartas este enlace fuera del paciente y el profesional.</p>
 </div>

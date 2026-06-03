@@ -35,6 +35,37 @@
   user-select: all;
 }
 
+.vc-wa-toggle {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-top: 0.75rem;
+  padding: 0.75rem;
+  background: var(--c-50);
+  border: 1px solid var(--c-100);
+  border-radius: 10px;
+}
+
+.vc-wa-toggle-copy {
+  min-width: 0;
+}
+
+.vc-wa-toggle-label {
+  display: block;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--c-700);
+}
+
+.vc-wa-toggle-hint {
+  display: block;
+  margin-top: 2px;
+  font-size: 11px;
+  color: var(--c-500);
+  line-height: 1.35;
+}
+
 .vc-meet-actions {
   display: flex;
   gap: 0.5rem;

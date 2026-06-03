@@ -1,0 +1,55 @@
+<div class="modal-backdrop animate-backdrop-in" (click)="$event.target === $event.currentTarget && !guardando() && close.emit()">
+  <div class="modal-box atender-modal animate-scale-in" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <span class="modal-icon modal-icon--success" aria-hidden="true">
+        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"/></svg>
+      </span>
+      <div class="modal-header__text">
+        <h2 class="modal-title">{{ titulo() }}</h2>
+        <p class="modal-subtitle">{{ turno().pacienteNombre }} · {{ turno().profesionalNombre }}</p>
+      </div>
+      <button type="button" class="modal-close" [disabled]="guardando()" (click)="close.emit()" aria-label="Cerrar">
+        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
+      </button>
+    </div>
+
+    <div class="atender-resumen">
+      <div class="atender-resumen__row">
+        <span class="atender-resumen__lbl">Horario</span>
+        <span class="atender-resumen__val">{{ turnoResumen() }}</span>
+      </div>
+    </div>
+
+    <div class="atender-notas">
+      <label class="field-label" for="atender-notas">Notas del profesional (opcional)</label>
+      <textarea
+        id="atender-notas"
+        class="field-textarea"
+        placeholder="Observaciones de la consulta…"
+        [ngModel]="notas()"
+        (ngModelChange)="notas.set($event)"
+        [disabled]="guardando()"
+        rows="3"
+        maxlength="2000">
+      </textarea>
+    </div>
+
+    <div class="modal-footer">
+      <button type="button" class="btn btn--ghost" [disabled]="guardando()" (click)="close.emit()">
+        Volver
+      </button>
+      <button
+        type="button"
+        class="btn btn--primary btn--with-spinner"
+        [disabled]="!puedeConfirmar()"
+        (click)="onConfirm()">
+        @if (guardando()) {
+          <span class="btn-spinner" aria-hidden="true"></span>
+          Guardando…
+        } @else {
+          Confirmar
+        }
+      </button>
+    </div>
+  </div>
+</div>
